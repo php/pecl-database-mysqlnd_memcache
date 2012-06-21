@@ -607,15 +607,7 @@ PHP_FUNCTION(mysqlnd_memcache_set)
 	mysqlnd_memcache_connection_data_data *conn_data;
 	zend_fcall_info *fci = NULL;
 	zend_fcall_info_cache *fcc = NULL;
-	
-	if (!memcached_ce) {
-		/* TODO: This is a potential race condition in TSRM mode */
-		if (zend_lookup_class("memcached", sizeof("memcached")-1, &memcached_ce TSRMLS_CC)==FAILURE || (*memcached_ce)->type != ZEND_INTERNAL_CLASS) {
-			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Failed to get memcached class");
-			RETURN_FALSE;
-		}
-	}
-	
+
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "zO|s!f", &mysqlnd_conn_zv, &memcached_zv, *memcached_ce, &regexp, &regexp_len, &fci, &fcc) == FAILURE) {
 		return;
 	}
@@ -678,6 +670,11 @@ PHP_MINIT_FUNCTION(mysqlnd_memcache)
 	REGISTER_INI_ENTRIES();
 	*/
 	
+	if (zend_hash_find(CG(class_table), "memcached", sizeof("memcached"), (void **) &memcached_ce)==FAILURE) {
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "mysqlnd_memcache failed to get Memcached class");
+		return FAILURE;
+	}
+
 	mysqlnd_memcache_plugin_id = mysqlnd_plugin_register();
 
 	data_methods = mysqlnd_conn_data_get_methods();
