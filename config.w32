@@ -1,0 +1,13 @@
+// $Id$
+// vim:ft=javascript
+
+// If your extension references something external, use ARG_WITH
+// ARG_WITH("mysqlnd_memcache", "for mysqlnd_memcache support", "no");
+
+// Otherwise, use ARG_ENABLE
+// ARG_ENABLE("mysqlnd_memcache", "enable mysqlnd_memcache support", "no");
+
+if (PHP_MYSQLND_MEMCACHE != "no") {
+	EXTENSION("mysqlnd_memcache", "mysqlnd_memcache.c");
+}
+
