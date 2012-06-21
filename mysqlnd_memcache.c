@@ -237,7 +237,7 @@ MYSQLND_ROW_C mysqlnd_memcache_result_fetch_row_c(MYSQLND_RES *result TSRMLS_DC)
 	}
 	
 	result_data->read = 1;
-	retval = safe_emalloc(field_count, sizeof(char*), 0);
+	retval = mnd_emalloc(field_count * sizeof(char*));
 
 	int i = 0;
 	char *value, *value_lasts;
