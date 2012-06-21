@@ -13,4 +13,5 @@ if test "$PHP_MYSQLND_MEMCACHE" != "no"; then
 
   PHP_ADD_EXTENSION_DEP(mysqlnd_memcache, mysqlnd)
   PHP_ADD_EXTENSION_DEP(mysqlnd_memcache, memcached)
+  PHP_ADD_EXTENSION_DEP(mysqlnd_memcache, pcre)
 fi
