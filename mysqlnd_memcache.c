@@ -360,7 +360,7 @@ static const struct st_mysqlnd_res_methods mysqlnd_memcache_query_result_funcs =
 /* }}} */
 /* }}} */
 
-static zval** mysqlnd_memcache_verify_patterns(mysqlnd_memcache_connection_data_data *connection_data, char *query, unsigned int query_len, zval *subpats TSRMLS_DC) /* }}} */
+static zval** mysqlnd_memcache_verify_patterns(mysqlnd_memcache_connection_data_data *connection_data, char *query, unsigned int query_len, zval *subpats TSRMLS_DC) /* {{{ */
 {
 	zval return_value;
 	zval **tmp;
@@ -515,7 +515,7 @@ static void MYSQLND_METHOD(mysqlnd_memcache_conn, dtor)(MYSQLND_CONN_DATA *conn 
 }
 /* }}} */
 
-static void mysqlnd_memcache_split_columns(mysqlnd_memcache_connection_data_data *connection_data, char *names, int names_len)
+static void mysqlnd_memcache_split_columns(mysqlnd_memcache_connection_data_data *connection_data, char *names, int names_len) /* {{{ */
 {
 	int i = 0;
 	char *pos_from = names, *pos_to;
@@ -540,6 +540,7 @@ static void mysqlnd_memcache_split_columns(mysqlnd_memcache_connection_data_data
 	}
 	*pos_to = '\0';
 }
+/* }}} */
 
 static mysqlnd_memcache_connection_data_data *mysqlnd_memcache_init_mysqlnd(MYSQLND *conn TSRMLS_DC) /* {{{ */
 {
