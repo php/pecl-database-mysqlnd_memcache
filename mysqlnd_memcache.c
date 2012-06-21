@@ -245,7 +245,7 @@ MYSQLND_ROW_C mysqlnd_memcache_result_fetch_row_c(MYSQLND_RES *result TSRMLS_DC)
 	value = strtok_r(result_data->data, connection_data->mapping.separator, &value_lasts);
 
 	while (value) {
-		/* TODO - This can e optimized, data handling in general should be made binary safe ..*/
+		/* TODO - This can be optimized, data handling in general should be made binary safe ..*/
 		retval[i] = strdup(value);
 		result_data->lengths[i++] = strlen(value);
 		value = strtok_r(NULL, connection_data->mapping.separator, &value_lasts);
@@ -423,8 +423,14 @@ static void mysqlnd_memcache_fill_field_data(mysqlnd_memcache_connection_data_da
 	
 	for (i = 0; i < field_count; ++i) {
 		result_data->fields[i].db = connection_data->mapping.schema_name;
+		result_data->fields[i].db_length = strlen(connection_data->mapping.schema_name);
+		result_data->fields[i].org_table = result_data->fields[i].table = connection_data->mapping.table_name;
+		result_data->fields[i].org_table_length = result_data->fields[i].table_length = strlen(connection_data->mapping.table_name);
 		result_data->fields[i].name = connection_data->mapping.value_columns.v[i];
 		result_data->fields[i].name_length = strlen(connection_data->mapping.value_columns.v[i]);
+		result_data->fields[i].catalog = "";
+		result_data->fields[i].catalog_length = 0;
+		result_data->fields[i].type = MYSQL_TYPE_STRING;
 	}
 }
 /* }}} */
