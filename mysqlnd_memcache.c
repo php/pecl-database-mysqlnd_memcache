@@ -25,6 +25,7 @@
 #include "php.h"
 #include "php_ini.h"
 #include "ext/standard/info.h"
+#include "ext/standard/php_versioning.h"
 #include "ext/mysqlnd/mysqlnd.h"
 #include "ext/mysqlnd/mysqlnd_result.h"
 #include "ext/mysqlnd/mysqlnd_ext_plugin.h"
@@ -665,6 +666,7 @@ static const zend_function_entry mysqlnd_memcache_functions[] = {
 PHP_MINIT_FUNCTION(mysqlnd_memcache)
 {
 	struct st_mysqlnd_conn_data_methods *data_methods;
+	char *pmversion;
 	
 	/* If you have INI entries, uncomment these lines 
 	REGISTER_INI_ENTRIES();
@@ -673,6 +675,11 @@ PHP_MINIT_FUNCTION(mysqlnd_memcache)
 	if (zend_hash_find(CG(class_table), "memcached", sizeof("memcached"), (void **) &memcached_ce)==FAILURE) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "mysqlnd_memcache failed to get Memcached class");
 		return FAILURE;
+	}
+
+	pmversion = (char*)((*memcached_ce)->info.internal.module->version);
+	if (php_version_compare("2.0.0", pmversion) > 0 || php_version_compare(pmversion, "2.1.0") >= 0) {
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "mysqlnd_memcache is only tested with php_memcached 2.0.x, %s might cause errors", pmversion);
 	}
 
 	mysqlnd_memcache_plugin_id = mysqlnd_plugin_register();
@@ -710,6 +717,7 @@ PHP_MINFO_FUNCTION(mysqlnd_memcache)
 	php_info_print_table_start();
 	php_info_print_table_header(2, "mysqlnd_memcache support", "enabled");
 	php_info_print_table_row(2, "mysqlnd version", MYSQLND_VERSION);
+	php_info_print_table_row(2, "php-memcached version", (*memcached_ce)->info.internal.module->version);
 	php_info_print_table_row(2, "libmemcached version", LIBMEMCACHED_VERSION_STRING);
 	php_info_print_table_end();
 
