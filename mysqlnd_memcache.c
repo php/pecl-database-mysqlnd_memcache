@@ -498,7 +498,7 @@ static void MYSQLND_METHOD(mysqlnd_memcache_conn, dtor)(MYSQLND_CONN_DATA *conn 
 		efree(conn_data->mapping.schema_name);
 		efree(conn_data->mapping.table_name);
 		efree(conn_data->mapping.id_field_name);
-//		efree(conn_data->mapping.value_columns.to_free);
+		efree(conn_data->mapping.value_columns.to_free);
 		efree(conn_data->mapping.value_columns.v);
 		efree(conn_data->mapping.separator);
 		
@@ -522,7 +522,7 @@ static void mysqlnd_memcache_split_columns(mysqlnd_memcache_connection_data_data
 	int count = count_char(names, ',') + 1;
 	
 	connection_data->mapping.value_columns.num = count;
-	pos_to = connection_data->mapping.value_columns.to_free = emalloc(names_len) + 1;
+	pos_to = connection_data->mapping.value_columns.to_free = emalloc(names_len + 1);
 	connection_data->mapping.value_columns.v = safe_emalloc(count, sizeof(char*), 0);
 	
 	connection_data->mapping.value_columns.v[0] = connection_data->mapping.value_columns.to_free;
