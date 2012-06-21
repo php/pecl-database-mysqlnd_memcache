@@ -188,7 +188,8 @@ static void mysqlnd_memcache_result_fetch_into(MYSQLND_RES *result, unsigned int
 {
 	mysqlnd_memcache_connection_data_data *connection_data = *mysqlnd_plugin_get_plugin_connection_data_data(result->conn, mysqlnd_memcache_plugin_id);
 	mysqlnd_memcache_result_data *result_data = *(mysqlnd_memcache_result_data **)mysqlnd_plugin_get_plugin_result_data(result, mysqlnd_memcache_plugin_id);
-		
+
+	int i = 0;
 	zval *data;
 	
 	if (result_data->read || !result_data->data) {
@@ -197,17 +198,13 @@ static void mysqlnd_memcache_result_fetch_into(MYSQLND_RES *result, unsigned int
 	
 	result_data->read = 1;
 	
-/*	
-	char *to_free, *columns;
-	to_free = columns = estrdup(connection_data->mapping.value_columns);
-	char *fieldname, *fieldname_lasts;
+
 	char *value, *value_lasts;
 	
-	fieldname = strtok_r(columns, ",", &fieldname_lasts);
 	value = strtok_r(result_data->data, connection_data->mapping.separator, &value_lasts);
 
 	array_init(return_value);
-	while (fieldname && value) {
+	while (value) {
 		ALLOC_INIT_ZVAL(data);
 		ZVAL_STRING(data, value, 1);
 		
@@ -217,15 +214,13 @@ static void mysqlnd_memcache_result_fetch_into(MYSQLND_RES *result, unsigned int
 		}
 		if (flags & MYSQLND_FETCH_ASSOC) {
 			Z_ADDREF_P(data);
-			zend_hash_add(Z_ARRVAL_P(return_value), fieldname, strlen(fieldname)+1, &data, sizeof(zval *), NULL);
+			zend_hash_add(Z_ARRVAL_P(return_value), connection_data->mapping.value_columns.v[i], strlen(connection_data->mapping.value_columns.v[i])+1, &data, sizeof(zval *), NULL);
 		}
 		zval_ptr_dtor(&data);
 		
-		fieldname = strtok_r(NULL, ",", &fieldname_lasts);
 		value = strtok_r(NULL, connection_data->mapping.separator, &value_lasts);
+		i++;
 	}
-	efree(to_free);
-*/									 
 }
 /* }}} */
 
