@@ -706,22 +706,6 @@ PHP_MSHUTDOWN_FUNCTION(mysqlnd_memcache)
 }
 /* }}} */
 
-/* {{{ PHP_RINIT_FUNCTION
- */
-PHP_RINIT_FUNCTION(mysqlnd_memcache)
-{
-	return SUCCESS;
-}
-/* }}} */
-
-/* {{{ PHP_RSHUTDOWN_FUNCTION
- */
-PHP_RSHUTDOWN_FUNCTION(mysqlnd_memcache)
-{
-	return SUCCESS;
-}
-/* }}} */
-
 /* {{{ PHP_MINFO_FUNCTION
  */
 PHP_MINFO_FUNCTION(mysqlnd_memcache)
@@ -756,8 +740,8 @@ zend_module_entry mysqlnd_memcache_module_entry = {
 	mysqlnd_memcache_functions,
 	PHP_MINIT(mysqlnd_memcache),
 	PHP_MSHUTDOWN(mysqlnd_memcache),
-	PHP_RINIT(mysqlnd_memcache),
-	PHP_RSHUTDOWN(mysqlnd_memcache),
+	NULL,
+	NULL,
 	PHP_MINFO(mysqlnd_memcache),
 	"0.1",
 	STANDARD_MODULE_PROPERTIES
