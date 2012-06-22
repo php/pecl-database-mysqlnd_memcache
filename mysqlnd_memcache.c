@@ -729,6 +729,7 @@ PHP_MINIT_FUNCTION(mysqlnd_memcache)
 
 	pmversion = (char*)((*memcached_ce)->info.internal.module->version);
 	if (php_version_compare("2.0.0", pmversion) > 0 || php_version_compare(pmversion, "2.1.0") >= 0) {
+		/* As long as we're blindly casting a void* to fake_memcached_object* we have to be extra careful */
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "mysqlnd_memcache is only tested with php_memcached 2.0.x, %s might cause errors", pmversion);
 	}
 
