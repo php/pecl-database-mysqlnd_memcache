@@ -32,6 +32,7 @@
 #include "ext/mysqlnd/mysqlnd_priv.h"
 #include "ext/mysqlnd/mysqlnd_alloc.h"
 #include "ext/mysqlnd/mysqlnd_reverse_api.h"
+#include "Zend/zend_interfaces.h"
 #include "php_mysqlnd_memcache.h"
 #include "ext/pcre/php_pcre.h"
 #include "libmemcached/memcached.h"
@@ -76,6 +77,11 @@ typedef struct {
 		} value_columns;
 		char *separator;
 	} mapping;
+	struct {
+		zend_fcall_info fci;
+		zend_fcall_info_cache fcc;
+		zend_bool exists;
+	} callback;
 } mysqlnd_memcache_connection_data_data;
 
 typedef struct {
@@ -436,6 +442,25 @@ static void mysqlnd_memcache_fill_field_data(mysqlnd_memcache_connection_data_da
 }
 /* }}} */
 
+static void myslqnd_memcache_notify_decision(mysqlnd_memcache_connection_data_data *conn_data, zend_bool using_memcache TSRMLS_DC) /* {{{ */
+{
+	zval *retval = NULL, *arg;
+	zval **args[1];
+	ALLOC_INIT_ZVAL(arg);
+	ZVAL_BOOL(arg, using_memcache);
+	args[0] = &arg;
+
+	conn_data->callback.fci.no_separation = 0;
+	conn_data->callback.fci.retval_ptr_ptr = &retval;
+	conn_data->callback.fci.param_count = 1;
+	conn_data->callback.fci.params = args;
+
+	if (zend_call_function(&conn_data->callback.fci, &conn_data->callback.fcc TSRMLS_CC) == SUCCESS && retval) {
+		zval_ptr_dtor(&retval);
+	}
+	zval_ptr_dtor(&arg);
+}
+
 static enum_func_status MYSQLND_METHOD(mysqlnd_memcache_conn, query)(MYSQLND_CONN_DATA *conn, const char *query, unsigned int query_len TSRMLS_DC) /* {{{ */
 {
 	zval subpats;
@@ -443,9 +468,13 @@ static enum_func_status MYSQLND_METHOD(mysqlnd_memcache_conn, query)(MYSQLND_CON
 	
 	INIT_ZVAL(subpats);
 	mysqlnd_memcache_connection_data_data *connection_data = *mysqlnd_plugin_get_plugin_connection_data_data(conn, mysqlnd_memcache_plugin_id);
-	
+
 	if (connection_data) {
 		tmp = mysqlnd_memcache_verify_patterns(connection_data, (char*)query, query_len, &subpats TSRMLS_CC);
+
+		if (UNEXPECTED(connection_data->callback.exists)) {
+			myslqnd_memcache_notify_decision(connection_data, tmp ? TRUE : FALSE TSRMLS_CC);
+		}
 	}
 	if (tmp) {
 		void **result_data_vpp;
@@ -510,6 +539,15 @@ static void MYSQLND_METHOD(mysqlnd_memcache_conn, dtor)(MYSQLND_CONN_DATA *conn 
 			efree(conn_data->regexp.str);
 		}
 		
+		if (conn_data->callback.exists) {
+			zval_ptr_dtor(&conn_data->callback.fci.function_name);
+			conn_data->callback.fci.function_name = NULL;
+			if (conn_data->callback.fci.object_ptr) {
+				zval_ptr_dtor(&conn_data->callback.fci.object_ptr);
+				conn_data->callback.fci.object_ptr = NULL;
+			}
+		}
+
 		efree(conn_data);
 	}
 	orig_mysqlnd_conn_dtor(conn TSRMLS_CC);
@@ -606,8 +644,8 @@ PHP_FUNCTION(mysqlnd_memcache_set)
 	char *regexp = NULL;
 	int regexp_len;
 	mysqlnd_memcache_connection_data_data *conn_data;
-	zend_fcall_info *fci = NULL;
-	zend_fcall_info_cache *fcc = NULL;
+	zend_fcall_info fci;
+	zend_fcall_info_cache fcc;
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "zO|s!f", &mysqlnd_conn_zv, &memcached_zv, *memcached_ce, &regexp, &regexp_len, &fci, &fcc) == FAILURE) {
 		return;
@@ -641,6 +679,18 @@ PHP_FUNCTION(mysqlnd_memcache_set)
 	
 	conn_data->regexp.pattern = pcre_get_compiled_regex_cache(conn_data->regexp.str, conn_data->regexp.len TSRMLS_CC);
 	
+	if (ZEND_NUM_ARGS() == 4) {
+		Z_ADDREF_P(fci.function_name);
+		if (fci.object_ptr) {
+			Z_ADDREF_P(fci.object_ptr);
+		}
+		conn_data->callback.exists = TRUE;
+		conn_data->callback.fcc = fcc;
+		conn_data->callback.fci = fci;
+	} else {
+		conn_data->callback.exists = FALSE;
+	}
+
 	RETURN_TRUE;
 }
 /* }}} */
