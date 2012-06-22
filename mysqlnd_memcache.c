@@ -668,13 +668,13 @@ PHP_FUNCTION(mysqlnd_memcache_set)
 	conn_data->connection.zv = memcached_zv;
 	
 	if (regexp) {
-	    conn_data->regexp.str = estrndup(regexp, regexp_len);
-	    conn_data->regexp.len = regexp_len;
-	    conn_data->regexp.str_is_allocated = 1;
+		conn_data->regexp.str = estrndup(regexp, regexp_len);
+		conn_data->regexp.len = regexp_len;
+		conn_data->regexp.str_is_allocated = 1;
 	} else {
-	    conn_data->regexp.str = SQL_PATTERN;
-	    conn_data->regexp.len = SQL_PATTERN_LEN;
-	    conn_data->regexp.str_is_allocated = 0;
+		conn_data->regexp.str = SQL_PATTERN;
+		conn_data->regexp.len = SQL_PATTERN_LEN;
+		conn_data->regexp.str_is_allocated = 0;
 	}
 	
 	conn_data->regexp.pattern = pcre_get_compiled_regex_cache(conn_data->regexp.str, conn_data->regexp.len TSRMLS_CC);
