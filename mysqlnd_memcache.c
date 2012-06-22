@@ -200,15 +200,13 @@ static void mysqlnd_memcache_result_fetch_into(MYSQLND_RES *result, unsigned int
 
 	int i = 0;
 	zval *data;
+	char *value, *value_lasts;
 	
 	if (result_data->read || !result_data->data) {
 		return;
 	}
 	
 	result_data->read = 1;
-	
-
-	char *value, *value_lasts;
 	
 	value = strtok_r(result_data->data, connection_data->mapping.separator, &value_lasts);
 
