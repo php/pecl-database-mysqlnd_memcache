@@ -460,6 +460,7 @@ static void myslqnd_memcache_notify_decision(mysqlnd_memcache_connection_data_da
 	}
 	zval_ptr_dtor(&arg);
 }
+/* }}} */
 
 static enum_func_status MYSQLND_METHOD(mysqlnd_memcache_conn, query)(MYSQLND_CONN_DATA *conn, const char *query, unsigned int query_len TSRMLS_DC) /* {{{ */
 {
