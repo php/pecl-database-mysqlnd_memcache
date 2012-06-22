@@ -41,6 +41,8 @@
 ZEND_DECLARE_MODULE_GLOBALS(mysqlnd_memcache)
  */
 
+#define MYSQLND_MEMCACHE_VERSION "0.1.0"
+
 static unsigned int mysqlnd_memcache_plugin_id;
 
 static func_mysqlnd_conn_data__query orig_mysqlnd_conn_query;
@@ -767,7 +769,7 @@ PHP_MSHUTDOWN_FUNCTION(mysqlnd_memcache)
 PHP_MINFO_FUNCTION(mysqlnd_memcache)
 {
 	php_info_print_table_start();
-	php_info_print_table_header(2, "mysqlnd_memcache support", "enabled");
+	php_info_print_table_header(2, "mysqlnd_memcache support", "enabled v." MYSQLND_MEMCACHE_VERSION);
 	php_info_print_table_row(2, "mysqlnd version", MYSQLND_VERSION);
 	php_info_print_table_row(2, "php-memcached version", (*memcached_ce)->info.internal.module->version);
 	php_info_print_table_row(2, "libmemcached version", LIBMEMCACHED_VERSION_STRING);
@@ -800,7 +802,7 @@ zend_module_entry mysqlnd_memcache_module_entry = {
 	NULL,
 	NULL,
 	PHP_MINFO(mysqlnd_memcache),
-	"0.1",
+	MYSQLND_MEMCACHE_VERSION,
 	STANDARD_MODULE_PROPERTIES
 };
 /* }}} */
