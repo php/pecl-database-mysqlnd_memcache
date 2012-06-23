@@ -686,7 +686,6 @@ PHP_FUNCTION(mysqlnd_memcache_set)
 	
 	if (!memcached_zv) {
 		mysqlnd_memcache_free_connection_data_data(mysqlnd_conn->data TSRMLS_CC);
-		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Connection plugin data was unset, old result sets might still try to access it. This has to be fixed. Be careful");
 		RETURN_TRUE;
 	}
 
