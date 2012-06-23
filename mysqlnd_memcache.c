@@ -480,7 +480,7 @@ static void mymem_notify_decision(mymem_connection_data_data *conn_data, zend_bo
 }
 /* }}} */
 
-static enum_func_status MYSQLND_METHOD(mysqlnd_memcache_conn, query)(MYSQLND_CONN_DATA *conn, const char *query, unsigned int query_len TSRMLS_DC) /* {{{ */
+static enum_func_status MYSQLND_METHOD(mymem_conn, query)(MYSQLND_CONN_DATA *conn, const char *query, unsigned int query_len TSRMLS_DC) /* {{{ */
 {
 	zval subpats;
 	zval **tmp = NULL;
@@ -575,7 +575,7 @@ static void mymem_free_connection_data_data(MYSQLND_CONN_DATA *conn TSRMLS_DC) /
 	}
 }
 
-static void MYSQLND_METHOD(mysqlnd_memcache_conn, dtor)(MYSQLND_CONN_DATA *conn TSRMLS_DC) /* {{{ */
+static void MYSQLND_METHOD(mymem_conn, dtor)(MYSQLND_CONN_DATA *conn TSRMLS_DC) /* {{{ */
 {
 	mymem_free_connection_data_data(conn TSRMLS_CC);
 	orig_mysqlnd_conn_dtor(conn TSRMLS_CC);
@@ -738,7 +738,7 @@ ZEND_END_ARG_INFO()
 /* }}} */
 
 /* {{{ mysqlnd_memcache_functions[] */
-static const zend_function_entry mysqlnd_memcache_functions[] = {
+static const zend_function_entry mymem_functions[] = {
 	PHP_FE(mysqlnd_memcache_set, arginfo_mysqlnd_memcache_set)
 	PHP_FE_END
 };
@@ -771,10 +771,10 @@ PHP_MINIT_FUNCTION(mysqlnd_memcache)
 	data_methods = mysqlnd_conn_data_get_methods();
 
 	orig_mysqlnd_conn_query = data_methods->query;
-        data_methods->query = MYSQLND_METHOD(mysqlnd_memcache_conn, query);
+        data_methods->query = MYSQLND_METHOD(mymem_conn, query);
 
 	orig_mysqlnd_conn_dtor = data_methods->dtor;
-        data_methods->dtor = MYSQLND_METHOD(mysqlnd_memcache_conn, dtor);
+        data_methods->dtor = MYSQLND_METHOD(mymem_conn, dtor);
 	
 	REGISTER_STRINGL_CONSTANT("MYSQLND_MEMCACHE_DEFAULT_REGEXP", SQL_PATTERN, SQL_PATTERN_LEN, CONST_CS | CONST_PERSISTENT);
 	
@@ -811,7 +811,7 @@ PHP_MINFO_FUNCTION(mysqlnd_memcache)
 }
 /* }}} */
 
-static const zend_module_dep mysqlnd_memcache_deps[] = { /* {{{ */
+static const zend_module_dep mymem_deps[] = { /* {{{ */
 	ZEND_MOD_REQUIRED("mysqlnd")
 	ZEND_MOD_REQUIRED("pcre")
 	ZEND_MOD_REQUIRED("memcached")
@@ -824,9 +824,9 @@ static const zend_module_dep mysqlnd_memcache_deps[] = { /* {{{ */
 zend_module_entry mysqlnd_memcache_module_entry = {
 	STANDARD_MODULE_HEADER_EX,
 	NULL,
-	mysqlnd_memcache_deps,
+	mymem_deps,
 	"mysqlnd_memcache",
-	mysqlnd_memcache_functions,
+	mymem_functions,
 	PHP_MINIT(mysqlnd_memcache),
 	PHP_MSHUTDOWN(mysqlnd_memcache),
 	NULL,
