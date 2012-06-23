@@ -228,6 +228,8 @@ static void mysqlnd_memcache_result_fetch_into(MYSQLND_RES *result, unsigned int
 		value = strtok_r(NULL, connection_data->mapping.separator, &value_lasts);
 		i++;
 	}
+
+	CONN_SET_STATE(result->conn, CONN_READY);
 }
 /* }}} */
 
@@ -257,6 +259,8 @@ MYSQLND_ROW_C mysqlnd_memcache_result_fetch_row_c(MYSQLND_RES *result TSRMLS_DC)
 		result_data->lengths[i++] = strlen(value);
 		value = strtok_r(NULL, connection_data->mapping.separator, &value_lasts);
 	}
+
+	CONN_SET_STATE(result->conn, CONN_READY);
 
 	return retval;
 }
