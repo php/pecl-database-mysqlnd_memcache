@@ -84,7 +84,7 @@ typedef struct {
 		zend_fcall_info_cache fcc;
 		zend_bool exists;
 	} callback;
-} mysqlnd_memcache_connection_data_data;
+} mymem_connection_data_data;
 
 typedef struct {
 	char *data;
@@ -92,7 +92,7 @@ typedef struct {
 	int read;
 	MYSQLND_FIELD *fields;
 	unsigned long *lengths;
-} mysqlnd_memcache_result_data;
+} mymem_result_data;
 
 /*
  * I'd prefer having those exported from php-memcached.
@@ -149,12 +149,12 @@ static void php_mysqlnd_memcache_init_globals(zend_mysqlnd_memcache_globals *mys
 /* }}} */
 
 /* {{{ MYSQLND_MEMCACHE_RESULT */
-static enum_func_status mysqlnd_memcache_result_fetch_row(MYSQLND_RES *result, void *param, unsigned int flags, zend_bool *fetched_anything TSRMLS_DC) /* {{{ */
+static enum_func_status mymem_result_fetch_row(MYSQLND_RES *result, void *param, unsigned int flags, zend_bool *fetched_anything TSRMLS_DC) /* {{{ */
 {
 	zval *row = (zval *) param;
 	zval *data;
-	mysqlnd_memcache_connection_data_data *connection_data = *mysqlnd_plugin_get_plugin_connection_data_data(result->conn, mysqlnd_memcache_plugin_id);
-	mysqlnd_memcache_result_data *result_data = *(mysqlnd_memcache_result_data **)mysqlnd_plugin_get_plugin_result_data(result, mysqlnd_memcache_plugin_id);
+	mymem_connection_data_data *connection_data = *mysqlnd_plugin_get_plugin_connection_data_data(result->conn, mysqlnd_memcache_plugin_id);
+	mymem_result_data *result_data = *(mymem_result_data **)mysqlnd_plugin_get_plugin_result_data(result, mysqlnd_memcache_plugin_id);
 
 	BAILOUT_IF_CONN_DATA_UNSET(connection_data)
 
@@ -188,22 +188,22 @@ static enum_func_status mysqlnd_memcache_result_fetch_row(MYSQLND_RES *result, v
 }
 /* }}} */
 
-static MYSQLND_RES *mysqlnd_memcache_result_use_result(MYSQLND_RES *const result, zend_bool ps_protocol TSRMLS_DC) /* {{{ */
+static MYSQLND_RES *mymem_result_use_result(MYSQLND_RES *const result, zend_bool ps_protocol TSRMLS_DC) /* {{{ */
 {
 	return result;
 }
 /* }}} */
 
-static MYSQLND_RES *mysqlnd_memcache_result_store_result(MYSQLND_RES *result, MYSQLND_CONN_DATA *conn, zend_bool ps_protocol TSRMLS_DC) /* {{{ */
+static MYSQLND_RES *mymem_result_store_result(MYSQLND_RES *result, MYSQLND_CONN_DATA *conn, zend_bool ps_protocol TSRMLS_DC) /* {{{ */
 {
 	return result;
 }
 /* }}} */
 
-static void mysqlnd_memcache_result_fetch_into(MYSQLND_RES *result, unsigned int flags, zval *return_value, enum_mysqlnd_extension ext TSRMLS_DC ZEND_FILE_LINE_DC) /* {{{ */
+static void mymem_result_fetch_into(MYSQLND_RES *result, unsigned int flags, zval *return_value, enum_mysqlnd_extension ext TSRMLS_DC ZEND_FILE_LINE_DC) /* {{{ */
 {
-	mysqlnd_memcache_connection_data_data *connection_data = *mysqlnd_plugin_get_plugin_connection_data_data(result->conn, mysqlnd_memcache_plugin_id);
-	mysqlnd_memcache_result_data *result_data = *(mysqlnd_memcache_result_data **)mysqlnd_plugin_get_plugin_result_data(result, mysqlnd_memcache_plugin_id);
+	mymem_connection_data_data *connection_data = *mysqlnd_plugin_get_plugin_connection_data_data(result->conn, mysqlnd_memcache_plugin_id);
+	mymem_result_data *result_data = *(mymem_result_data **)mysqlnd_plugin_get_plugin_result_data(result, mysqlnd_memcache_plugin_id);
 
 	int i = 0;
 	zval *data;
@@ -242,10 +242,10 @@ static void mysqlnd_memcache_result_fetch_into(MYSQLND_RES *result, unsigned int
 }
 /* }}} */
 
-MYSQLND_ROW_C mysqlnd_memcache_result_fetch_row_c(MYSQLND_RES *result TSRMLS_DC) /* {{{ */
+MYSQLND_ROW_C mymem_result_fetch_row_c(MYSQLND_RES *result TSRMLS_DC) /* {{{ */
 {
-	mysqlnd_memcache_connection_data_data *connection_data = *mysqlnd_plugin_get_plugin_connection_data_data(result->conn, mysqlnd_memcache_plugin_id);
-	mysqlnd_memcache_result_data *result_data = *(mysqlnd_memcache_result_data **)mysqlnd_plugin_get_plugin_result_data(result, mysqlnd_memcache_plugin_id);
+	mymem_connection_data_data *connection_data = *mysqlnd_plugin_get_plugin_connection_data_data(result->conn, mysqlnd_memcache_plugin_id);
+	mymem_result_data *result_data = *(mymem_result_data **)mysqlnd_plugin_get_plugin_result_data(result, mysqlnd_memcache_plugin_id);
 
 	int field_count;
 	char **retval;
@@ -279,58 +279,58 @@ MYSQLND_ROW_C mysqlnd_memcache_result_fetch_row_c(MYSQLND_RES *result TSRMLS_DC)
 }
 /* }}} */
 
-static void mysqlnd_memcache_result_fetch_all(MYSQLND_RES *result, unsigned int flags, zval *return_value TSRMLS_DC ZEND_FILE_LINE_DC) /* {{{ */
+static void mymem_result_fetch_all(MYSQLND_RES *result, unsigned int flags, zval *return_value TSRMLS_DC ZEND_FILE_LINE_DC) /* {{{ */
 {
 	zval *row;
-	mysqlnd_memcache_result_data *result_data_p = *(mysqlnd_memcache_result_data **)mysqlnd_plugin_get_plugin_result_data(result, mysqlnd_memcache_plugin_id);
+	mymem_result_data *result_data_p = *(mymem_result_data **)mysqlnd_plugin_get_plugin_result_data(result, mysqlnd_memcache_plugin_id);
 		
 	array_init(return_value);
 	if (result_data_p->data) {
 		ALLOC_INIT_ZVAL(row);
-		mysqlnd_memcache_result_fetch_into(result, flags, row, MYSQLND_MYSQLI TSRMLS_CC ZEND_FILE_LINE_CC);
+		mymem_result_fetch_into(result, flags, row, MYSQLND_MYSQLI TSRMLS_CC ZEND_FILE_LINE_CC);
 		zend_hash_next_index_insert(Z_ARRVAL_P(return_value), &row, sizeof(zval *), NULL);
 	}
 }
 /* }}} */
 
-static uint64_t mysqlnd_memcache_result_num_rows(const MYSQLND_RES * const result TSRMLS_DC) /* {{{ */
+static uint64_t mymem_result_num_rows(const MYSQLND_RES * const result TSRMLS_DC) /* {{{ */
 {
-	mysqlnd_memcache_result_data *result_data_p = *(mysqlnd_memcache_result_data **)mysqlnd_plugin_get_plugin_result_data(result, mysqlnd_memcache_plugin_id);
+	mymem_result_data *result_data_p = *(mymem_result_data **)mysqlnd_plugin_get_plugin_result_data(result, mysqlnd_memcache_plugin_id);
 	return result_data_p->data ? 1 : 0;
 }
 /* }}} */
 
-static unsigned int mysqlnd_memcache_result_num_fields(const MYSQLND_RES * const result TSRMLS_DC) /* {{{ */
+static unsigned int mymem_result_num_fields(const MYSQLND_RES * const result TSRMLS_DC) /* {{{ */
 {
-	mysqlnd_memcache_connection_data_data *connection_data = *mysqlnd_plugin_get_plugin_connection_data_data(result->conn, mysqlnd_memcache_plugin_id);
+	mymem_connection_data_data *connection_data = *mysqlnd_plugin_get_plugin_connection_data_data(result->conn, mysqlnd_memcache_plugin_id);
 	BAILOUT_IF_CONN_DATA_UNSET(connection_data)
 	return connection_data->mapping.value_columns.num;
 }
 /* }}} */
 
-static MYSQLND_FIELD_OFFSET mysqlnd_memcache_result_field_tell(const MYSQLND_RES * const result TSRMLS_DC) /* {{{ */
+static MYSQLND_FIELD_OFFSET mymem_result_field_tell(const MYSQLND_RES * const result TSRMLS_DC) /* {{{ */
 {
 	return 0;
 }
 /* }}} */
 
-const MYSQLND_FIELD *mysqlnd_memcache_result_fetch_fields(MYSQLND_RES * const result TSRMLS_DC) /* {{{ */
+const MYSQLND_FIELD *mymem_result_fetch_fields(MYSQLND_RES * const result TSRMLS_DC) /* {{{ */
 {
-	mysqlnd_memcache_result_data *result_data = *mysqlnd_plugin_get_plugin_result_data(result, mysqlnd_memcache_plugin_id);
+	mymem_result_data *result_data = *mysqlnd_plugin_get_plugin_result_data(result, mysqlnd_memcache_plugin_id);
 	return result_data->fields;
 }
 /* }}} */
 
-unsigned long *mysqlnd_memcache_result_fetch_lengths(MYSQLND_RES * const result TSRMLS_DC) /* {{{ */
+unsigned long *mymem_result_fetch_lengths(MYSQLND_RES * const result TSRMLS_DC) /* {{{ */
 {
-	mysqlnd_memcache_result_data *result_data = *mysqlnd_plugin_get_plugin_result_data(result, mysqlnd_memcache_plugin_id);
+	mymem_result_data *result_data = *mysqlnd_plugin_get_plugin_result_data(result, mysqlnd_memcache_plugin_id);
 	return result_data->lengths;
 }
 /* }}} */
 
-static enum_func_status	mysqlnd_memcache_result_free_result(MYSQLND_RES * result, zend_bool implicit TSRMLS_DC) /* {{{ */
+static enum_func_status	mymem_result_free_result(MYSQLND_RES * result, zend_bool implicit TSRMLS_DC) /* {{{ */
 {
-	mysqlnd_memcache_result_data *result_data = *mysqlnd_plugin_get_plugin_result_data(result, mysqlnd_memcache_plugin_id);
+	mymem_result_data *result_data = *mysqlnd_plugin_get_plugin_result_data(result, mysqlnd_memcache_plugin_id);
 	free(result_data->data);
 	efree(result_data->fields);
 	efree(result_data->lengths);
@@ -340,32 +340,32 @@ static enum_func_status	mysqlnd_memcache_result_free_result(MYSQLND_RES * result
 }
 /* }}} */
 
-static const struct st_mysqlnd_res_methods mysqlnd_memcache_query_result_funcs = {  /* {{{ */
-	mysqlnd_memcache_result_fetch_row,    /* mysqlnd_fetch_row_func	fetch_row; */
+static const struct st_mysqlnd_res_methods mymem_query_result_funcs = {  /* {{{ */
+	mymem_result_fetch_row,    /* mysqlnd_fetch_row_func	fetch_row; */
 	NULL, /* mysqlnd_fetch_row_func	fetch_row_normal_buffered; -- private */
 	NULL, /* mysqlnd_fetch_row_func	fetch_row_normal_unbuffered; -- private */
 
-	mysqlnd_memcache_result_use_result,   /* func_mysqlnd_res__use_result use_result; */
-	mysqlnd_memcache_result_store_result, /* func_mysqlnd_res__store_result store_result; */
-	mysqlnd_memcache_result_fetch_into,   /* func_mysqlnd_res__fetch_into fetch_into; */
-	mysqlnd_memcache_result_fetch_row_c,  /* func_mysqlnd_res__fetch_row_c fetch_row_c; */
-	mysqlnd_memcache_result_fetch_all,    /* func_mysqlnd_res__fetch_all fetch_all; */
+	mymem_result_use_result,   /* func_mysqlnd_res__use_result use_result; */
+	mymem_result_store_result, /* func_mysqlnd_res__store_result store_result; */
+	mymem_result_fetch_into,   /* func_mysqlnd_res__fetch_into fetch_into; */
+	mymem_result_fetch_row_c,  /* func_mysqlnd_res__fetch_row_c fetch_row_c; */
+	mymem_result_fetch_all,    /* func_mysqlnd_res__fetch_all fetch_all; */
 	NULL, /* func_mysqlnd_res__fetch_field_data fetch_field_data; */
-	mysqlnd_memcache_result_num_rows,     /* func_mysqlnd_res__num_rows num_rows; */
-	mysqlnd_memcache_result_num_fields,   /* func_mysqlnd_res__num_fields num_fields; */
+	mymem_result_num_rows,     /* func_mysqlnd_res__num_rows num_rows; */
+	mymem_result_num_fields,   /* func_mysqlnd_res__num_fields num_fields; */
 	NULL, /* func_mysqlnd_res__skip_result skip_result; */
 	NULL, /* func_mysqlnd_res__seek_data seek_data; */
 	NULL, /* func_mysqlnd_res__seek_field seek_field; */
-	mysqlnd_memcache_result_field_tell, /* func_mysqlnd_res__field_tell field_tell; */
+	mymem_result_field_tell, /* func_mysqlnd_res__field_tell field_tell; */
 	NULL, /* func_mysqlnd_res__fetch_field fetch_field; */
 	NULL, /* func_mysqlnd_res__fetch_field_direct fetch_field_direct; */
-	mysqlnd_memcache_result_fetch_fields, /* func_mysqlnd_res__fetch_fields fetch_fields; */
+	mymem_result_fetch_fields, /* func_mysqlnd_res__fetch_fields fetch_fields; */
 	NULL, /* func_mysqlnd_res__read_result_metadata read_result_metadata; */
-	mysqlnd_memcache_result_fetch_lengths, /* func_mysqlnd_res__fetch_lengths fetch_lengths; */
+	mymem_result_fetch_lengths, /* func_mysqlnd_res__fetch_lengths fetch_lengths; */
 	NULL, /* func_mysqlnd_res__store_result_fetch_data store_result_fetch_data; */
 	NULL, /* func_mysqlnd_res__initialize_result_set_rest initialize_result_set_rest; */
 	NULL, /* func_mysqlnd_res__free_result_buffers free_result_buffers; */
-	mysqlnd_memcache_result_free_result,  /* func_mysqlnd_res__free_result free_result; */
+	mymem_result_free_result,  /* func_mysqlnd_res__free_result free_result; */
 	NULL, /* func_mysqlnd_res__free_result_internal free_result_internal; */
 	NULL, /* func_mysqlnd_res__free_result_contents free_result_contents; */
 	NULL, /* func_mysqlnd_res__free_buffered_data free_buffered_data; */
@@ -385,7 +385,7 @@ static const struct st_mysqlnd_res_methods mysqlnd_memcache_query_result_funcs =
 /* }}} */
 /* }}} */
 
-static zval** mysqlnd_memcache_verify_patterns(mysqlnd_memcache_connection_data_data *connection_data, char *query, unsigned int query_len, zval *subpats TSRMLS_DC) /* {{{ */
+static zval** mymem_verify_patterns(mymem_connection_data_data *connection_data, char *query, unsigned int query_len, zval *subpats TSRMLS_DC) /* {{{ */
 {
 	zval return_value;
 	zval **tmp;
@@ -436,7 +436,7 @@ static zval** mysqlnd_memcache_verify_patterns(mysqlnd_memcache_connection_data_
 }
 /* }}} */
 
-static void mysqlnd_memcache_fill_field_data(mysqlnd_memcache_connection_data_data *connection_data, mysqlnd_memcache_result_data *result_data) /* {{{ */
+static void mymem_fill_field_data(mymem_connection_data_data *connection_data, mymem_result_data *result_data) /* {{{ */
 {
 	int i;
 	int field_count = connection_data->mapping.value_columns.num;
@@ -460,7 +460,7 @@ static void mysqlnd_memcache_fill_field_data(mysqlnd_memcache_connection_data_da
 }
 /* }}} */
 
-static void myslqnd_memcache_notify_decision(mysqlnd_memcache_connection_data_data *conn_data, zend_bool using_memcache TSRMLS_DC) /* {{{ */
+static void mymem_notify_decision(mymem_connection_data_data *conn_data, zend_bool using_memcache TSRMLS_DC) /* {{{ */
 {
 	zval *retval = NULL, *arg;
 	zval **args[1];
@@ -486,18 +486,18 @@ static enum_func_status MYSQLND_METHOD(mysqlnd_memcache_conn, query)(MYSQLND_CON
 	zval **tmp = NULL;
 	
 	INIT_ZVAL(subpats);
-	mysqlnd_memcache_connection_data_data *connection_data = *mysqlnd_plugin_get_plugin_connection_data_data(conn, mysqlnd_memcache_plugin_id);
+	mymem_connection_data_data *connection_data = *mysqlnd_plugin_get_plugin_connection_data_data(conn, mysqlnd_memcache_plugin_id);
 
 	if (connection_data) {
-		tmp = mysqlnd_memcache_verify_patterns(connection_data, (char*)query, query_len, &subpats TSRMLS_CC);
+		tmp = mymem_verify_patterns(connection_data, (char*)query, query_len, &subpats TSRMLS_CC);
 
 		if (UNEXPECTED(connection_data->callback.exists)) {
-			myslqnd_memcache_notify_decision(connection_data, tmp ? TRUE : FALSE TSRMLS_CC);
+			mymem_notify_decision(connection_data, tmp ? TRUE : FALSE TSRMLS_CC);
 		}
 	}
 	if (tmp) {
 		void **result_data_vpp;
-		mysqlnd_memcache_result_data *result_data_p;
+		mymem_result_data *result_data_p;
 		
 		uint32_t flags;
 		size_t value_len;
@@ -513,14 +513,14 @@ static enum_func_status MYSQLND_METHOD(mysqlnd_memcache_conn, query)(MYSQLND_CON
 		
 		conn->current_result = mysqlnd_result_init(1, conn->persistent TSRMLS_CC);
 		result_data_vpp = mysqlnd_plugin_get_plugin_result_data(conn->current_result, mysqlnd_memcache_plugin_id);
-		*result_data_vpp = emalloc(sizeof(mysqlnd_memcache_result_data));
-		result_data_p = *(mysqlnd_memcache_result_data **)result_data_vpp;
+		*result_data_vpp = emalloc(sizeof(mymem_result_data));
+		result_data_p = *(mymem_result_data **)result_data_vpp;
 		
 		result_data_p->data = res;
 		result_data_p->data_len = value_len;
 		result_data_p->read = 0;
 		
-		mysqlnd_memcache_fill_field_data(connection_data, result_data_p);
+		mymem_fill_field_data(connection_data, result_data_p);
 		
 		conn->upsert_status->affected_rows = (uint64_t)-1;
 		conn->upsert_status->warning_count = 0;
@@ -528,7 +528,7 @@ static enum_func_status MYSQLND_METHOD(mysqlnd_memcache_conn, query)(MYSQLND_CON
 		
 		conn->current_result->conn = conn;
 		conn->current_result->field_count = 1;
-		conn->current_result->m = mysqlnd_memcache_query_result_funcs;
+		conn->current_result->m = mymem_query_result_funcs;
 		
 		conn->last_query_type = QUERY_SELECT;
 		CONN_SET_STATE(conn, CONN_FETCHING_DATA);
@@ -541,10 +541,10 @@ static enum_func_status MYSQLND_METHOD(mysqlnd_memcache_conn, query)(MYSQLND_CON
 }
 /* }}} */
 
-static void mysqlnd_memcache_free_connection_data_data(MYSQLND_CONN_DATA *conn TSRMLS_DC) /* {{{ */
+static void mymem_free_connection_data_data(MYSQLND_CONN_DATA *conn TSRMLS_DC) /* {{{ */
 {
-	mysqlnd_memcache_connection_data_data **conn_data_p = (mysqlnd_memcache_connection_data_data **)mysqlnd_plugin_get_plugin_connection_data_data(conn, mysqlnd_memcache_plugin_id);
-	mysqlnd_memcache_connection_data_data *conn_data = *conn_data_p;
+	mymem_connection_data_data **conn_data_p = (mymem_connection_data_data **)mysqlnd_plugin_get_plugin_connection_data_data(conn, mysqlnd_memcache_plugin_id);
+	mymem_connection_data_data *conn_data = *conn_data_p;
 
 	if (conn_data) {
 		efree(conn_data->mapping.schema_name);
@@ -577,12 +577,12 @@ static void mysqlnd_memcache_free_connection_data_data(MYSQLND_CONN_DATA *conn T
 
 static void MYSQLND_METHOD(mysqlnd_memcache_conn, dtor)(MYSQLND_CONN_DATA *conn TSRMLS_DC) /* {{{ */
 {
-	mysqlnd_memcache_free_connection_data_data(conn TSRMLS_CC);
+	mymem_free_connection_data_data(conn TSRMLS_CC);
 	orig_mysqlnd_conn_dtor(conn TSRMLS_CC);
 }
 /* }}} */
 
-static void mysqlnd_memcache_split_columns(mysqlnd_memcache_connection_data_data *connection_data, char *names, int names_len) /* {{{ */
+static void mymem_split_columns(mymem_connection_data_data *connection_data, char *names, int names_len) /* {{{ */
 {
 	int i = 0;
 	char *pos_from = names, *pos_to;
@@ -609,13 +609,13 @@ static void mysqlnd_memcache_split_columns(mysqlnd_memcache_connection_data_data
 }
 /* }}} */
 
-static mysqlnd_memcache_connection_data_data *mysqlnd_memcache_init_mysqlnd(MYSQLND *conn TSRMLS_DC) /* {{{ */
+static mymem_connection_data_data *mymem_init_mysqlnd(MYSQLND *conn TSRMLS_DC) /* {{{ */
 {
 	void **plugin_data_vpp;
-	mysqlnd_memcache_connection_data_data *plugin_data_p;
+	mymem_connection_data_data *plugin_data_p;
 
 	MYSQLND_ROW_C row;
-	if (FAIL == orig_mysqlnd_conn_query(conn->data, MAPPING_QUERY, sizeof(MAPPING_QUERY) TSRMLS_CC)) {
+	if (FAIL == orig_mysqlnd_conn_query(conn->data, MAPPING_QUERY, sizeof(MAPPING_QUERY)-1 TSRMLS_CC)) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "MySQL query failed: %s", mysqlnd_error(conn));
 		return NULL;
 	}
@@ -645,13 +645,13 @@ static mysqlnd_memcache_connection_data_data *mysqlnd_memcache_init_mysqlnd(MYSQ
 	but if there's one PK lookup only per request we're gonna loose.
 	*/
 	plugin_data_vpp = mysqlnd_plugin_get_plugin_connection_data_data(conn->data, mysqlnd_memcache_plugin_id);
-	*plugin_data_vpp = pemalloc(sizeof(mysqlnd_memcache_connection_data_data), conn->persistent);
-	plugin_data_p = *(mysqlnd_memcache_connection_data_data **)plugin_data_vpp;
+	*plugin_data_vpp = pemalloc(sizeof(mymem_connection_data_data), conn->persistent);
+	plugin_data_p = *(mymem_connection_data_data **)plugin_data_vpp;
 	
 	plugin_data_p->mapping.schema_name = estrdup(row[0]);
 	plugin_data_p->mapping.table_name = estrdup(row[1]);
 	plugin_data_p->mapping.id_field_name = estrdup(row[2]);
-	mysqlnd_memcache_split_columns(plugin_data_p, row[3], strlen(row[3]));
+	mymem_split_columns(plugin_data_p, row[3], strlen(row[3]));
 	plugin_data_p->mapping.separator = estrdup(row[4]);
 
 	mnd_free(row);
@@ -671,7 +671,7 @@ PHP_FUNCTION(mysqlnd_memcache_set)
 	fake_memcached_object *memcached_obj;
 	char *regexp = NULL;
 	int regexp_len;
-	mysqlnd_memcache_connection_data_data *conn_data;
+	mymem_connection_data_data *conn_data;
 	zend_fcall_info fci;
 	zend_fcall_info_cache fcc;
 
@@ -685,13 +685,13 @@ PHP_FUNCTION(mysqlnd_memcache_set)
 	}
 	
 	if (!memcached_zv) {
-		mysqlnd_memcache_free_connection_data_data(mysqlnd_conn->data TSRMLS_CC);
+		mymem_free_connection_data_data(mysqlnd_conn->data TSRMLS_CC);
 		RETURN_TRUE;
 	}
 
 	memcached_obj = (fake_memcached_object *)zend_object_store_get_object(memcached_zv TSRMLS_CC);
 
-	conn_data = mysqlnd_memcache_init_mysqlnd(mysqlnd_conn TSRMLS_CC);
+	conn_data = mymem_init_mysqlnd(mysqlnd_conn TSRMLS_CC);
 	if (!conn_data) {
 		RETURN_FALSE;
 	}
