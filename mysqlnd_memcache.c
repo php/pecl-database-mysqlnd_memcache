@@ -55,7 +55,7 @@ static func_mysqlnd_conn_data__dtor orig_mysqlnd_conn_dtor;
 #define MAPPING_QUERY "    SELECT c.db_schema, c.db_table, c.key_columns, c.value_columns, o.value sep" \
                       "      FROM innodb_memcache.containers c" \
                       " LEFT JOIN innodb_memcache.config_options o " \
-		      "        ON o.name = 'separator';"
+		      "        ON o.name = 'separator'"
 
 typedef struct {
 	struct {
