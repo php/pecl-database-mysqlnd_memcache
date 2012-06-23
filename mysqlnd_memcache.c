@@ -122,6 +122,11 @@ static int count_char(char *pos, char v) /* {{{ */
 }
 /* }}} */
 
+#define BAILOUT_IF_CONN_DATA_UNSET(connection_data) \
+	if (UNEXPECTED(!connection_data)) { \
+		php_error_docref(NULL TSRMLS_CC, E_ERROR, "Connection data was unset but result set using it still exists"); \
+	}
+
 /* {{{ PHP_INI
  */
 /* Remove comments and fill if you need to have entries in php.ini
@@ -150,7 +155,9 @@ static enum_func_status mysqlnd_memcache_result_fetch_row(MYSQLND_RES *result, v
 	zval *data;
 	mysqlnd_memcache_connection_data_data *connection_data = *mysqlnd_plugin_get_plugin_connection_data_data(result->conn, mysqlnd_memcache_plugin_id);
 	mysqlnd_memcache_result_data *result_data = *(mysqlnd_memcache_result_data **)mysqlnd_plugin_get_plugin_result_data(result, mysqlnd_memcache_plugin_id);
-	
+
+	BAILOUT_IF_CONN_DATA_UNSET(connection_data)
+
 	if (result_data->read) {
 		return FAIL;
 	}
@@ -201,7 +208,9 @@ static void mysqlnd_memcache_result_fetch_into(MYSQLND_RES *result, unsigned int
 	int i = 0;
 	zval *data;
 	char *value, *value_lasts;
-	
+
+	BAILOUT_IF_CONN_DATA_UNSET(connection_data)
+
 	if (result_data->read || !result_data->data) {
 		return;
 	}
@@ -238,9 +247,13 @@ MYSQLND_ROW_C mysqlnd_memcache_result_fetch_row_c(MYSQLND_RES *result TSRMLS_DC)
 	mysqlnd_memcache_connection_data_data *connection_data = *mysqlnd_plugin_get_plugin_connection_data_data(result->conn, mysqlnd_memcache_plugin_id);
 	mysqlnd_memcache_result_data *result_data = *(mysqlnd_memcache_result_data **)mysqlnd_plugin_get_plugin_result_data(result, mysqlnd_memcache_plugin_id);
 
-	int field_count = connection_data->mapping.value_columns.num;
+	int field_count;
 	char **retval;
-	
+
+	BAILOUT_IF_CONN_DATA_UNSET(connection_data)
+
+	field_count = connection_data->mapping.value_columns.num;
+
 	if (result_data->read || !result_data->data) {
 		return NULL;
 	}
@@ -290,6 +303,7 @@ static uint64_t mysqlnd_memcache_result_num_rows(const MYSQLND_RES * const resul
 static unsigned int mysqlnd_memcache_result_num_fields(const MYSQLND_RES * const result TSRMLS_DC) /* {{{ */
 {
 	mysqlnd_memcache_connection_data_data *connection_data = *mysqlnd_plugin_get_plugin_connection_data_data(result->conn, mysqlnd_memcache_plugin_id);
+	BAILOUT_IF_CONN_DATA_UNSET(connection_data)
 	return connection_data->mapping.value_columns.num;
 }
 /* }}} */
