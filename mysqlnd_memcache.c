@@ -257,7 +257,7 @@ MYSQLND_ROW_C mysqlnd_memcache_result_fetch_row_c(MYSQLND_RES *result TSRMLS_DC)
 		result_data->lengths[i++] = strlen(value);
 		value = strtok_r(NULL, connection_data->mapping.separator, &value_lasts);
 	}
-	
+
 	return retval;
 }
 /* }}} */
@@ -523,9 +523,11 @@ static enum_func_status MYSQLND_METHOD(mysqlnd_memcache_conn, query)(MYSQLND_CON
 }
 /* }}} */
 
-static void MYSQLND_METHOD(mysqlnd_memcache_conn, dtor)(MYSQLND_CONN_DATA *conn TSRMLS_DC) /* {{{ */
+static void mysqlnd_memcache_free_connection_data_data(MYSQLND_CONN_DATA *conn TSRMLS_DC) /* {{{ */
 {
-	mysqlnd_memcache_connection_data_data *conn_data = *mysqlnd_plugin_get_plugin_connection_data_data(conn, mysqlnd_memcache_plugin_id);
+	mysqlnd_memcache_connection_data_data **conn_data_p = (mysqlnd_memcache_connection_data_data **)mysqlnd_plugin_get_plugin_connection_data_data(conn, mysqlnd_memcache_plugin_id);
+	mysqlnd_memcache_connection_data_data *conn_data = *conn_data_p;
+
 	if (conn_data) {
 		efree(conn_data->mapping.schema_name);
 		efree(conn_data->mapping.table_name);
@@ -550,7 +552,14 @@ static void MYSQLND_METHOD(mysqlnd_memcache_conn, dtor)(MYSQLND_CONN_DATA *conn 
 		}
 
 		efree(conn_data);
+
+		*conn_data_p = NULL;
 	}
+}
+
+static void MYSQLND_METHOD(mysqlnd_memcache_conn, dtor)(MYSQLND_CONN_DATA *conn TSRMLS_DC) /* {{{ */
+{
+	mysqlnd_memcache_free_connection_data_data(conn TSRMLS_CC);
 	orig_mysqlnd_conn_dtor(conn TSRMLS_CC);
 }
 /* }}} */
@@ -640,7 +649,7 @@ PHP_FUNCTION(mysqlnd_memcache_set)
 {
 	zval *mysqlnd_conn_zv;
 	MYSQLND *mysqlnd_conn;
-	zval *memcached_zv;
+	zval *memcached_zv = NULL;
 	fake_memcached_object *memcached_obj;
 	char *regexp = NULL;
 	int regexp_len;
@@ -648,7 +657,7 @@ PHP_FUNCTION(mysqlnd_memcache_set)
 	zend_fcall_info fci;
 	zend_fcall_info_cache fcc;
 
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "zO|s!f", &mysqlnd_conn_zv, &memcached_zv, *memcached_ce, &regexp, &regexp_len, &fci, &fcc) == FAILURE) {
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "zO!|s!f", &mysqlnd_conn_zv, &memcached_zv, *memcached_ce, &regexp, &regexp_len, &fci, &fcc) == FAILURE) {
 		return;
 	}
 	
@@ -657,6 +666,12 @@ PHP_FUNCTION(mysqlnd_memcache_set)
 		RETURN_FALSE;
 	}
 	
+	if (!memcached_zv) {
+		mysqlnd_memcache_free_connection_data_data(mysqlnd_conn->data TSRMLS_CC);
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Connection plugin data was unset, old result sets might still try to access it. This has to be fixed. Be careful");
+		RETURN_TRUE;
+	}
+
 	memcached_obj = (fake_memcached_object *)zend_object_store_get_object(memcached_zv TSRMLS_CC);
 
 	conn_data = mysqlnd_memcache_init_mysqlnd(mysqlnd_conn TSRMLS_CC);
@@ -699,7 +714,7 @@ PHP_FUNCTION(mysqlnd_memcache_set)
 /* {{{ ARGINFO */
 ZEND_BEGIN_ARG_INFO_EX(arginfo_mysqlnd_memcache_set, 0, 0, 2)
 	ZEND_ARG_INFO(0, mysql_connection)
-	ZEND_ARG_OBJ_INFO(0, memcached_connection, Memcached, 0)
+	ZEND_ARG_OBJ_INFO(0, memcached_connection, Memcached, 1)
 	ZEND_ARG_INFO(0, select_pattern)
 	ZEND_ARG_INFO(0, debug_callback)
 ZEND_END_ARG_INFO()
