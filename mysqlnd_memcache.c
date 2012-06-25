@@ -49,7 +49,7 @@ static func_mysqlnd_conn_data__query orig_mysqlnd_conn_query;
 static func_mysqlnd_conn_data__dtor orig_mysqlnd_conn_dtor;
 
 #define SQL_IDENTIFIER "`?([a-z0-9_]+)`?"
-#define SQL_PATTERN "/^\\s*SELECT\\s*(\\S+)\\s*FROM\\s*" SQL_IDENTIFIER "\\s*WHERE\\s*" SQL_IDENTIFIER "\\s*=\\s*[\"']?([0-9]+)[\"']?\\s*$/im"
+#define SQL_PATTERN "/^\\s*SELECT\\s*(.+?)\\s*FROM\\s*" SQL_IDENTIFIER "\\s*WHERE\\s*" SQL_IDENTIFIER "\\s*=\\s*[\"']?([0-9]+)[\"']?\\s*$/is"
 #define SQL_PATTERN_LEN (sizeof(SQL_PATTERN)-1)
 
 #define MAPPING_QUERY "    SELECT c.db_schema, c.db_table, c.key_columns, c.value_columns, o.value sep" \
@@ -385,6 +385,43 @@ static const struct st_mysqlnd_res_methods mymem_query_result_funcs = {  /* {{{ 
 /* }}} */
 /* }}} */
 
+static zend_bool mymem_check_field_list(char *list_s, char **list_c, int list_c_len) /* {{{ */
+{
+	/* list_s - from SQL statement, list_c from configuration */
+	char *end = list_c[list_c_len-1];
+
+	while (*list_s) {
+		switch (*list_s) {
+		case ' ':
+		case '\n':
+		case '\r':
+		case '\t':
+		case ',':
+			/* we don't care about these, continue */
+			list_s++;
+			break;
+		default:
+			/* we're at the beginning of a field name .. probably, and either we know and expect it, or not */
+			if (!memcmp(list_s, *list_c, strlen(*list_c))) {
+				list_s += strlen(*list_c);
+				if (*list_c == end) {
+					if (*list_s == '\0') {
+						return TRUE;
+					} else {
+						return FALSE;
+					}
+				}
+				list_c++;
+			} else {
+				return FALSE;
+			}
+			break;
+		}
+	}
+	return FALSE;
+}
+/* }}} */
+
 static zval** mymem_verify_patterns(mymem_connection_data_data *connection_data, char *query, unsigned int query_len, zval *subpats TSRMLS_DC) /* {{{ */
 {
 	zval return_value;
@@ -397,17 +434,15 @@ static zval** mymem_verify_patterns(mymem_connection_data_data *connection_data,
 	if (!Z_LVAL(return_value)) {
 		return NULL;
 	}
-	
+
 	if (zend_hash_index_find(Z_ARRVAL_P(subpats), 1, (void**)&tmp) == FAILURE || Z_TYPE_PP(tmp) != IS_STRING) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Pattern matched but no field list passed or not a string");
 		return NULL;
 	}
 
-/* TODO - check fieldnames
-	if (memcmp(Z_STRVAL_PP(tmp), connection_data->mapping.value_columns.raw, Z_STRLEN_PP(tmp))) {
+	if (!mymem_check_field_list(Z_STRVAL_PP(tmp), connection_data->mapping.value_columns.v, connection_data->mapping.value_columns.num)) {
 		return NULL;
 	}
-*/
 
 	if (zend_hash_index_find(Z_ARRVAL_P(subpats), 2, (void**)&tmp) == FAILURE || Z_TYPE_PP(tmp) != IS_STRING) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Pattern matched but no table name passed or not a string");
