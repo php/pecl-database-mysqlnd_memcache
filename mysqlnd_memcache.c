@@ -595,15 +595,24 @@ static void mymem_split_columns(mymem_connection_data_data *connection_data, cha
 	
 	connection_data->mapping.value_columns.v[0] = connection_data->mapping.value_columns.to_free;
 	while (*pos_from) {
-		if (*pos_from == ',') {
+		switch (*pos_from) {
+		case ' ':
+		case '\n':
+		case '\r':
+		case '\t':
+			pos_from++;
+			break;
+		case ',':
 			*pos_to = '\0';
 			pos_to++;
 			pos_from++;
 			connection_data->mapping.value_columns.v[++i] = pos_to;
+			/* fall-through */
+		default:
+			*pos_to = *pos_from;
+			pos_from++;
+			pos_to++;
 		}
-		*pos_to = *pos_from;
-		pos_from++;
-		pos_to++;
 	}
 	*pos_to = '\0';
 }
