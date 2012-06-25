@@ -772,6 +772,54 @@ PHP_FUNCTION(mysqlnd_memcache_set)
 }
 /* }}} */
 
+/* {{{ proto array mysqlnd_memcache_get_config(mixed mysql_connection)
+   Dump different aspects of the configuration */
+PHP_FUNCTION(mysqlnd_memcache_get_config)
+{
+	zval *mysqlnd_conn_zv, *mapping, *fields;
+	int i;
+	MYSQLND *mysqlnd_conn;
+	mymem_connection_data_data *conn_data;
+
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "z", &mysqlnd_conn_zv) == FAILURE) {
+		return;
+	}
+
+	if (!(mysqlnd_conn = zval_to_mysqlnd(mysqlnd_conn_zv TSRMLS_CC))) {
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Passed variable is no mysqlnd-based MySQL connection");
+		RETURN_FALSE;
+	}
+
+	conn_data = *mysqlnd_plugin_get_plugin_connection_data_data(mysqlnd_conn->data, mysqlnd_memcache_plugin_id);
+	if (!conn_data) {
+		RETURN_FALSE;
+	}
+	array_init(return_value);
+	Z_ADDREF_P(conn_data->connection.zv);
+	add_assoc_zval(return_value, "memcached", conn_data->connection.zv);
+
+	add_assoc_stringl(return_value, "pattern", conn_data->regexp.str, conn_data->regexp.len, 1);
+
+	ALLOC_INIT_ZVAL(mapping);
+	ALLOC_INIT_ZVAL(fields);
+	array_init(mapping);
+	array_init(fields);
+
+#define ADD_MAPPING_STR(f) add_assoc_string(mapping, #f, conn_data->mapping.f, 1)
+	ADD_MAPPING_STR(schema_name);
+	ADD_MAPPING_STR(table_name);
+	ADD_MAPPING_STR(id_field_name);
+	ADD_MAPPING_STR(separator);
+
+	for (i = 0; i < conn_data->mapping.value_columns.num; ++i) {
+		add_next_index_string(fields, conn_data->mapping.value_columns.v[i], 1);
+	}
+	add_assoc_zval(mapping, "fields", fields);
+
+	add_assoc_zval(return_value, "mapping", mapping);
+}
+/* }}} */
+
 /* {{{ ARGINFO */
 ZEND_BEGIN_ARG_INFO_EX(arginfo_mysqlnd_memcache_set, 0, 0, 2)
 	ZEND_ARG_INFO(0, mysql_connection)
@@ -779,11 +827,16 @@ ZEND_BEGIN_ARG_INFO_EX(arginfo_mysqlnd_memcache_set, 0, 0, 2)
 	ZEND_ARG_INFO(0, select_pattern)
 	ZEND_ARG_INFO(0, debug_callback)
 ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_mysqlnd_memcache_get_config, 0, 0, 1)
+	ZEND_ARG_INFO(0, mysql_connection)
+ZEND_END_ARG_INFO()
 /* }}} */
 
 /* {{{ mysqlnd_memcache_functions[] */
 static const zend_function_entry mymem_functions[] = {
 	PHP_FE(mysqlnd_memcache_set, arginfo_mysqlnd_memcache_set)
+	PHP_FE(mysqlnd_memcache_get_config, arginfo_mysqlnd_memcache_get_config)
 	PHP_FE_END
 };
 /* }}} */
