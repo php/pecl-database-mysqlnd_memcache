@@ -657,13 +657,15 @@ static mymem_connection_data_data *mymem_init_mysqlnd(MYSQLND *conn TSRMLS_DC) /
 {
 	void **plugin_data_vpp;
 	mymem_connection_data_data *plugin_data_p;
-
 	MYSQLND_ROW_C row;
+	MYSQLND_RES *res;
+
 	if (FAIL == orig_mysqlnd_conn_query(conn->data, MAPPING_QUERY, sizeof(MAPPING_QUERY)-1 TSRMLS_CC)) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "MySQL query failed: %s", mysqlnd_error(conn));
 		return NULL;
 	}
-	MYSQLND_RES *res = mysqlnd_store_result(conn);
+
+	res = mysqlnd_store_result(conn);
 	if (!res) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Failed to store result");
 		return NULL;
