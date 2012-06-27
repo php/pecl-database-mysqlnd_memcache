@@ -250,6 +250,9 @@ MYSQLND_ROW_C mymem_result_fetch_row_c(MYSQLND_RES *result TSRMLS_DC) /* {{{ */
 	int field_count;
 	char **retval;
 
+	int i = 0;
+	char *value, *value_lasts;
+
 	BAILOUT_IF_CONN_DATA_UNSET(connection_data)
 
 	field_count = connection_data->mapping.value_columns.num;
@@ -261,9 +264,6 @@ MYSQLND_ROW_C mymem_result_fetch_row_c(MYSQLND_RES *result TSRMLS_DC) /* {{{ */
 	result_data->read = 1;
 	retval = mnd_emalloc(field_count * sizeof(char*));
 
-	int i = 0;
-	char *value, *value_lasts;
-	
 	value = strtok_r(result_data->data, connection_data->mapping.separator, &value_lasts);
 
 	while (value) {
