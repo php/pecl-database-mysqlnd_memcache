@@ -331,6 +331,13 @@ static MYSQLND_FIELD_OFFSET mymem_result_field_tell(const MYSQLND_RES * const re
 }
 /* }}} */
 
+static const MYSQLND_FIELD *mymem_result_fetch_field_direct(MYSQLND_RES * const result, MYSQLND_FIELD_OFFSET fieldnr TSRMLS_DC) /* {{{ */
+{
+	mymem_result_data *result_data = *mysqlnd_plugin_get_plugin_result_data(result, mysqlnd_memcache_plugin_id);
+	return result_data->fields + fieldnr;
+}
+/* }}} */
+
 static const MYSQLND_FIELD *mymem_result_fetch_fields(MYSQLND_RES * const result TSRMLS_DC) /* {{{ */
 {
 	mymem_result_data *result_data = *mysqlnd_plugin_get_plugin_result_data(result, mysqlnd_memcache_plugin_id);
@@ -375,7 +382,7 @@ static const struct st_mysqlnd_res_methods mymem_query_result_funcs = {  /* {{{ 
 	NULL, /* func_mysqlnd_res__seek_field seek_field; */
 	mymem_result_field_tell, /* func_mysqlnd_res__field_tell field_tell; */
 	NULL, /* func_mysqlnd_res__fetch_field fetch_field; */
-	NULL, /* func_mysqlnd_res__fetch_field_direct fetch_field_direct; */
+	mymem_result_fetch_field_direct, /* func_mysqlnd_res__fetch_field_direct fetch_field_direct; */
 	mymem_result_fetch_fields, /* func_mysqlnd_res__fetch_fields fetch_fields; */
 	NULL, /* func_mysqlnd_res__read_result_metadata read_result_metadata; */
 	mymem_result_fetch_lengths, /* func_mysqlnd_res__fetch_lengths fetch_lengths; */
