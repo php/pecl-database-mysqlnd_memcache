@@ -560,7 +560,22 @@ static enum_func_status MYSQLND_METHOD(mymem_conn, query)(MYSQLND_CONN_DATA *con
 		uint32_t flags;
 		size_t value_len;
 		memcached_return error;
-		char* res = memcached_get(connection_data->connection.memc, Z_STRVAL_PP(tmp), Z_STRLEN_PP(tmp), &value_len, &flags, &error);
+		char *key, *res;
+		int key_len;
+
+		if ((*mapping)->prefix) {
+			int prefix_len = strlen((*mapping)->prefix);
+			key_len = prefix_len + Z_STRLEN_PP(tmp);
+			key = alloca(key_len+1);
+			memcpy(key, (*mapping)->prefix, prefix_len);
+			memcpy(key+prefix_len, Z_STRVAL_PP(tmp), Z_STRLEN_PP(tmp));
+			key[key_len] = '\0';
+		} else {
+			key = Z_STRVAL_PP(tmp);
+			key_len = Z_STRLEN_PP(tmp);
+		}
+
+		res = memcached_get(connection_data->connection.memc, key, key_len, &value_len, &flags, &error);
 		
 		zval_dtor(&subpats);
 		
