@@ -571,7 +571,7 @@ static enum_func_status MYSQLND_METHOD(mymem_conn, query)(MYSQLND_CONN_DATA *con
 		char *key, *res;
 		int key_len;
 
-		if ((*mapping)->prefix) {
+		if ((*mapping)->prefix && *(*mapping)->prefix) {
 			int prefix_len = strlen((*mapping)->prefix);
 			key_len = prefix_len + Z_STRLEN_PP(tmp);
 			key = alloca(key_len+1);
