@@ -775,6 +775,9 @@ static mymem_connection_data_data *mymem_init_mysqlnd(MYSQLND *conn TSRMLS_DC) /
 	int query_len;
 	char *query = mymem_pick_mapping_query(conn, &query_len TSRMLS_CC);
 
+	if (!query) {
+		return NULL;
+	}
 	if (FAIL == orig_mysqlnd_conn_query(conn->data, query, query_len TSRMLS_CC)) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "MySQL mapping query failed: %s", mysqlnd_error(conn));
 		return NULL;
