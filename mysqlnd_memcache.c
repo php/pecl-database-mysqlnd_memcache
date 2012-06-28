@@ -58,6 +58,18 @@ static func_mysqlnd_conn_data__dtor orig_mysqlnd_conn_dtor;
 		      "        ON o.name = 'separator'"
 
 typedef struct {
+	char *schema_name;
+	char *table_name;
+	char *id_field_name;
+	struct {
+		int num;
+		char *to_free;
+		char **v;
+	} value_columns;
+	char *separator;
+} mymem_mapping;
+
+typedef struct {
 	struct {
 		zval *zv;
 		memcached_st *memc;
@@ -68,17 +80,7 @@ typedef struct {
 		pcre_cache_entry* pattern;
 		int  str_is_allocated;
 	} regexp;
-	struct {
-		char *schema_name;
-		char *table_name;
-		char *id_field_name;
-		struct {
-			int num;
-			char *to_free;
-			char **v;
-		} value_columns;
-		char *separator;
-	} mapping;
+	HashTable mapping;
 	struct {
 		zend_fcall_info fci;
 		zend_fcall_info_cache fcc;
@@ -92,6 +94,7 @@ typedef struct {
 	int read;
 	MYSQLND_FIELD *fields;
 	unsigned long *lengths;
+	mymem_mapping *mapping;
 } mymem_result_data;
 
 /*
@@ -217,7 +220,7 @@ static void mymem_result_fetch_into(MYSQLND_RES *result, unsigned int flags, zva
 	
 	result_data->read = 1;
 	
-	value = strtok_r(result_data->data, connection_data->mapping.separator, &value_lasts);
+	value = strtok_r(result_data->data, result_data->mapping->separator, &value_lasts);
 
 	array_init(return_value);
 	while (value) {
@@ -230,11 +233,11 @@ static void mymem_result_fetch_into(MYSQLND_RES *result, unsigned int flags, zva
 		}
 		if (flags & MYSQLND_FETCH_ASSOC) {
 			Z_ADDREF_P(data);
-			zend_hash_add(Z_ARRVAL_P(return_value), connection_data->mapping.value_columns.v[i], strlen(connection_data->mapping.value_columns.v[i])+1, &data, sizeof(zval *), NULL);
+			zend_hash_add(Z_ARRVAL_P(return_value), result_data->mapping->value_columns.v[i], strlen(result_data->mapping->value_columns.v[i])+1, &data, sizeof(zval *), NULL);
 		}
 		zval_ptr_dtor(&data);
 		
-		value = strtok_r(NULL, connection_data->mapping.separator, &value_lasts);
+		value = strtok_r(NULL, result_data->mapping->separator, &value_lasts);
 		i++;
 	}
 
@@ -255,22 +258,22 @@ MYSQLND_ROW_C mymem_result_fetch_row_c(MYSQLND_RES *result TSRMLS_DC) /* {{{ */
 
 	BAILOUT_IF_CONN_DATA_UNSET(connection_data)
 
-	field_count = connection_data->mapping.value_columns.num;
+	field_count = result_data->mapping->value_columns.num;
 
 	if (result_data->read || !result_data->data) {
 		return NULL;
 	}
 	
 	result_data->read = 1;
-	retval = mnd_emalloc(field_count * sizeof(char*));
+	retval = mnd_malloc(field_count * sizeof(char*));
 
-	value = strtok_r(result_data->data, connection_data->mapping.separator, &value_lasts);
+	value = strtok_r(result_data->data, result_data->mapping->separator, &value_lasts);
 
 	while (value) {
 		/* TODO - This can be optimized, data handling in general should be made binary safe ..*/
 		retval[i] = strdup(value);
 		result_data->lengths[i++] = strlen(value);
-		value = strtok_r(NULL, connection_data->mapping.separator, &value_lasts);
+		value = strtok_r(NULL, result_data->mapping->separator, &value_lasts);
 	}
 
 	CONN_SET_STATE(result->conn, CONN_READY);
@@ -303,8 +306,9 @@ static uint64_t mymem_result_num_rows(const MYSQLND_RES * const result TSRMLS_DC
 static unsigned int mymem_result_num_fields(const MYSQLND_RES * const result TSRMLS_DC) /* {{{ */
 {
 	mymem_connection_data_data *connection_data = *mysqlnd_plugin_get_plugin_connection_data_data(result->conn, mysqlnd_memcache_plugin_id);
+	mymem_result_data *result_data = *(mymem_result_data **)mysqlnd_plugin_get_plugin_result_data(result, mysqlnd_memcache_plugin_id);
 	BAILOUT_IF_CONN_DATA_UNSET(connection_data)
-	return connection_data->mapping.value_columns.num;
+	return result_data->mapping->value_columns.num;
 }
 /* }}} */
 
@@ -422,11 +426,14 @@ static zend_bool mymem_check_field_list(char *list_s, char **list_c, int list_c_
 }
 /* }}} */
 
-static zval** mymem_verify_patterns(mymem_connection_data_data *connection_data, char *query, unsigned int query_len, zval *subpats TSRMLS_DC) /* {{{ */
+static zval ** mymem_verify_patterns(mymem_connection_data_data *connection_data, char *query, unsigned int query_len, zval *subpats, mymem_mapping ***mapping TSRMLS_DC) /* {{{ */
 {
 	zval return_value;
-	zval **tmp;
-	
+	zval **schema, **table, **id_field, **tmp;
+	zval **value;
+	char *key;
+	int key_len;
+
 	INIT_ZVAL(return_value); /* This will be a long or bool, no need for a zval_dtor */
 	
 	php_pcre_match_impl(connection_data->regexp.pattern, query, query_len, &return_value, subpats, 0, 0, 0, 0 TSRMLS_CC);
@@ -435,46 +442,48 @@ static zval** mymem_verify_patterns(mymem_connection_data_data *connection_data,
 		return NULL;
 	}
 
+	if (zend_hash_index_find(Z_ARRVAL_P(subpats), 2, (void**)&table) == FAILURE || Z_TYPE_PP(table) != IS_STRING) {
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Pattern matched but no table name passed or not a string");
+		return NULL;
+	}
+
+	if (zend_hash_index_find(Z_ARRVAL_P(subpats), 3, (void**)&id_field) == FAILURE || Z_TYPE_PP(id_field) != IS_STRING) {
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Pattern matched but no id field name passed or not a string");
+		return NULL;
+	}
+
+	/* TODO - test hard-coded!!!!!*/
+	key_len = spprintf(&key, 0, "%s.%s.%s", "test", Z_STRVAL_PP(table), Z_STRVAL_PP(id_field));
+
+	if (zend_hash_find(&connection_data->mapping, key, key_len+1, (void**)mapping) == FAILURE) {
+		efree(key);
+		return NULL;
+	}
+	efree(key);
+
+	if (zend_hash_index_find(Z_ARRVAL_P(subpats), 4, (void**)&value) == FAILURE || Z_TYPE_PP(value) != IS_STRING) {
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Pattern matched but no id value passed or not a string");
+		return NULL;
+	}
+
 	if (zend_hash_index_find(Z_ARRVAL_P(subpats), 1, (void**)&tmp) == FAILURE || Z_TYPE_PP(tmp) != IS_STRING) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Pattern matched but no field list passed or not a string");
 		return NULL;
 	}
 
-	if (!mymem_check_field_list(Z_STRVAL_PP(tmp), connection_data->mapping.value_columns.v, connection_data->mapping.value_columns.num)) {
+	if (!mymem_check_field_list(Z_STRVAL_PP(tmp), (**mapping)->value_columns.v, (**mapping)->value_columns.num)) {
 		return NULL;
 	}
 
-	if (zend_hash_index_find(Z_ARRVAL_P(subpats), 2, (void**)&tmp) == FAILURE || Z_TYPE_PP(tmp) != IS_STRING) {
-		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Pattern matched but no table name passed or not a string");
-		return NULL;
-	}
-
-	if (memcmp(Z_STRVAL_PP(tmp), connection_data->mapping.table_name, Z_STRLEN_PP(tmp))) {
-		return NULL;
-	}
-		
-	if (zend_hash_index_find(Z_ARRVAL_P(subpats), 3, (void**)&tmp) == FAILURE || Z_TYPE_PP(tmp) != IS_STRING) {
-		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Pattern matched but no id field name passed or not a string");
-		return NULL;
-	}
-		
-	if (memcmp(Z_STRVAL_PP(tmp), connection_data->mapping.id_field_name, Z_STRLEN_PP(tmp))) {
-		return NULL;
-	}
-		
-	if (zend_hash_index_find(Z_ARRVAL_P(subpats), 4, (void**)&tmp) == FAILURE || Z_TYPE_PP(tmp) != IS_STRING) {
-		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Pattern matched but no id value passed or not a string");
-		return NULL;
-	}
 	
-	return tmp;
+	return value;
 }
 /* }}} */
 
 static void mymem_fill_field_data(mymem_connection_data_data *connection_data, mymem_result_data *result_data) /* {{{ */
 {
 	int i;
-	int field_count = connection_data->mapping.value_columns.num;
+	int field_count = result_data->mapping->value_columns.num;
 	result_data->fields = safe_emalloc(field_count, sizeof(MYSQLND_FIELD), 0);
 	memset(result_data->fields, 0, field_count*sizeof(MYSQLND_FIELD));
 	
@@ -482,12 +491,12 @@ static void mymem_fill_field_data(mymem_connection_data_data *connection_data, m
 	memset(result_data->lengths, 0, field_count*sizeof(unsigned long));
 	
 	for (i = 0; i < field_count; ++i) {
-		result_data->fields[i].db = connection_data->mapping.schema_name;
-		result_data->fields[i].db_length = strlen(connection_data->mapping.schema_name);
-		result_data->fields[i].org_table = result_data->fields[i].table = connection_data->mapping.table_name;
-		result_data->fields[i].org_table_length = result_data->fields[i].table_length = strlen(connection_data->mapping.table_name);
-		result_data->fields[i].name = connection_data->mapping.value_columns.v[i];
-		result_data->fields[i].name_length = strlen(connection_data->mapping.value_columns.v[i]);
+		result_data->fields[i].db = result_data->mapping->schema_name;
+		result_data->fields[i].db_length = strlen(result_data->mapping->schema_name);
+		result_data->fields[i].org_table = result_data->fields[i].table = result_data->mapping->table_name;
+		result_data->fields[i].org_table_length = result_data->fields[i].table_length = strlen(result_data->mapping->table_name);
+		result_data->fields[i].name = result_data->mapping->value_columns.v[i];
+		result_data->fields[i].name_length = strlen(result_data->mapping->value_columns.v[i]);
 		result_data->fields[i].catalog = "";
 		result_data->fields[i].catalog_length = 0;
 		result_data->fields[i].type = MYSQL_TYPE_STRING;
@@ -519,12 +528,13 @@ static enum_func_status MYSQLND_METHOD(mymem_conn, query)(MYSQLND_CONN_DATA *con
 {
 	zval subpats;
 	zval **tmp = NULL;
+	mymem_mapping **mapping;
+	mymem_connection_data_data *connection_data = *mysqlnd_plugin_get_plugin_connection_data_data(conn, mysqlnd_memcache_plugin_id);
 	
 	INIT_ZVAL(subpats);
-	mymem_connection_data_data *connection_data = *mysqlnd_plugin_get_plugin_connection_data_data(conn, mysqlnd_memcache_plugin_id);
 
 	if (connection_data) {
-		tmp = mymem_verify_patterns(connection_data, (char*)query, query_len, &subpats TSRMLS_CC);
+		tmp = mymem_verify_patterns(connection_data, (char*)query, query_len, &subpats, &mapping TSRMLS_CC);
 
 		if (UNEXPECTED(connection_data->callback.exists)) {
 			mymem_notify_decision(connection_data, tmp ? TRUE : FALSE TSRMLS_CC);
@@ -554,6 +564,7 @@ static enum_func_status MYSQLND_METHOD(mymem_conn, query)(MYSQLND_CONN_DATA *con
 		result_data_p->data = res;
 		result_data_p->data_len = value_len;
 		result_data_p->read = 0;
+		result_data_p->mapping = *mapping;
 		
 		mymem_fill_field_data(connection_data, result_data_p);
 		
@@ -582,12 +593,7 @@ static void mymem_free_connection_data_data(MYSQLND_CONN_DATA *conn TSRMLS_DC) /
 	mymem_connection_data_data *conn_data = *conn_data_p;
 
 	if (conn_data) {
-		efree(conn_data->mapping.schema_name);
-		efree(conn_data->mapping.table_name);
-		efree(conn_data->mapping.id_field_name);
-		efree(conn_data->mapping.value_columns.to_free);
-		efree(conn_data->mapping.value_columns.v);
-		efree(conn_data->mapping.separator);
+		zend_hash_destroy(&conn_data->mapping);
 		
 		zval_ptr_dtor(&conn_data->connection.zv);
 
@@ -617,18 +623,18 @@ static void MYSQLND_METHOD(mymem_conn, dtor)(MYSQLND_CONN_DATA *conn TSRMLS_DC) 
 }
 /* }}} */
 
-static void mymem_split_columns(mymem_connection_data_data *connection_data, char *names, int names_len) /* {{{ */
+static void mymem_split_columns(mymem_mapping *mapping, char *names, int names_len) /* {{{ */
 {
 	int i = 0;
 	char *pos_from = names, *pos_to;
 	
 	int count = count_char(names, ',') + 1;
 	
-	connection_data->mapping.value_columns.num = count;
-	pos_to = connection_data->mapping.value_columns.to_free = emalloc(names_len + 1);
-	connection_data->mapping.value_columns.v = safe_emalloc(count, sizeof(char*), 0);
+	mapping->value_columns.num = count;
+	pos_to = mapping->value_columns.to_free = emalloc(names_len + 1);
+	mapping->value_columns.v = safe_emalloc(count, sizeof(char*), 0);
 	
-	connection_data->mapping.value_columns.v[0] = connection_data->mapping.value_columns.to_free;
+	mapping->value_columns.v[0] = mapping->value_columns.to_free;
 	while (*pos_from) {
 		switch (*pos_from) {
 		case ' ':
@@ -641,7 +647,7 @@ static void mymem_split_columns(mymem_connection_data_data *connection_data, cha
 			*pos_to = '\0';
 			pos_to++;
 			pos_from++;
-			connection_data->mapping.value_columns.v[++i] = pos_to;
+			mapping->value_columns.v[++i] = pos_to;
 			/* fall-through */
 		default:
 			*pos_to = *pos_from;
@@ -650,6 +656,19 @@ static void mymem_split_columns(mymem_connection_data_data *connection_data, cha
 		}
 	}
 	*pos_to = '\0';
+}
+/* }}} */
+
+static void mymem_free_mapping(void *mapping_v) /* {{{ */
+{
+	mymem_mapping **mapping = (mymem_mapping**)mapping_v;
+	efree((*mapping)->schema_name);
+	efree((*mapping)->table_name);
+	efree((*mapping)->id_field_name);
+	efree((*mapping)->value_columns.to_free);
+	efree((*mapping)->value_columns.v);
+	efree((*mapping)->separator);
+	efree(*mapping);
 }
 /* }}} */
 
@@ -670,46 +689,49 @@ static mymem_connection_data_data *mymem_init_mysqlnd(MYSQLND *conn TSRMLS_DC) /
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Failed to store result");
 		return NULL;
 	}
-	if (mysqlnd_num_rows(res) != 1) {
-		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Got %l configuration rows, expected a single one. Either your configuration is invalid or you're using a unsupported innodb_memcached plugin", mysqlnd_num_rows(res));
+	if (5 != mysqlnd_num_fields(res)) {
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Got an invalid result num_fields=%i, expected 5", mysqlnd_num_fields(res));
 		mysqlnd_free_result(res, 0);
 		return NULL;
 	}
-	row = mysqlnd_fetch_row_c(res);
-	if (!row || 5 != mysqlnd_num_fields(res)) {
-		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Got an invalid result have_row=%i, num_fields=%i", row ? 1 : 0, mysqlnd_num_fields(res));
-		if (row) {
-		    mnd_free(row);
-		}
-		mysqlnd_free_result(res, 0);
-		return NULL;
-	}
-		
-	/*
-	For highest performance we might cache this persistently, globally,
-	this creates the risk of stuff going wrong if servers don't match
-	but if there's one PK lookup only per request we're gonna loose.
-	*/
+
 	plugin_data_vpp = mysqlnd_plugin_get_plugin_connection_data_data(conn->data, mysqlnd_memcache_plugin_id);
 	*plugin_data_vpp = pemalloc(sizeof(mymem_connection_data_data), conn->persistent);
 	plugin_data_p = *(mymem_connection_data_data **)plugin_data_vpp;
-	
-	plugin_data_p->mapping.schema_name = estrdup(row[0]);
-	plugin_data_p->mapping.table_name = estrdup(row[1]);
-	plugin_data_p->mapping.id_field_name = estrdup(row[2]);
-	mymem_split_columns(plugin_data_p, row[3], strlen(row[3]));
-	plugin_data_p->mapping.separator = estrdup(row[4]);
+	zend_hash_init(&plugin_data_p->mapping, mysqlnd_num_rows(res), 0, mymem_free_mapping, 0);
 
-	mnd_free(row);
+	while (row = mysqlnd_fetch_row_c(res)) {
+		char *key = NULL;
+		int key_len;
+		mymem_mapping *mapping = emalloc(sizeof(mymem_mapping));
+		/*
+		For highest performance we might cache this persistently, globally,
+		this creates the risk of stuff going wrong if servers don't match
+		but if there's one PK lookup only per request we're gonna loose.
+		*/
+
+		mapping->schema_name = estrdup(row[0]);
+		mapping->table_name = estrdup(row[1]);
+		mapping->id_field_name = estrdup(row[2]);
+		mymem_split_columns(mapping, row[3], strlen(row[3]));
+		mapping->separator = estrdup(row[4]);
+
+		/* TODO: We should add fields to the hash, too */
+		key_len = spprintf(&key, 0, "%s.%s.%s", mapping->schema_name, mapping->table_name, mapping->id_field_name);
+
+		zend_hash_add(&plugin_data_p->mapping, key, key_len+1, &mapping, sizeof(mymem_mapping*), NULL);
+		efree(key);
+		mnd_free(row);
+	}
 	mysqlnd_free_result(res, 0);
-	
+
 	return plugin_data_p;
 }
 /* }}} */
 
 /* {{{ proto string mysqlnd_memcache_set(mixed mysql_connection, memcached memcached, string pattern, callback debug_notify)
    Link a memcache connection to a MySQLconnection */
-PHP_FUNCTION(mysqlnd_memcache_set)
+static PHP_FUNCTION(mysqlnd_memcache_set)
 {
 	zval *mysqlnd_conn_zv;
 	MYSQLND *mysqlnd_conn;
@@ -774,12 +796,40 @@ PHP_FUNCTION(mysqlnd_memcache_set)
 }
 /* }}} */
 
+static int mymemm_add_mapping_to_zv(void *mapping_v, void *retval_v TSRMLS_DC) /* {{{ */
+{
+	int i;
+	mymem_mapping *mapping = *(mymem_mapping**)mapping_v;
+	zval *retval = (zval*)retval_v;
+	zval *current, *fields;
+
+	ALLOC_INIT_ZVAL(current);
+	ALLOC_INIT_ZVAL(fields);
+	array_init(current);
+	array_init(fields);
+
+#define ADD_MAPPING_STR(f) add_assoc_string(current, #f, mapping->f, 1)
+	ADD_MAPPING_STR(schema_name);
+	ADD_MAPPING_STR(table_name);
+	ADD_MAPPING_STR(id_field_name);
+	ADD_MAPPING_STR(separator);
+
+	for (i = 0; i < mapping->value_columns.num; ++i) {
+		add_next_index_string(fields, mapping->value_columns.v[i], 1);
+	}
+
+	add_assoc_zval(current, "fields", fields);
+	add_next_index_zval(retval, current);
+
+	return ZEND_HASH_APPLY_KEEP;
+}
+/* }}} */
+
 /* {{{ proto array mysqlnd_memcache_get_config(mixed mysql_connection)
    Dump different aspects of the configuration */
-PHP_FUNCTION(mysqlnd_memcache_get_config)
+static PHP_FUNCTION(mysqlnd_memcache_get_config)
 {
-	zval *mysqlnd_conn_zv, *mapping, *fields;
-	int i;
+	zval *mysqlnd_conn_zv, *mapping;
 	MYSQLND *mysqlnd_conn;
 	mymem_connection_data_data *conn_data;
 
@@ -803,22 +853,11 @@ PHP_FUNCTION(mysqlnd_memcache_get_config)
 	add_assoc_stringl(return_value, "pattern", conn_data->regexp.str, conn_data->regexp.len, 1);
 
 	ALLOC_INIT_ZVAL(mapping);
-	ALLOC_INIT_ZVAL(fields);
 	array_init(mapping);
-	array_init(fields);
 
-#define ADD_MAPPING_STR(f) add_assoc_string(mapping, #f, conn_data->mapping.f, 1)
-	ADD_MAPPING_STR(schema_name);
-	ADD_MAPPING_STR(table_name);
-	ADD_MAPPING_STR(id_field_name);
-	ADD_MAPPING_STR(separator);
+	zend_hash_apply_with_argument(&conn_data->mapping, mymemm_add_mapping_to_zv, mapping TSRMLS_CC);
 
-	for (i = 0; i < conn_data->mapping.value_columns.num; ++i) {
-		add_next_index_string(fields, conn_data->mapping.value_columns.v[i], 1);
-	}
-	add_assoc_zval(mapping, "fields", fields);
-
-	add_assoc_zval(return_value, "mapping", mapping);
+	add_assoc_zval(return_value, "mappings", mapping);
 }
 /* }}} */
 
