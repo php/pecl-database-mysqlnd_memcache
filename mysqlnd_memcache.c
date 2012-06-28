@@ -154,8 +154,8 @@ static void php_mysqlnd_memcache_init_globals(zend_mysqlnd_memcache_globals *mys
 /* {{{ MYSQLND_MEMCACHE_RESULT */
 static enum_func_status mymem_result_fetch_row(MYSQLND_RES *result, void *param, unsigned int flags, zend_bool *fetched_anything TSRMLS_DC) /* {{{ */
 {
-	zval *row = (zval *) param;
-	zval *data;
+//	zval *row = (zval *) param;
+//	zval *data;
 	mymem_connection_data_data *connection_data = *mysqlnd_plugin_get_plugin_connection_data_data(result->conn, mysqlnd_memcache_plugin_id);
 	mymem_result_data *result_data = *(mymem_result_data **)mysqlnd_plugin_get_plugin_result_data(result, mysqlnd_memcache_plugin_id);
 
@@ -171,8 +171,8 @@ static enum_func_status mymem_result_fetch_row(MYSQLND_RES *result, void *param,
 		return FAIL;
 	}
 	
-	pcre_cache_entry *pattern = pcre_get_compiled_regex_cache("/\\W*,\\W*/", sizeof("/\\W*,\\W*/")-1 TSRMLS_CC);
-	php_pcre_split_impl(pattern, result_data->data, result_data->data_len, row, 0, 0 TSRMLS_CC);
+//	pcre_cache_entry *pattern = pcre_get_compiled_regex_cache("/\\W*,\\W*/", sizeof("/\\W*,\\W*/")-1 TSRMLS_CC);
+//	php_pcre_split_impl(pattern, result_data->data, result_data->data_len, row, 0, 0 TSRMLS_CC);
 /*
 	ALLOC_INIT(data);
 	ZVAL_STRINGL(data, result_data->data, result_data->data_len, 1);
@@ -245,7 +245,7 @@ static void mymem_result_fetch_into(MYSQLND_RES *result, unsigned int flags, zva
 }
 /* }}} */
 
-MYSQLND_ROW_C mymem_result_fetch_row_c(MYSQLND_RES *result TSRMLS_DC) /* {{{ */
+static MYSQLND_ROW_C mymem_result_fetch_row_c(MYSQLND_RES *result TSRMLS_DC) /* {{{ */
 {
 	mymem_connection_data_data *connection_data = *mysqlnd_plugin_get_plugin_connection_data_data(result->conn, mysqlnd_memcache_plugin_id);
 	mymem_result_data *result_data = *(mymem_result_data **)mysqlnd_plugin_get_plugin_result_data(result, mysqlnd_memcache_plugin_id);
@@ -318,14 +318,14 @@ static MYSQLND_FIELD_OFFSET mymem_result_field_tell(const MYSQLND_RES * const re
 }
 /* }}} */
 
-const MYSQLND_FIELD *mymem_result_fetch_fields(MYSQLND_RES * const result TSRMLS_DC) /* {{{ */
+static const MYSQLND_FIELD *mymem_result_fetch_fields(MYSQLND_RES * const result TSRMLS_DC) /* {{{ */
 {
 	mymem_result_data *result_data = *mysqlnd_plugin_get_plugin_result_data(result, mysqlnd_memcache_plugin_id);
 	return result_data->fields;
 }
 /* }}} */
 
-unsigned long *mymem_result_fetch_lengths(MYSQLND_RES * const result TSRMLS_DC) /* {{{ */
+static unsigned long *mymem_result_fetch_lengths(MYSQLND_RES * const result TSRMLS_DC) /* {{{ */
 {
 	mymem_result_data *result_data = *mysqlnd_plugin_get_plugin_result_data(result, mysqlnd_memcache_plugin_id);
 	return result_data->lengths;
@@ -884,7 +884,7 @@ static const zend_function_entry mymem_functions[] = {
 
 /* {{{ PHP_MINIT_FUNCTION
  */
-PHP_MINIT_FUNCTION(mysqlnd_memcache)
+static PHP_MINIT_FUNCTION(mysqlnd_memcache)
 {
 	struct st_mysqlnd_conn_data_methods *data_methods;
 	char *pmversion;
@@ -922,7 +922,7 @@ PHP_MINIT_FUNCTION(mysqlnd_memcache)
 
 /* {{{ PHP_MSHUTDOWN_FUNCTION
  */
-PHP_MSHUTDOWN_FUNCTION(mysqlnd_memcache)
+static PHP_MSHUTDOWN_FUNCTION(mysqlnd_memcache)
 {
 	/* uncomment this line if you have INI entries
 	UNREGISTER_INI_ENTRIES();
@@ -934,7 +934,7 @@ PHP_MSHUTDOWN_FUNCTION(mysqlnd_memcache)
 
 /* {{{ PHP_MINFO_FUNCTION
  */
-PHP_MINFO_FUNCTION(mysqlnd_memcache)
+static PHP_MINFO_FUNCTION(mysqlnd_memcache)
 {
 	php_info_print_table_start();
 	php_info_print_table_header(2, "mysqlnd_memcache support", "enabled v." MYSQLND_MEMCACHE_VERSION);
