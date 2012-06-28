@@ -402,6 +402,7 @@ static const struct st_mysqlnd_res_methods mymem_query_result_funcs = {  /* {{{ 
 /* }}} */
 /* }}} */
 
+/* {{{ query helpers */
 static zend_bool mymem_check_field_list(char *list_s, char **list_c, int list_c_len) /* {{{ */
 {
 	/* list_s - from SQL statement, list_c from configuration */
@@ -534,6 +535,7 @@ static void mymem_notify_decision(mymem_connection_data_data *conn_data, zend_bo
 	}
 	zval_ptr_dtor(&arg);
 }
+/* }}} */
 /* }}} */
 
 static enum_func_status MYSQLND_METHOD(mymem_conn, query)(MYSQLND_CONN_DATA *conn, const char *query, unsigned int query_len TSRMLS_DC) /* {{{ */
