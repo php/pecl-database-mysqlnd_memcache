@@ -715,14 +715,11 @@ static void mymem_free_mapping(void *mapping_v) /* {{{ */
 }
 /* }}} */
 
-static mymem_connection_data_data *mymem_init_mysqlnd(MYSQLND *conn TSRMLS_DC) /* {{{ */
+static char *mymem_pick_mapping_query(MYSQLND *conn, int *query_len TSRMLS_DC) /* {{{ */
 {
-	void **plugin_data_vpp;
-	mymem_connection_data_data *plugin_data_p;
 	MYSQLND_ROW_C row;
 	MYSQLND_RES *res;
-	char *query;
-	int query_len;
+	char *retval;
 
 	if (FAIL == orig_mysqlnd_conn_query(conn->data, MAPPING_DECISION_QUERY, sizeof(MAPPING_DECISION_QUERY)-1 TSRMLS_CC)) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "MySQL decision query failed: %s", mysqlnd_error(conn));
@@ -745,11 +742,11 @@ static mymem_connection_data_data *mymem_init_mysqlnd(MYSQLND *conn TSRMLS_DC) /
 		return NULL;
 	}
 	if (!strncmp(row[0], "innodb_memcache", sizeof("innodb_memcache")-1)) {
-		query = MAPPING_QUERY_INNODB;
-		query_len = sizeof(MAPPING_QUERY_INNODB)-1;
+		retval = MAPPING_QUERY_INNODB;
+		*query_len = sizeof(MAPPING_QUERY_INNODB)-1;
 	} else if (!strncmp(row[0], "ndbmemcache", sizeof("ndbmemcache")-1)) {
-		query = MAPPING_QUERY_NDB;
-		query_len = sizeof(MAPPING_QUERY_NDB)-1;
+		retval = MAPPING_QUERY_NDB;
+		*query_len = sizeof(MAPPING_QUERY_NDB)-1;
 	} else {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Invalid memcache configuration table found, this error should be impossible to hit");
 		/* We make a SQL query using IN("innodb_memcache", "ndmemcache") but something different is being returned, major bug */
@@ -765,7 +762,20 @@ static mymem_connection_data_data *mymem_init_mysqlnd(MYSQLND *conn TSRMLS_DC) /
 	}
 	mysqlnd_free_result(res, 0);
 	
-	if (FAIL == orig_mysqlnd_conn_query(conn->data, MAPPING_QUERY_INNODB, sizeof(MAPPING_QUERY_INNODB)-1 TSRMLS_CC)) {
+	return retval;
+}
+/* }}} */
+
+static mymem_connection_data_data *mymem_init_mysqlnd(MYSQLND *conn TSRMLS_DC) /* {{{ */
+{
+	void **plugin_data_vpp;
+	mymem_connection_data_data *plugin_data_p;
+	MYSQLND_ROW_C row;
+	MYSQLND_RES *res;
+	int query_len;
+	char *query = mymem_pick_mapping_query(conn, &query_len TSRMLS_CC);
+
+	if (FAIL == orig_mysqlnd_conn_query(conn->data, query, query_len TSRMLS_CC)) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "MySQL mapping query failed: %s", mysqlnd_error(conn));
 		return NULL;
 	}
