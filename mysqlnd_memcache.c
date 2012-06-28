@@ -52,12 +52,24 @@ static func_mysqlnd_conn_data__dtor orig_mysqlnd_conn_dtor;
 #define SQL_PATTERN "/^\\s*SELECT\\s*(.+?)\\s*FROM\\s*" SQL_IDENTIFIER "\\s*WHERE\\s*" SQL_IDENTIFIER "\\s*=\\s*[\"']?([0-9]+)[\"']?\\s*$/is"
 #define SQL_PATTERN_LEN (sizeof(SQL_PATTERN)-1)
 
-#define MAPPING_QUERY "    SELECT c.db_schema, c.db_table, c.key_columns, c.value_columns, o.value sep" \
-                      "      FROM innodb_memcache.containers c" \
-                      " LEFT JOIN innodb_memcache.config_options o " \
-		      "        ON o.name = 'separator'"
+#define MAPPING_DECISION_QUERY "SELECT TABLE_SCHEMA " \
+                               "  FROM INFORMATION_SCHEMA.TABLES " \
+                               " WHERE TABLE_NAME = 'containers' "\
+			       "   AND TABLE_SCHEMA IN ('innodb_memcache', 'ndbmemcache')"
+
+#define MAPPING_QUERY_INNODB "    SELECT c.name, '' key_prefix, c.db_schema, c.db_table, c.key_columns, c.value_columns, o.value sep " \
+                             "      FROM innodb_memcache.containers c " \
+                             " LEFT JOIN innodb_memcache.config_options o " \
+                             "        ON o.name = 'separator'"
+
+#define MAPPING_QUERY_NDB    "    SELECT c.name, p.key_prefix, c.db_schema, c.db_table, c.key_columns, c.value_columns, '|' separator " \
+                             "      FROM ndbmemcache.containers c " \
+                             " LEFT JOIN ndbmemcache.key_prefixes p " \
+                             "        ON p.container = c.name"
 
 typedef struct {
+	char *name;
+	char *prefix;
 	char *schema_name;
 	char *table_name;
 	char *id_field_name;
@@ -615,6 +627,7 @@ static void mymem_free_connection_data_data(MYSQLND_CONN_DATA *conn TSRMLS_DC) /
 		*conn_data_p = NULL;
 	}
 }
+/* }}} */
 
 static void MYSQLND_METHOD(mymem_conn, dtor)(MYSQLND_CONN_DATA *conn TSRMLS_DC) /* {{{ */
 {
@@ -662,6 +675,8 @@ static void mymem_split_columns(mymem_mapping *mapping, char *names, int names_l
 static void mymem_free_mapping(void *mapping_v) /* {{{ */
 {
 	mymem_mapping **mapping = (mymem_mapping**)mapping_v;
+	efree((*mapping)->name);
+	efree((*mapping)->prefix);
 	efree((*mapping)->schema_name);
 	efree((*mapping)->table_name);
 	efree((*mapping)->id_field_name);
@@ -678,9 +693,52 @@ static mymem_connection_data_data *mymem_init_mysqlnd(MYSQLND *conn TSRMLS_DC) /
 	mymem_connection_data_data *plugin_data_p;
 	MYSQLND_ROW_C row;
 	MYSQLND_RES *res;
+	char *query;
+	int query_len;
 
-	if (FAIL == orig_mysqlnd_conn_query(conn->data, MAPPING_QUERY, sizeof(MAPPING_QUERY)-1 TSRMLS_CC)) {
-		php_error_docref(NULL TSRMLS_CC, E_WARNING, "MySQL query failed: %s", mysqlnd_error(conn));
+	if (FAIL == orig_mysqlnd_conn_query(conn->data, MAPPING_DECISION_QUERY, sizeof(MAPPING_DECISION_QUERY)-1 TSRMLS_CC)) {
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "MySQL decision query failed: %s", mysqlnd_error(conn));
+		return NULL;	    
+	}
+	res = mysqlnd_store_result(conn);
+	if (!res) {
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Failed to store result");
+		return NULL;
+	}
+	if (1 != mysqlnd_num_fields(res)) {
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Got an invalid result num_fields=%i, expected 1", mysqlnd_num_fields(res));
+		mysqlnd_free_result(res, 0);
+		return NULL;
+	}
+	row = mysqlnd_fetch_row_c(res);
+	if (!row) {
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Neither innodb_memcache.containers nor ndmemcache.containers exists. Can't proceed");
+		mysqlnd_free_result(res, 0);
+		return NULL;
+	}
+	if (!strncmp(row[0], "innodb_memcache", sizeof("innodb_memcache")-1)) {
+		query = MAPPING_QUERY_INNODB;
+		query_len = sizeof(MAPPING_QUERY_INNODB)-1;
+	} else if (!strncmp(row[0], "ndbmemcache", sizeof("ndbmemcache")-1)) {
+		query = MAPPING_QUERY_NDB;
+		query_len = sizeof(MAPPING_QUERY_NDB)-1;
+	} else {
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Invalid memcache configuration table found, this error should be impossible to hit");
+		/* We make a SQL query using IN("innodb_memcache", "ndmemcache") but something different is being returned, major bug */
+		mysqlnd_free_result(res, 0);
+		return NULL;
+	}
+	mnd_free(row);
+	if ((row = mysqlnd_fetch_row_c(res))) {
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "It seems like both, innodb-memcached and ndb-memcached are configured. This is not supported");
+		mnd_free(row);
+		mysqlnd_free_result(res, 0);
+		return NULL;
+	}
+	mysqlnd_free_result(res, 0);
+	
+	if (FAIL == orig_mysqlnd_conn_query(conn->data, MAPPING_QUERY_INNODB, sizeof(MAPPING_QUERY_INNODB)-1 TSRMLS_CC)) {
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "MySQL mapping query failed: %s", mysqlnd_error(conn));
 		return NULL;
 	}
 
@@ -689,8 +747,8 @@ static mymem_connection_data_data *mymem_init_mysqlnd(MYSQLND *conn TSRMLS_DC) /
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Failed to store result");
 		return NULL;
 	}
-	if (5 != mysqlnd_num_fields(res)) {
-		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Got an invalid result num_fields=%i, expected 5", mysqlnd_num_fields(res));
+	if (7 != mysqlnd_num_fields(res)) {
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Got an invalid result num_fields=%i, expected 7", mysqlnd_num_fields(res));
 		mysqlnd_free_result(res, 0);
 		return NULL;
 	}
@@ -710,11 +768,13 @@ static mymem_connection_data_data *mymem_init_mysqlnd(MYSQLND *conn TSRMLS_DC) /
 		but if there's one PK lookup only per request we're gonna loose.
 		*/
 
-		mapping->schema_name = estrdup(row[0]);
-		mapping->table_name = estrdup(row[1]);
-		mapping->id_field_name = estrdup(row[2]);
-		mymem_split_columns(mapping, row[3], strlen(row[3]));
-		mapping->separator = estrdup(row[4]);
+		mapping->name = estrdup(row[0]);
+		mapping->prefix = estrdup(row[1]);
+		mapping->schema_name = estrdup(row[2]);
+		mapping->table_name = estrdup(row[3]);
+		mapping->id_field_name = estrdup(row[4]);
+		mymem_split_columns(mapping, row[5], strlen(row[5]));
+		mapping->separator = estrdup(row[6]);
 
 		/* TODO: We should add fields to the hash, too */
 		key_len = spprintf(&key, 0, "%s.%s.%s", mapping->schema_name, mapping->table_name, mapping->id_field_name);
@@ -809,6 +869,7 @@ static int mymemm_add_mapping_to_zv(void *mapping_v, void *retval_v TSRMLS_DC) /
 	array_init(fields);
 
 #define ADD_MAPPING_STR(f) add_assoc_string(current, #f, mapping->f, 1)
+	ADD_MAPPING_STR(prefix);
 	ADD_MAPPING_STR(schema_name);
 	ADD_MAPPING_STR(table_name);
 	ADD_MAPPING_STR(id_field_name);
@@ -819,7 +880,7 @@ static int mymemm_add_mapping_to_zv(void *mapping_v, void *retval_v TSRMLS_DC) /
 	}
 
 	add_assoc_zval(current, "fields", fields);
-	add_next_index_zval(retval, current);
+	add_assoc_zval(retval, mapping->name, current);
 
 	return ZEND_HASH_APPLY_KEEP;
 }
