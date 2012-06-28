@@ -439,10 +439,10 @@ static zend_bool mymem_check_field_list(char *list_s, char **list_c, int list_c_
 }
 /* }}} */
 
-static zval ** mymem_verify_patterns(mymem_connection_data_data *connection_data, char *query, unsigned int query_len, zval *subpats, mymem_mapping ***mapping TSRMLS_DC) /* {{{ */
+static zval ** mymem_verify_patterns(MYSQLND_CONN_DATA *conn, mymem_connection_data_data *connection_data, char *query, unsigned int query_len, zval *subpats, mymem_mapping ***mapping TSRMLS_DC) /* {{{ */
 {
 	zval return_value;
-	zval **schema, **table, **id_field, **tmp;
+	zval **table, **id_field, **tmp;
 	zval **value;
 	char *key;
 	int key_len;
@@ -465,8 +465,7 @@ static zval ** mymem_verify_patterns(mymem_connection_data_data *connection_data
 		return NULL;
 	}
 
-	/* TODO - test hard-coded!!!!!*/
-	key_len = spprintf(&key, 0, "%s.%s.%s", "test", Z_STRVAL_PP(table), Z_STRVAL_PP(id_field));
+	key_len = spprintf(&key, 0, "%s.%s.%s", conn->connect_or_select_db, Z_STRVAL_PP(table), Z_STRVAL_PP(id_field));
 
 	if (zend_hash_find(&connection_data->mapping, key, key_len+1, (void**)mapping) == FAILURE) {
 		efree(key);
@@ -547,7 +546,7 @@ static enum_func_status MYSQLND_METHOD(mymem_conn, query)(MYSQLND_CONN_DATA *con
 	INIT_ZVAL(subpats);
 
 	if (connection_data) {
-		tmp = mymem_verify_patterns(connection_data, (char*)query, query_len, &subpats, &mapping TSRMLS_CC);
+		tmp = mymem_verify_patterns(conn, connection_data, (char*)query, query_len, &subpats, &mapping TSRMLS_CC);
 
 		if (UNEXPECTED(connection_data->callback.exists)) {
 			mymem_notify_decision(connection_data, tmp ? TRUE : FALSE TSRMLS_CC);
