@@ -492,7 +492,7 @@ static zval ** mymem_verify_patterns(MYSQLND_CONN_DATA *conn, mymem_connection_d
 }
 /* }}} */
 
-static void mymem_fill_field_data(mymem_connection_data_data *connection_data, mymem_result_data *result_data) /* {{{ */
+static void mymem_fill_field_data(mymem_result_data *result_data) /* {{{ */
 {
 	int i;
 	int field_count = result_data->mapping->value_columns.num;
@@ -593,7 +593,7 @@ static enum_func_status MYSQLND_METHOD(mymem_conn, query)(MYSQLND_CONN_DATA *con
 		result_data_p->read = 0;
 		result_data_p->mapping = *mapping;
 		
-		mymem_fill_field_data(connection_data, result_data_p);
+		mymem_fill_field_data(result_data_p);
 		
 		conn->upsert_status->affected_rows = (uint64_t)-1;
 		conn->upsert_status->warning_count = 0;
