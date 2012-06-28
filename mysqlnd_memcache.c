@@ -52,10 +52,11 @@ static func_mysqlnd_conn_data__dtor orig_mysqlnd_conn_dtor;
 #define SQL_PATTERN "/^\\s*SELECT\\s*(.+?)\\s*FROM\\s*" SQL_IDENTIFIER "\\s*WHERE\\s*" SQL_IDENTIFIER "\\s*=\\s*[\"']?([0-9]+)[\"']?\\s*$/is"
 #define SQL_PATTERN_LEN (sizeof(SQL_PATTERN)-1)
 
+/* {{{ QUERIES */
 #define MAPPING_DECISION_QUERY "SELECT TABLE_SCHEMA " \
                                "  FROM INFORMATION_SCHEMA.TABLES " \
                                " WHERE TABLE_NAME = 'containers' "\
-			       "   AND TABLE_SCHEMA IN ('innodb_memcache', 'ndbmemcache')"
+                               "   AND TABLE_SCHEMA IN ('innodb_memcache', 'ndbmemcache')"
 
 #define MAPPING_QUERY_INNODB "    SELECT c.name, '' key_prefix, c.db_schema, c.db_table, c.key_columns, c.value_columns, o.value sep " \
                              "      FROM innodb_memcache.containers c " \
@@ -66,7 +67,9 @@ static func_mysqlnd_conn_data__dtor orig_mysqlnd_conn_dtor;
                              "      FROM ndbmemcache.containers c " \
                              " LEFT JOIN ndbmemcache.key_prefixes p " \
                              "        ON p.container = c.name"
+/* }}} */
 
+/* {{{ STRUCTURES */
 typedef struct {
 	char *name;
 	char *prefix;
@@ -109,6 +112,7 @@ typedef struct {
 	unsigned long *lengths;
 	mymem_mapping *mapping;
 } mymem_result_data;
+/* }}} */
 
 /*
  * I'd prefer having those exported from php-memcached.
