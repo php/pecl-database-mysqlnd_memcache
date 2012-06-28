@@ -698,16 +698,16 @@ static void mymem_split_columns(mymem_mapping *mapping, char *names, int names_l
 
 static void mymem_free_mapping(void *mapping_v) /* {{{ */
 {
-	mymem_mapping **mapping = (mymem_mapping**)mapping_v;
-	efree((*mapping)->name);
-	efree((*mapping)->prefix);
-	efree((*mapping)->schema_name);
-	efree((*mapping)->table_name);
-	efree((*mapping)->id_field_name);
-	efree((*mapping)->value_columns.to_free);
-	efree((*mapping)->value_columns.v);
-	efree((*mapping)->separator);
-	efree(*mapping);
+	mymem_mapping *mapping = *(mymem_mapping**)mapping_v;
+	efree(mapping->name);
+	efree(mapping->prefix);
+	efree(mapping->schema_name);
+	efree(mapping->table_name);
+	efree(mapping->id_field_name);
+	efree(mapping->value_columns.to_free);
+	efree(mapping->value_columns.v);
+	efree(mapping->separator);
+	efree(mapping);
 }
 /* }}} */
 
