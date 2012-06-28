@@ -837,8 +837,8 @@ static PHP_FUNCTION(mysqlnd_memcache_set)
 		RETURN_FALSE;
 	}
 	
+	mymem_free_connection_data_data(mysqlnd_conn->data TSRMLS_CC);
 	if (!memcached_zv) {
-		mymem_free_connection_data_data(mysqlnd_conn->data TSRMLS_CC);
 		RETURN_TRUE;
 	}
 
