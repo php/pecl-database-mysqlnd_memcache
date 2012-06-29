@@ -407,40 +407,40 @@ static enum_func_status	mymem_result_free_result(MYSQLND_RES * result, zend_bool
 /* }}} */
 
 static const struct st_mysqlnd_res_methods mymem_query_result_funcs = {  /* {{{ */
-	mymem_result_fetch_row,    /* mysqlnd_fetch_row_func	fetch_row; */
-	NULL, /* mysqlnd_fetch_row_func	fetch_row_normal_buffered; -- private */
-	NULL, /* mysqlnd_fetch_row_func	fetch_row_normal_unbuffered; -- private */
+	mymem_result_fetch_row,          /* mysqlnd_fetch_row_func fetch_row; */
+	NULL,                            /* mysqlnd_fetch_row_func fetch_row_normal_buffered; -- private */
+	NULL,                            /* mysqlnd_fetch_row_func fetch_row_normal_unbuffered; -- private */
 
-	mymem_result_use_result,   /* func_mysqlnd_res__use_result use_result; */
-	mymem_result_store_result, /* func_mysqlnd_res__store_result store_result; */
-	mymem_result_fetch_into,   /* func_mysqlnd_res__fetch_into fetch_into; */
-	mymem_result_fetch_row_c,  /* func_mysqlnd_res__fetch_row_c fetch_row_c; */
-	mymem_result_fetch_all,    /* func_mysqlnd_res__fetch_all fetch_all; */
-	mymem_result_fetch_field_data, /* func_mysqlnd_res__fetch_field_data fetch_field_data; */
-	mymem_result_num_rows,     /* func_mysqlnd_res__num_rows num_rows; */
-	mymem_result_num_fields,   /* func_mysqlnd_res__num_fields num_fields; */
-	NULL, /* func_mysqlnd_res__skip_result skip_result; */
-	mymem_result_seek_data,    /* func_mysqlnd_res__seek_data seek_data; */
-	mymem_result_seek_field,   /* func_mysqlnd_res__seek_field seek_field; */
-	mymem_result_field_tell,   /* func_mysqlnd_res__field_tell field_tell; */
-	mymem_result_fetch_field,  /* func_mysqlnd_res__fetch_field fetch_field; */
+	mymem_result_use_result,         /* func_mysqlnd_res__use_result use_result; */
+	mymem_result_store_result,       /* func_mysqlnd_res__store_result store_result; */
+	mymem_result_fetch_into,         /* func_mysqlnd_res__fetch_into fetch_into; */
+	mymem_result_fetch_row_c,        /* func_mysqlnd_res__fetch_row_c fetch_row_c; */
+	mymem_result_fetch_all,          /* func_mysqlnd_res__fetch_all fetch_all; */
+	mymem_result_fetch_field_data,   /* func_mysqlnd_res__fetch_field_data fetch_field_data; */
+	mymem_result_num_rows,           /* func_mysqlnd_res__num_rows num_rows; */
+	mymem_result_num_fields,         /* func_mysqlnd_res__num_fields num_fields; */
+	NULL,                            /* func_mysqlnd_res__skip_result skip_result; */
+	mymem_result_seek_data,          /* func_mysqlnd_res__seek_data seek_data; */
+	mymem_result_seek_field,         /* func_mysqlnd_res__seek_field seek_field; */
+	mymem_result_field_tell,         /* func_mysqlnd_res__field_tell field_tell; */
+	mymem_result_fetch_field,        /* func_mysqlnd_res__fetch_field fetch_field; */
 	mymem_result_fetch_field_direct, /* func_mysqlnd_res__fetch_field_direct fetch_field_direct; */
-	mymem_result_fetch_fields, /* func_mysqlnd_res__fetch_fields fetch_fields; */
-	NULL, /* func_mysqlnd_res__read_result_metadata read_result_metadata; */
-	mymem_result_fetch_lengths, /* func_mysqlnd_res__fetch_lengths fetch_lengths; */
-	NULL, /* func_mysqlnd_res__store_result_fetch_data store_result_fetch_data; */
-	NULL, /* func_mysqlnd_res__initialize_result_set_rest initialize_result_set_rest; */
-	NULL, /* func_mysqlnd_res__free_result_buffers free_result_buffers; */
-	mymem_result_free_result,  /* func_mysqlnd_res__free_result free_result; */
-	NULL, /* func_mysqlnd_res__free_result_internal free_result_internal; */
-	NULL, /* func_mysqlnd_res__free_result_contents free_result_contents; */
-	NULL, /* func_mysqlnd_res__free_buffered_data free_buffered_data; */
-	NULL, /* func_mysqlnd_res__unbuffered_free_last_data unbuffered_free_last_data; */
+	mymem_result_fetch_fields,       /* func_mysqlnd_res__fetch_fields fetch_fields; */
+	NULL,                            /* func_mysqlnd_res__read_result_metadata read_result_metadata; */
+	mymem_result_fetch_lengths,      /* func_mysqlnd_res__fetch_lengths fetch_lengths; */
+	NULL,                            /* func_mysqlnd_res__store_result_fetch_data store_result_fetch_data; */
+	NULL,                            /* func_mysqlnd_res__initialize_result_set_rest initialize_result_set_rest; */
+	NULL,                            /* func_mysqlnd_res__free_result_buffers free_result_buffers; */
+	mymem_result_free_result,        /* func_mysqlnd_res__free_result free_result; */
+	NULL,                            /* func_mysqlnd_res__free_result_internal free_result_internal; */
+	NULL,                            /* func_mysqlnd_res__free_result_contents free_result_contents; */
+	NULL,                            /* func_mysqlnd_res__free_buffered_data free_buffered_data; */
+	NULL,                            /* func_mysqlnd_res__unbuffered_free_last_data unbuffered_free_last_data; */
 
 	/* for decoding - binary or text protocol */
-	NULL, /* func_mysqlnd_res__row_decoder row_decoder; */
+	NULL,                            /* func_mysqlnd_res__row_decoder row_decoder; */
 
-	NULL, /* func_mysqlnd_res__result_meta_init result_meta_init; */
+	NULL,                            /* func_mysqlnd_res__result_meta_init result_meta_init; */
 
 	NULL, /* void * unused1; */
 	NULL, /* void * unused2; */
