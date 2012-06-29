@@ -329,6 +329,17 @@ static unsigned int mymem_result_num_fields(const MYSQLND_RES * const result TSR
 }
 /* }}} */
 
+static enum_func_status	mymem_result_seek_data(MYSQLND_RES * result, uint64_t row TSRMLS_DC) /* {{{ */
+{
+	if (row == 1) {
+		mymem_result_data *result_data = *mysqlnd_plugin_get_plugin_result_data(result, mysqlnd_memcache_plugin_id);
+		result_data->read = 0;
+		return PASS;
+	}
+	return FAIL;
+}
+/* }}} */
+
 static MYSQLND_FIELD_OFFSET mymem_result_field_tell(const MYSQLND_RES * const result TSRMLS_DC) /* {{{ */
 {
 	return 0;
@@ -382,7 +393,7 @@ static const struct st_mysqlnd_res_methods mymem_query_result_funcs = {  /* {{{ 
 	mymem_result_num_rows,     /* func_mysqlnd_res__num_rows num_rows; */
 	mymem_result_num_fields,   /* func_mysqlnd_res__num_fields num_fields; */
 	NULL, /* func_mysqlnd_res__skip_result skip_result; */
-	NULL, /* func_mysqlnd_res__seek_data seek_data; */
+	mymem_result_seek_data,    /* func_mysqlnd_res__seek_data seek_data; */
 	NULL, /* func_mysqlnd_res__seek_field seek_field; */
 	mymem_result_field_tell, /* func_mysqlnd_res__field_tell field_tell; */
 	NULL, /* func_mysqlnd_res__fetch_field fetch_field; */
