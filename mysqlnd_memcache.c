@@ -109,6 +109,7 @@ typedef struct {
 	size_t data_len;
 	int read;
 	MYSQLND_FIELD *fields;
+	MYSQLND_FIELD_OFFSET current_field_offset;
 	unsigned long *lengths;
 	mymem_mapping *mapping;
 } mymem_result_data;
@@ -349,14 +350,24 @@ static enum_func_status	mymem_result_seek_data(MYSQLND_RES * result, uint64_t ro
 
 static MYSQLND_FIELD_OFFSET mymem_result_seek_field(MYSQLND_RES * const result, MYSQLND_FIELD_OFFSET field_offset TSRMLS_DC) /* {{{ */
 {
-	php_error_docref(NULL TSRMLS_CC, E_WARNING, "Seeking fields is currently not supported");
-	return 0;
+	mymem_result_data *result_data = *mysqlnd_plugin_get_plugin_result_data(result, mysqlnd_memcache_plugin_id);
+	MYSQLND_FIELD_OFFSET old_value = result_data->current_field_offset;
+	result_data->current_field_offset = field_offset; /* TODO: should we throw some error when out of bounds? */
+	return old_value;
 }
 /* }}} */
 
 static MYSQLND_FIELD_OFFSET mymem_result_field_tell(const MYSQLND_RES * const result TSRMLS_DC) /* {{{ */
 {
-	return 0;
+	mymem_result_data *result_data = *mysqlnd_plugin_get_plugin_result_data(result, mysqlnd_memcache_plugin_id);
+	return result_data->current_field_offset;
+}
+/* }}} */
+
+static const MYSQLND_FIELD *mymem_result_fetch_field(MYSQLND_RES * const result TSRMLS_DC) /* {{{ */
+{
+	mymem_result_data *result_data = *mysqlnd_plugin_get_plugin_result_data(result, mysqlnd_memcache_plugin_id);
+	return result_data->fields + (result_data->current_field_offset++);
 }
 /* }}} */
 
@@ -410,7 +421,7 @@ static const struct st_mysqlnd_res_methods mymem_query_result_funcs = {  /* {{{ 
 	mymem_result_seek_data,    /* func_mysqlnd_res__seek_data seek_data; */
 	mymem_result_seek_field,   /* func_mysqlnd_res__seek_field seek_field; */
 	mymem_result_field_tell,   /* func_mysqlnd_res__field_tell field_tell; */
-	NULL, /* func_mysqlnd_res__fetch_field fetch_field; */
+	mymem_result_fetch_field,  /* func_mysqlnd_res__fetch_field fetch_field; */
 	mymem_result_fetch_field_direct, /* func_mysqlnd_res__fetch_field_direct fetch_field_direct; */
 	mymem_result_fetch_fields, /* func_mysqlnd_res__fetch_fields fetch_fields; */
 	NULL, /* func_mysqlnd_res__read_result_metadata read_result_metadata; */
@@ -533,6 +544,7 @@ static void mymem_fill_field_data(mymem_result_data *result_data) /* {{{ */
 {
 	int i;
 	int field_count = result_data->mapping->value_columns.num;
+	result_data->current_field_offset = 0;
 	result_data->fields = safe_emalloc(field_count, sizeof(MYSQLND_FIELD), 0);
 	memset(result_data->fields, 0, field_count*sizeof(MYSQLND_FIELD));
 	
