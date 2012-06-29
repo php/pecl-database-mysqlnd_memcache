@@ -179,6 +179,8 @@ static enum_func_status mymem_result_fetch_row(MYSQLND_RES *result, void *param,
 
 	BAILOUT_IF_CONN_DATA_UNSET(connection_data)
 
+	php_error_docref(NULL TSRMLS_CC, E_ERROR, "fetch_row in %s:%d is currently not implemented", __FILE__, __LINE__);
+
 	if (result_data->read) {
 		return FAIL;
 	}
