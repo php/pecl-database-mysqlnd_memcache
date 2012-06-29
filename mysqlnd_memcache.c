@@ -340,6 +340,13 @@ static enum_func_status	mymem_result_seek_data(MYSQLND_RES * result, uint64_t ro
 }
 /* }}} */
 
+static MYSQLND_FIELD_OFFSET mymem_result_seek_field(MYSQLND_RES * const result, MYSQLND_FIELD_OFFSET field_offset TSRMLS_DC) /* {{{ */
+{
+	php_error_docref(NULL TSRMLS_CC, E_WARNING, "Seeking fields is currently not supported");
+	return 0;
+}
+/* }}} */
+
 static MYSQLND_FIELD_OFFSET mymem_result_field_tell(const MYSQLND_RES * const result TSRMLS_DC) /* {{{ */
 {
 	return 0;
@@ -394,8 +401,8 @@ static const struct st_mysqlnd_res_methods mymem_query_result_funcs = {  /* {{{ 
 	mymem_result_num_fields,   /* func_mysqlnd_res__num_fields num_fields; */
 	NULL, /* func_mysqlnd_res__skip_result skip_result; */
 	mymem_result_seek_data,    /* func_mysqlnd_res__seek_data seek_data; */
-	NULL, /* func_mysqlnd_res__seek_field seek_field; */
-	mymem_result_field_tell, /* func_mysqlnd_res__field_tell field_tell; */
+	mymem_result_seek_field,   /* func_mysqlnd_res__seek_field seek_field; */
+	mymem_result_field_tell,   /* func_mysqlnd_res__field_tell field_tell; */
 	NULL, /* func_mysqlnd_res__fetch_field fetch_field; */
 	mymem_result_fetch_field_direct, /* func_mysqlnd_res__fetch_field_direct fetch_field_direct; */
 	mymem_result_fetch_fields, /* func_mysqlnd_res__fetch_fields fetch_fields; */
