@@ -322,6 +322,7 @@ static void mymem_result_fetch_field_data(MYSQLND_RES *result, unsigned int offs
 	php_error_docref(NULL TSRMLS_CC, E_WARNING, "Fetching fields is currently not supported, returning raw");
 	ZVAL_STRING(return_value, result_data->data, 1);
 }
+/* }}} */
 
 static uint64_t mymem_result_num_rows(const MYSQLND_RES * const result TSRMLS_DC) /* {{{ */
 {
@@ -451,6 +452,7 @@ static const struct st_mysqlnd_res_methods mymem_query_result_funcs = {  /* {{{ 
 /* }}} */
 /* }}} */
 
+/* {{{ mysqlnd_data overrides */
 /* {{{ query helpers */
 static zend_bool mymem_check_field_list(char *list_s, char **list_c, int list_c_len) /* {{{ */
 {
@@ -702,7 +704,9 @@ static void MYSQLND_METHOD(mymem_conn, dtor)(MYSQLND_CONN_DATA *conn TSRMLS_DC) 
 	orig_mysqlnd_conn_dtor(conn TSRMLS_CC);
 }
 /* }}} */
+/* }}} */
 
+/* {{{ User space functions and helpers */
 static void mymem_split_columns(mymem_mapping *mapping, char *names, int names_len) /* {{{ */
 {
 	int i = 0;
@@ -1024,7 +1028,9 @@ static const zend_function_entry mymem_functions[] = {
 	PHP_FE_END
 };
 /* }}} */
+/* }}} */
 
+/* {{{ PHP Infrastructure */
 /* {{{ PHP_MINIT_FUNCTION
  */
 static PHP_MINIT_FUNCTION(mysqlnd_memcache)
@@ -1121,6 +1127,7 @@ zend_module_entry mysqlnd_memcache_module_entry = {
 #ifdef COMPILE_DL_MYSQLND_MEMCACHE
 ZEND_GET_MODULE(mysqlnd_memcache)
 #endif
+/* }}} */
 
 /*
  * Local variables:
