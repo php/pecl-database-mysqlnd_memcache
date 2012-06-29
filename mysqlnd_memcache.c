@@ -313,6 +313,13 @@ static void mymem_result_fetch_all(MYSQLND_RES *result, unsigned int flags, zval
 }
 /* }}} */
 
+static void mymem_result_fetch_field_data(MYSQLND_RES *result, unsigned int offset, zval *return_value TSRMLS_DC) /* {{{ */
+{
+	mymem_result_data *result_data = *(mymem_result_data **)mysqlnd_plugin_get_plugin_result_data(result, mysqlnd_memcache_plugin_id);
+	php_error_docref(NULL TSRMLS_CC, E_WARNING, "Fetching fields is currently not supported, returning raw");
+	ZVAL_STRING(return_value, result_data->data, 1);
+}
+
 static uint64_t mymem_result_num_rows(const MYSQLND_RES * const result TSRMLS_DC) /* {{{ */
 {
 	mymem_result_data *result_data_p = *(mymem_result_data **)mysqlnd_plugin_get_plugin_result_data(result, mysqlnd_memcache_plugin_id);
@@ -396,7 +403,7 @@ static const struct st_mysqlnd_res_methods mymem_query_result_funcs = {  /* {{{ 
 	mymem_result_fetch_into,   /* func_mysqlnd_res__fetch_into fetch_into; */
 	mymem_result_fetch_row_c,  /* func_mysqlnd_res__fetch_row_c fetch_row_c; */
 	mymem_result_fetch_all,    /* func_mysqlnd_res__fetch_all fetch_all; */
-	NULL, /* func_mysqlnd_res__fetch_field_data fetch_field_data; */
+	mymem_result_fetch_field_data, /* func_mysqlnd_res__fetch_field_data fetch_field_data; */
 	mymem_result_num_rows,     /* func_mysqlnd_res__num_rows num_rows; */
 	mymem_result_num_fields,   /* func_mysqlnd_res__num_fields num_fields; */
 	NULL, /* func_mysqlnd_res__skip_result skip_result; */
