@@ -1,0 +1,11 @@
+These test are based on the same enironment variables
+like other MySQL tests. There two new optional settings:
+    MYSQL_TEST_MEMCACHE_HOST and MYSQL_TEST_MEMCACHE_PORT
+to set memcache configuration. By default memcache will connect
+to the MySQL host using port 11211.
+
+These tests also override gloal configuration tables in the
+innodb_memcache databse. If you need your data their make a
+backup. To confirm you're aware of this set
+    MYSQLND_MEMCACHE_I_KNOW_WHAT_I_DO
+in your enironment before running tests.
