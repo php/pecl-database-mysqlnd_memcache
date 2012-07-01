@@ -629,7 +629,7 @@ static enum_func_status MYSQLND_METHOD(mymem_conn, query)(MYSQLND_CONN_DATA *con
 		}
 
 		res = memcached_get(connection_data->connection.memc, key, key_len, &value_len, &flags, &error);
-		
+
 		zval_dtor(&subpats);
 		
 		if (conn->current_result) {
