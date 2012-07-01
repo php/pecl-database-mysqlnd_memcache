@@ -1,5 +1,5 @@
 --TEST--
-Simple mysqli test
+Simple mysql test
 --INI--
 extension=/home/johannes/src/php/php-memcached/modules/memcached.so
 --SKIPIF--
