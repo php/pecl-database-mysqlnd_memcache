@@ -48,8 +48,11 @@ static unsigned int mysqlnd_memcache_plugin_id;
 static func_mysqlnd_conn_data__query orig_mysqlnd_conn_query;
 static func_mysqlnd_conn_data__dtor orig_mysqlnd_conn_dtor;
 
+#define SQL_FIELD_LIST "(.+?)"
 #define SQL_IDENTIFIER "`?([a-z0-9_]+)`?"
-#define SQL_PATTERN "/^\\s*SELECT\\s*(.+?)\\s*FROM\\s*`?([a-z0-9_]+)`?\\s*WHERE\\s*`?([a-z0-9_]+)`?\\s*=\\s*(?(?=[\"'])[\"']([^\"']*)[\"']|([0-9e\\.]*))\\s*$/is"
+#define SQL_STRING "[\"']([^\"']*)[\"']"
+#define SQL_NUMBER "([0-9e\\.]*)"
+#define SQL_PATTERN "/^\\s*SELECT\\s*" SQL_FIELD_LIST "\\s*FROM\\s*" SQL_IDENTIFIER "\\s*WHERE\\s*" SQL_IDENTIFIER "\\s*=\\s*(?(?=[\"'])" SQL_STRING "|" SQL_NUMBER ")\\s*$/is"
 #define SQL_PATTERN_LEN (sizeof(SQL_PATTERN)-1)
 
 /* {{{ QUERIES */
