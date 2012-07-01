@@ -49,7 +49,7 @@ static func_mysqlnd_conn_data__query orig_mysqlnd_conn_query;
 static func_mysqlnd_conn_data__dtor orig_mysqlnd_conn_dtor;
 
 #define SQL_IDENTIFIER "`?([a-z0-9_]+)`?"
-#define SQL_PATTERN "/^\\s*SELECT\\s*(.+?)\\s*FROM\\s*" SQL_IDENTIFIER "\\s*WHERE\\s*" SQL_IDENTIFIER "\\s*=\\s*[\"']?([0-9]+)[\"']?\\s*$/is"
+#define SQL_PATTERN "/^\\s*SELECT\\s*(.+?)\\s*FROM\\s*`?([a-z0-9_]+)`?\\s*WHERE\\s*`?([a-z0-9_]+)`?\\s*=\\s*(?(?=[\"'])[\"']([^\"']*)[\"']|([0-9e\\.]*))\\s*$/is"
 #define SQL_PATTERN_LEN (sizeof(SQL_PATTERN)-1)
 
 /* {{{ QUERIES */
@@ -525,9 +525,11 @@ static zval ** mymem_verify_patterns(MYSQLND_CONN_DATA *conn, mymem_connection_d
 	}
 	efree(key);
 
-	if (zend_hash_index_find(Z_ARRVAL_P(subpats), 4, (void**)&value) == FAILURE || Z_TYPE_PP(value) != IS_STRING) {
-		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Pattern matched but no id value passed or not a string");
-		return NULL;
+	if (zend_hash_index_find(Z_ARRVAL_P(subpats), 5, (void**)&value) == FAILURE || Z_TYPE_PP(value) != IS_STRING) {
+		if (zend_hash_index_find(Z_ARRVAL_P(subpats), 4, (void**)&value) == FAILURE || Z_TYPE_PP(value) != IS_STRING) {
+			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Pattern matched but no id value passed or not a string");
+			return NULL;
+		}
 	}
 
 	if (zend_hash_index_find(Z_ARRVAL_P(subpats), 1, (void**)&tmp) == FAILURE || Z_TYPE_PP(tmp) != IS_STRING) {
