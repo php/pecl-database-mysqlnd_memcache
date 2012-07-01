@@ -18,7 +18,7 @@ function init_memcache_config($value_columns, $id_is_string = false, $separator 
 	}
 
 	$id_type = $id_is_string ? 'CHAR(4)' : 'INT';
-	if (!mysqli_query($link, 'CREATE TABLE mymem_test(id '.$id_type.', f1 VARCHAR(255), f2 VARCHAR(255), f3 VARCHAR(255), flags INT, cas_column INT, expire_time_column INT, PRIMARY KEY(id)) ENGINE=InnoDB DEFAULT CHARSET=latin1')) {
+	if (!mysqli_query($link, 'CREATE TABLE mymem_test(id '.$id_type.', f1 VARCHAR(255), f2 VARCHAR(255), f3 VARCHAR(255), flags INT NOT NULL, cas_column INT, expire_time_column INT, PRIMARY KEY(id)) ENGINE=InnoDB DEFAULT CHARSET=latin1')) {
 		printf("Failed to create test table: [%d] %s\n", mysqli_errno($link), mysqli_error($link));
 		exit(1);
 	}
