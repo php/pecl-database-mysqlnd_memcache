@@ -1,44 +1,39 @@
 --TEST--
-Simple ext/mysql test
+Simple mysqli test
 --INI--
 extension=/home/johannes/src/php/php-memcached/modules/memcached.so
 --SKIPIF--
 <?php
-if (!extension_loaded('mysql') || !extension_loaded('mysqlnd_memcache')) {
-    echo "skip\n";
-}
+require('skipif.inc');
 ?>
 --FILE--
 <?php
+require 'table.inc';
+init_memcache_config('f1,f2,f3', true, '|');
 
-$memc = new Memcached();
-$memc->addServer("localhost", 11211);
-$memc->add("23", "foo bar");
-
-$mysql = mysql_connect(":/tmp/mysql56.sock", "root");
-var_dump(mysqlnd_memcache_set($mysql, $memc, NULL, "var_dump"));
-mysql_select_db("test");
-
-echo "TRANSACTION ISOLATION:\n";
-mysql_query("set session TRANSACTION ISOLATION LEVEL read uncommitted");
-
-echo "SELECT:\n";
-$r = mysql_query("SELECT c2, foo FROM demo_test WHERE c1 = 23");
-var_dump($r);
-var_dump(mysql_fetch_row($r));
-
-echo "---DONE---\n";
---EXPECT--
-bool(true)
-TRANSACTION ISOLATION:
-bool(false)
-SELECT:
-bool(true)
-resource(6) of type (mysql result)
-array(2) {
-  [0]=>
-  string(10) "hallo welt"
-  [1]=>
-  string(3) "foo"
+if (!$link = my_mysql_connect($host, $user, $passwd, $db, $port, $socket)) {
+	die("Connection failed");
 }
----DONE---
+
+$memc = my_memcache_connect($memcache_host, $memcache_port);
+mysqlnd_memcache_set($link, $memc, NULL, function ($success) { echo "Went through memcache: ".($success ? 'Yes' : 'No')."\n";});
+
+echo "Fetching key1 via memcache:\n";
+var_dump($memc->get("key1"));
+echo "Querying SELECT f1, f2, f3 FROM mymem_test WHERE id = 'key1':\n";
+$r = mysql_query("SELECT f1, f2, f3 FROM mymem_test WHERE id = 'key1'", $link);
+var_dump(mysql_fetch_row($r));
+?>
+--EXPECT--
+Fetching key1 via memcache:
+string(5) "a|b|c"
+Querying SELECT f1, f2, f3 FROM mymem_test WHERE id = 'key1':
+Went through memcache: Yes
+array(3) {
+  [0]=>
+  string(1) "a"
+  [1]=>
+  string(1) "b"
+  [2]=>
+  string(1) "c"
+}
