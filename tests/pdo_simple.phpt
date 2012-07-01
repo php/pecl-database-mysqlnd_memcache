@@ -1,7 +1,5 @@
 --TEST--
 Simple PDO test
---INI--
-extension=/home/johannes/src/php/php-memcached/modules/memcached.so
 --SKIPIF--
 <?php
 require('skipif.inc');
