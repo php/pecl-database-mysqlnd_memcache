@@ -606,20 +606,20 @@ static void mymem_notify_decision(mymem_connection_data_data *conn_data, zend_bo
 static enum_func_status MYSQLND_METHOD(mymem_conn, query)(MYSQLND_CONN_DATA *conn, const char *query, unsigned int query_len TSRMLS_DC) /* {{{ */
 {
 	zval subpats;
-	zval **tmp = NULL;
+	zval **query_key = NULL;
 	mymem_mapping **mapping;
 	mymem_connection_data_data *connection_data = *mysqlnd_plugin_get_plugin_connection_data_data(conn, mysqlnd_memcache_plugin_id);
 	
 	INIT_ZVAL(subpats);
 
 	if (connection_data) {
-		tmp = mymem_verify_patterns(conn, connection_data, (char*)query, query_len, &subpats, &mapping TSRMLS_CC);
+		query_key = mymem_verify_patterns(conn, connection_data, (char*)query, query_len, &subpats, &mapping TSRMLS_CC);
 
 		if (UNEXPECTED(connection_data->callback.exists)) {
-			mymem_notify_decision(connection_data, tmp ? TRUE : FALSE TSRMLS_CC);
+			mymem_notify_decision(connection_data, query_key ? TRUE : FALSE TSRMLS_CC);
 		}
 	}
-	if (tmp) {
+	if (query_key) {
 		void **result_data_vpp;
 		mymem_result_data *result_data_p;
 		
@@ -631,14 +631,14 @@ static enum_func_status MYSQLND_METHOD(mymem_conn, query)(MYSQLND_CONN_DATA *con
 
 		if ((*mapping)->prefix && *(*mapping)->prefix) {
 			int prefix_len = strlen((*mapping)->prefix);
-			key_len = prefix_len + Z_STRLEN_PP(tmp);
+			key_len = prefix_len + Z_STRLEN_PP(query_key);
 			key = alloca(key_len+1);
 			memcpy(key, (*mapping)->prefix, prefix_len);
-			memcpy(key+prefix_len, Z_STRVAL_PP(tmp), Z_STRLEN_PP(tmp));
+			memcpy(key+prefix_len, Z_STRVAL_PP(query_key), Z_STRLEN_PP(query_key));
 			key[key_len] = '\0';
 		} else {
-			key = Z_STRVAL_PP(tmp);
-			key_len = Z_STRLEN_PP(tmp);
+			key = Z_STRVAL_PP(query_key);
+			key_len = Z_STRLEN_PP(query_key);
 		}
 
 		res = memcached_get(connection_data->connection.memc, key, key_len, &value_len, &flags, &error);
