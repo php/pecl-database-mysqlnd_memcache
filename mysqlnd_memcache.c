@@ -644,7 +644,19 @@ static enum_func_status MYSQLND_METHOD(mymem_conn, query)(MYSQLND_CONN_DATA *con
 		res = memcached_get(connection_data->connection.memc, key, key_len, &value_len, &flags, &error);
 
 		zval_dtor(&subpats);
-		
+
+		if (error != MEMCACHED_SUCCESS && error != MEMCACHED_NOTFOUND) {
+			/*
+			 * Not found will be handled by having 0 rows in the end, we
+			 * can initialize things properly, other errors are more
+			 * interesting, maybe we could/should fall-back to MySQL
+			 * protocol for some?
+			 */
+			/* TODO: Map to MySQL error codes */
+			php_error_docref(NULL TSRMLS_CC, E_WARNING, "libmemcached error code %i", (int)error);
+			return FAIL;
+		}
+
 		if (conn->current_result) {
 			conn->current_result->m.free_result(conn->current_result, TRUE TSRMLS_CC);
 			mnd_efree(conn->current_result);
