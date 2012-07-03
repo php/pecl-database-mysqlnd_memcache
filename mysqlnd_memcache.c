@@ -216,12 +216,20 @@ static enum_func_status mymem_result_fetch_row(MYSQLND_RES *result, void *param,
 
 static MYSQLND_RES *mymem_result_use_result(MYSQLND_RES *const result, zend_bool ps_protocol TSRMLS_DC) /* {{{ */
 {
+	if (UNEXPECTED(ps_protocol)) {
+		php_error_docref(NULL TSRMLS_CC, E_ERROR, "mysqlnd_memcache store result called with ps_protocol, not expected, bailing out");
+	}
 	return result;
 }
 /* }}} */
 
 static MYSQLND_RES *mymem_result_store_result(MYSQLND_RES *result, MYSQLND_CONN_DATA *conn, zend_bool ps_protocol TSRMLS_DC) /* {{{ */
 {
+	mymem_connection_data_data *connection_data = *mysqlnd_plugin_get_plugin_connection_data_data(result->conn, mysqlnd_memcache_plugin_id);
+	BAILOUT_IF_CONN_DATA_UNSET(connection_data)
+	if (UNEXPECTED(ps_protocol)) {
+		php_error_docref(NULL TSRMLS_CC, E_ERROR, "mysqlnd_memcache store result called with ps_protocol, not expected, bailing out");
+	}
 	return result;
 }
 /* }}} */
