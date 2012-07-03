@@ -843,7 +843,7 @@ static mymem_connection_data_data *mymem_init_mysqlnd(MYSQLND *conn TSRMLS_DC) /
 	}
 
 	plugin_data_vpp = mysqlnd_plugin_get_plugin_connection_data_data(conn->data, mysqlnd_memcache_plugin_id);
-	*plugin_data_vpp = pemalloc(sizeof(mymem_connection_data_data), conn->persistent);
+	*plugin_data_vpp = emalloc(sizeof(mymem_connection_data_data));
 	plugin_data_p = *(mymem_connection_data_data **)plugin_data_vpp;
 	zend_hash_init(&plugin_data_p->mapping, mysqlnd_num_rows(res), 0, mymem_free_mapping, 0);
 	plugin_data_p->mapping_query = query;
