@@ -405,7 +405,7 @@ static enum_func_status	mymem_result_free_result(MYSQLND_RES * result, zend_bool
 	efree(result_data->fields);
 	efree(result_data->lengths);
 	efree(result_data);
-	mnd_efree(result);
+	mnd_pefree(result, result->conn->persistent);
 	return PASS;
 }
 /* }}} */
@@ -705,7 +705,7 @@ static void mymem_free_connection_data_data(MYSQLND_CONN_DATA *conn TSRMLS_DC) /
 
 static void MYSQLND_METHOD(mymem_conn, dtor)(MYSQLND_CONN_DATA *conn TSRMLS_DC) /* {{{ */
 {
-        /* TODO: This has to be run per request, even with pconn, is this the correct hook? */
+        /* TODO: This has to be run per request, even with persistent conns, is this the correct hook? */
 	mymem_free_connection_data_data(conn TSRMLS_CC);
 	orig_mysqlnd_conn_dtor(conn TSRMLS_CC);
 }
