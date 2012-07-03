@@ -794,7 +794,7 @@ static char *mymem_pick_mapping_query(MYSQLND *conn, int *query_len TSRMLS_DC) /
 	}
 	row = mysqlnd_fetch_row_c(res);
 	if (!row) {
-		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Neither innodb_memcache.containers nor ndmemcache.containers exists. Can't proceed");
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Neither innodb_memcache.containers nor ndbmemcache.containers exists. Can't proceed");
 		mysqlnd_free_result(res, 0);
 		return NULL;
 	}
