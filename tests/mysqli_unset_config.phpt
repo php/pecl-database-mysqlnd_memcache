@@ -4,7 +4,7 @@ Unsetting/Resetting mysqlnd_memcache data with mysqli
 <?php
 require('skipif.inc');
 _skipif_check_extensions(array("mysqli"));
-_skipif_connect($host, $user, $passwd, $db, $port, $socket);
+_skipif_no_plugin($host, $user, $passwd, $db, $port, $socket);
 ?>
 --FILE--
 <?php

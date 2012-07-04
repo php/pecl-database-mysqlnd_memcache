@@ -3,8 +3,8 @@ Simple mysql test
 --SKIPIF--
 <?php
 require('skipif.inc');
-_skipif_check_extensions(array("mysql"));
-_skipif_connect($host, $user, $passwd, $db, $port, $socket);
+_skipif_check_extensions(array("mysql", "mysqli"));
+_skipif_no_plugin($host, $user, $passwd, $db, $port, $socket);
 ?>
 --FILE--
 <?php
