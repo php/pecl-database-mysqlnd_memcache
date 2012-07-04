@@ -81,6 +81,33 @@
 				$this->query("set session TRANSACTION ISOLATION LEVEL read uncommitted");
 			}
 		}
+
+		function my_memcache_connect($host, $port) {
+			$memc = new Memcached();
+			$memc->addServer($host, $port);
+			return $memc;
+		}
+
+		function my_error_handler($errno, $error, $file, $line) {
+			/* KLUDGE */
+			static $errcodes = array();
+
+			if (empty($errcodes)) {
+				$constants = get_defined_constants();
+				foreach ($constants as $name => $value) {
+					if (substr($name, 0, 2) == "E_")
+						$errcodes[$value] = $name;
+				}
+			}
+			$msg = sprintf("[%s] %s in %s on line %s\n",
+				(isset($errcodes[$errno])) ? $errcodes[$errno] : $errno,
+				$error, $file, $line);
+
+			echo $msg;
+
+			return true;
+		}
+
 	} else {
 		printf("skip Eeeek/BUG/FIXME I - connect.inc included twice! skipif bug?\n");
 	}
@@ -132,9 +159,5 @@
 		}
 	}
 
-	function my_memcache_connect($host, $port) {
-		$memc = new Memcached();
-		$memc->addServer($host, $port);
-		return $memc;
-	}
+
 ?>

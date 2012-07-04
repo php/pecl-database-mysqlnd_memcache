@@ -3,6 +3,8 @@ Simple PDO test
 --SKIPIF--
 <?php
 require('skipif.inc');
+_skipif_check_extensions(array("pdo_mysql"));
+_skipif_connect($host, $user, $passwd, $db, $port, $socket);
 ?>
 --FILE--
 <?php

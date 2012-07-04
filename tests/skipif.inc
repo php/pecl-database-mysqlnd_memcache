@@ -1,18 +1,21 @@
 <?php
-if (!extension_loaded('memcached')) {
-	die('skip memcached extension not available');
-}
-if (!extension_loaded('mysqlnd_memcache')) {
-	die('skip mysqlnd_memcache extension not available');
+function _skipif_check_extensions($extensions) {
+	if (!is_array($extensions))
+		$extensions = array($extensions);
+
+	foreach ($extensions as $k => $extension) {
+		if (!extension_loaded($extension))
+			die(sprintf("SKIP ext/%s not available", $extension));
+	}
+
 }
 
-if (!getenv('MYSQLND_MEMCACHE_I_KNOW_WHAT_I_DO')) {
-	die('skip MYSQLND_MEMCACHE_I_KNOW_WHAT_I_DO not set in environment');
+function _skipif_connect($host, $user, $passwd, $db, $port, $socket) {
+	if (!$link = mst_mysqli_connect($host, $user, $passwd, $db, $port, $socket))
+		die(sprintf("SKIP (h=%s,u=%s,p=%s,db=%s,P=%s,S=%s), [%d] %s\n",
+			$host, $user, ($passwd) ? "***" : '', $db, $port, $socket, mysqli_connect_errno(), mysqli_connect_error()));
 }
 
-require_once('connect.inc');
-$link = @my_mysqli_connect($host, $user, $passwd, $db, $port, $socket); 
-if (!is_object($link)) {
-	die(sprintf("skip Can't connect to MySQL Server - [%d] %s", mysqli_connect_errno(), mysqli_connect_error()));
-}
-mysqli_close($link);
+_skipif_check_extensions("memcached");
+_skipif_check_extensions("mysqlnd_memcache");
+
