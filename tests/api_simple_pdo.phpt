@@ -1,9 +1,9 @@
 --TEST--
-Simple mysqli test
+Simple PDO test
 --SKIPIF--
 <?php
 	require('skipif.inc');
-	_skipif_check_extensions(array("mysqli"));
+	_skipif_check_extensions(array("pdo_mysql", "mysqli"));
 	_skipif_connect($host, $user, $passwd, $db, $port, $socket);
 
 	require_once('table.inc');
@@ -14,7 +14,7 @@ Simple mysqli test
 ?>
 --FILE--
 <?php
-	require_once('connect.inc');
+	require_once("connect.inc");
 	function debug_callback() {
 		printf("%s()", __FUNCTION__);
 
@@ -24,13 +24,14 @@ Simple mysqli test
 		}
 	}
 
-	$link = my_mysqli_connect($host, $user, $passwd, $db, $port, $socket);
-	if ($link->connect_errno) {
-		printf("[001] [%d] %s\n", $link->connect_errno, $link->connect_error);
+	if (!$link = my_pdo_connect($host, $user, $passwd, $db, $port, $socket)) {
+		printf("[001] Connection failed\n");
 	}
 
-	$memc = my_memcache_connect($memcache_host, $memcache_port);
+	/* Disable PS emulation - we do not monitor prepare() C API call */
+	$link->setAttribute(PDO::ATTR_EMULATE_PREPARES, 1);
 
+	$memc = my_memcache_connect($memcache_host, $memcache_port);
 	if (!mysqlnd_memcache_set($link, $memc, NULL, "debug_callback")) {
 		printf("[002] Failed to register connection, [%d] '%s'\n",
 			$link->errno, $link->error);
@@ -44,17 +45,15 @@ Simple mysqli test
 
 
 	if ($res = $link->query("SELECT f1, f2, f3 FROM mymem_test WHERE id = 'key1'")) {
-		$row = $res->fetch_row();
-
+		$row = $res->fetch(PDO::FETCH_NUM);
 		if ($row != $columns) {
 			printf("[005] Native Memcache and SQL results differ\n");
 			var_dump(array_diff($row, $columns));
 		}
 
-		var_dump($res->fetch_assoc());
-
+		var_dump($res->fetch());
 	} else {
-		printf("[004] %d %s\n", $link->errno, $link->error);
+		printf("[004] Fetch failed, %s\n", var_export($link->errorInfo(), true));
 	}
 
 	print "done!";
@@ -69,5 +68,5 @@ array(3) {
   string(1) "c"
 }
 debug_callback() 00: boolean / true
-NULL
+bool(false)
 done!
