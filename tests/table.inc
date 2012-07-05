@@ -83,14 +83,14 @@ class my_memcache_config {
 			return sprintf("SHOW PLUGINS failed, [%d] %s\n", $this->link->errno, $this->link->error);
 		}
 		while ($row = $res->fetch_assoc()) {
+
 			if (($row['Name'] == 'daemon_memcached') && ($row['Status'] == 'ACTIVE')) {
 				$plugin_loaded = true;
 				break;
 			}
 		}
 
-		if (!$plugin_loaded) {
-			/* Plugin needs to be installed, we don't need to check config */
+		if ($plugin_loaded) {
 			$update_needed = $this->container_needs_update($value_columns, $separator);
 			if (is_string($update_needed)) {
 				/* error */
@@ -162,7 +162,7 @@ class my_memcache_config {
 
 		if ($res = $this->link->query($sql)) {
 			$row = $res->fetch_assoc();
-			$columns = explode("'", $row['value_columns']);
+			$columns = explode(",", $row['value_columns']);
 			foreach ($columns as $k => $column) {
 				$column = trim($column);
 				foreach ($value_columns as $vk => $vcolumn) {
