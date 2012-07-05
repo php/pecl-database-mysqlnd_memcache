@@ -4,7 +4,6 @@ Don't connect to memcached host
 <?php
 	require('skipif.inc');
 	_skipif_check_extensions(array("mysqli"));
-	_skipif_no_plugin($host, $user, $passwd, $db, $port, $socket);
 
 	require_once('table.inc');
 	$ret = my_memcache_config::init(array('f1'), true, '|');
@@ -33,12 +32,12 @@ Don't connect to memcached host
 			var_dump($row);
 		}
 	} else {
-		printf("[003] %s, [%d] %s\n", var_export($res, true), $link->errno, $link->error);
+		printf("[003] %s, [%d] '%s'\n", var_export($res, true), $link->errno, $link->error);
 	}
 
 	print "done!";
 ?>
 --EXPECTF--
 Warning: mysqli::query(): libmemcached error code 20 in %s on line %d
-[003] false, [0]
+[003] false, [0] ''
 done!

@@ -1,4 +1,6 @@
 <?php
+require_once("connect.inc");
+
 function _skipif_check_extensions($extensions) {
 	if (!is_array($extensions))
 		$extensions = array($extensions);
@@ -11,13 +13,13 @@ function _skipif_check_extensions($extensions) {
 }
 
 function _skipif_connect($host, $user, $passwd, $db, $port, $socket) {
-	if (!$link = mst_mysqli_connect($host, $user, $passwd, $db, $port, $socket))
+	if (!$link = my_mysqli_connect($host, $user, $passwd, $db, $port, $socket))
 		die(sprintf("SKIP (h=%s,u=%s,p=%s,db=%s,P=%s,S=%s), [%d] %s\n",
 			$host, $user, ($passwd) ? "***" : '', $db, $port, $socket, mysqli_connect_errno(), mysqli_connect_error()));
 }
 
 function _skipif_no_plugin($host, $user, $passwd, $db, $port, $socket) {
-	if (!$link = mst_mysqli_connect($host, $user, $passwd, $db, $port, $socket))
+	if (!$link = my_mysqli_connect($host, $user, $passwd, $db, $port, $socket))
 		die(sprintf("SKIP (h=%s,u=%s,p=%s,db=%s,P=%s,S=%s), [%d] %s\n",
 			$host, $user, ($passwd) ? "***" : '', $db, $port, $socket, mysqli_connect_errno(), mysqli_connect_error()));
 
