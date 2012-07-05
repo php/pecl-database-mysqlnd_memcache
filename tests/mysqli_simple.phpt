@@ -9,7 +9,7 @@ _skipif_connect($host, $user, $passwd, $db, $port, $socket);
 --FILE--
 <?php
 require 'table.inc';
-init_memcache_config('f1', true, '|');
+my_memcache_config::init(array('f1'), true, '|');
 
 if (!$link = my_mysqli_connect($host, $user, $passwd, $db, $port, $socket)) {
 	die("Connection failed");
