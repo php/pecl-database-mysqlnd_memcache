@@ -2,15 +2,18 @@
 mysqlnd_memcache_get_config()
 --SKIPIF--
 <?php
-require('skipif.inc');
-_skipif_check_extensions(array("mysql"));
-_skipif_no_plugin($host, $user, $passwd, $db, $port, $socket);
+	require('skipif.inc');
+	_skipif_check_extensions(array("mysql"));
+
+	require_once('table.inc');
+	$ret = my_memcache_config::init(array('f1', 'f2', 'f3'), true, '|');
+	if (true !== $ret) {
+		die(sprintf("SKIP %s\n", $ret));
+	}
 ?>
 --FILE--
 <?php
 	require 'table.inc';
-	init_memcache_config('f1,f2,f3', true, '|');
-
 	if (!$link = my_mysql_connect($host, $user, $passwd, $db, $port, $socket)) {
 		printf("[001] [%d] %s\n", mysql_errno(), mysql_error());
 	}
@@ -33,10 +36,12 @@ _skipif_no_plugin($host, $user, $passwd, $db, $port, $socket);
 		printf("[004] No pattern entry. Dumping config.\n");
 		var_dump($config);
 	} else {
-		if (strlen($config['pattern']) < 20) {
-			printf("[005] Default pattern suspiciously short. Dumping config\.n");
-			var_dump($config);
+		if ($config['pattern'] != MYSQLND_MEMCACHE_DEFAULT_REGEXP) {
+			printf("[005] Default pattern '%s' != '%s' (pattern from config)\n",
+				MYSQLND_MEMCACHE_DEFAULT_REGEXP,
+				$config['pattern']);
 		}
+
 		unset($config['pattern']);
 	}
 
