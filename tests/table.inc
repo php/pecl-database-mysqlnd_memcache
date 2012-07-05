@@ -12,10 +12,10 @@ class my_memcache_config {
 			self::$my_memcache_config = new my_memcache_config();
 		}
 
-		if (!($ret = self::$my_memcache_config->create_test_table($id_is_string)))
+		if (is_string($ret = self::$my_memcache_config->create_test_table($id_is_string)))
 			return $ret;
 
-		if (!($res = self::$my_memcache_config->update_container($value_columns, $separator)))
+		if (is_string($res = self::$my_memcache_config->update_container($value_columns, $separator)))
 			return $ret;
 
 		return true;
@@ -35,7 +35,7 @@ class my_memcache_config {
 		return true;
 	}
 
-	public function create_test_table($id_is_string = false) {
+	public function create_test_table($id_is_string = false, $max_retry = 1) {
 
 		$this->connect();
 		if (!$this->link->query("DROP TABLE IF EXISTS mymem_test")) {
@@ -55,6 +55,18 @@ class my_memcache_config {
 			($id_is_string) ? "CHAR(4)" : "INT");
 
 		if (!$this->link->query($sql)) {
+
+			if (($max_retry > 0) && (1050 == $this->link->errno)) {
+				/*
+					In the early days InnoDB did a background drop and it required
+					a plugin reload to get re-create a table
+				*/
+				if (is_string($ret = $this->reload_plugin()))
+					return $ret;
+
+				$max_retry--;
+				return $this->create_test_table($id_is_string, $max_retry);
+			}
 			return sprintf("(%s) [%d] %s\n", $sql, $this->link->errno, $this->link->error);
 		}
 
@@ -127,8 +139,14 @@ class my_memcache_config {
 			return sprintf("%s, [%d] %s\n", $sql, $this->link->errno, $this->link->error);
 		}
 
+		return $this->reload_plugin();
+	}
+
+
+	public function reload_plugin() {
 		/* As of today, there seems no other way to notify the plugin of reloading its config */
 		$this->link->query("UNINSTALL PLUGIN daemon_memcached");
+		sleep(1);
 
 		if (!$this->link->query("INSTALL PLUGIN  daemon_memcached SONAME 'libmemcached.so'")) {
 			return sprintf("INSTALL PLUGIN failed, [%d] %s\n", $this->link->errno, $this->link->error);
