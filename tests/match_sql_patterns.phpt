@@ -3,48 +3,59 @@ MySQL Query pattern matching
 --SKIPIF--
 <?php
 require('skipif.inc');
-_skipif_check_extensions(array("mysqli"));
-_skipif_no_plugin($host, $user, $passwd, $db, $port, $socket);
 ?>
 --FILE--
 <?php
-require_once('connect.inc');
-if (!$link = my_mysqli_connect($host, $user, $passwd, $db, $port, $socket)) {
-	die("Connection failed");
-}
-
-$memc = my_memcache_connect($memcache_host, $memcache_port);
-mysqlnd_memcache_set($link, $memc);
-
-$regexp = mysqlnd_memcache_get_config($link)["pattern"];
-
 $sqls = [
-    "SELECT f FROM t WHERE i = 1",
-    "SELECT f FROM t WHERE i = 'v'",
-    'SELECT f FROM t WHERE i = "v"',
-    "   	SELECT 	f1, f2,f3 FROM f WHERE id = 1",
-    "SELECT f1, f2, f3 FROM t WHERE id = 1 AND foo = 2",
+    "SELECT column FROM table WHERE key = 1",
+    "SELECT column FROM table WHERE key = 'v'",
+    'SELECT column FROM table WHERE key = "v"',
+    "SELECT column1, column2, column3 FROM table WHERE id = 1",
+    "SELECT column1, column2, column3 FROM table WHERE id = 1 AND foo = 2",
 ];
 
+printf("Default regexp: %s\n", MYSQLND_MEMCACHE_DEFAULT_REGEXP);
+
 foreach ($sqls as $sql) {
-    echo $sql."\n";
-    var_dump(preg_match($regexp, $sql));
-    echo "\n";
+	if (preg_match(MYSQLND_MEMCACHE_DEFAULT_REGEXP, $sql, $matches)) {
+		printf("'%s' - match\n", $sql);
+		foreach ($matches as $k => $v) {
+			printf(" %02d: '%s'\n", $k, $v);
+		}
+	} else {
+		printf("'%s' - no match\n", $sql);
+	}
 }
+
+print "done!";
 ?>
 --EXPECT--
-SELECT f FROM t WHERE i = 1
-int(1)
-
-SELECT f FROM t WHERE i = 'v'
-int(1)
-
-SELECT f FROM t WHERE i = "v"
-int(1)
-
-   	SELECT 	f1, f2,f3 FROM f WHERE id = 1
-int(1)
-
-SELECT f1, f2, f3 FROM t WHERE id = 1 AND foo = 2
-int(0)
-
+Default regexp: /^\s*SELECT\s*(.+?)\s*FROM\s*`?([a-z0-9_]+)`?\s*WHERE\s*`?([a-z0-9_]+)`?\s*=\s*(?(?=["'])["']([^"']*)["']|([0-9e\.]*))\s*$/is
+'SELECT column FROM table WHERE key = 1' - match
+ 00: 'SELECT column FROM table WHERE key = 1'
+ 01: 'column'
+ 02: 'table'
+ 03: 'key'
+ 04: ''
+ 05: '1'
+'SELECT column FROM table WHERE key = 'v'' - match
+ 00: 'SELECT column FROM table WHERE key = 'v''
+ 01: 'column'
+ 02: 'table'
+ 03: 'key'
+ 04: 'v'
+'SELECT column FROM table WHERE key = "v"' - match
+ 00: 'SELECT column FROM table WHERE key = "v"'
+ 01: 'column'
+ 02: 'table'
+ 03: 'key'
+ 04: 'v'
+'SELECT column1, column2, column3 FROM table WHERE id = 1' - match
+ 00: 'SELECT column1, column2, column3 FROM table WHERE id = 1'
+ 01: 'column1, column2, column3'
+ 02: 'table'
+ 03: 'id'
+ 04: ''
+ 05: '1'
+'SELECT column1, column2, column3 FROM table WHERE id = 1 AND foo = 2' - no match
+done!
