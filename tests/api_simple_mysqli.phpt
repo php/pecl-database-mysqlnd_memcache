@@ -1,5 +1,5 @@
 --TEST--
-Simple mysql test
+Simple mysqli test
 --SKIPIF--
 <?php
 	require('skipif.inc');
@@ -14,7 +14,7 @@ Simple mysql test
 ?>
 --FILE--
 <?php
-	require_once("connect.inc");
+	require_once('connect.inc');
 	function debug_callback() {
 		printf("%s()", __FUNCTION__);
 
@@ -24,8 +24,9 @@ Simple mysql test
 		}
 	}
 
-	if (!$link = my_mysql_connect($host, $user, $passwd, $db, $port, $socket)) {
-		printf("[001] [%d] %s\n", mysql_errno(), mysql_error());
+	$link = my_mysqli_connect($host, $user, $passwd, $db, $port, $socket);
+	if ($link->connect_errno) {
+		printf("[001] [%d] %s\n", $link->connect_errno, $link->connect_error);
 	}
 
 	$memc = my_memcache_connect($memcache_host, $memcache_port);
@@ -41,26 +42,21 @@ Simple mysql test
 	$columns = explode("|", $key1);
 	var_dump($columns);
 
-	if (!$res = (mysql_query("SELECT f1, f2, f3 FROM mymem_test WHERE id = 'key1'", $link))) {
-		printf("[004] [%d] %s\n", mysql_errno($link), mysql_error($link));
-	} else {
-		$row = mysql_fetch_row($res);
-		if ($columns != $row) {
-			printf("[005] Native and SQL results differ\n");
-			var_dump(array_diff($columns, $row));
+
+	if ($res = $link->query("SELECT f1, f2, f3 FROM mymem_test WHERE id = 'key1'")) {
+		$row = $res->fetch_row();
+
+		if ($row != $columns) {
+			printf("[005] Native Memcache and SQL results differ\n");
+			var_dump(array_diff($row, $columns));
 		}
 
-		/* more results ? */
-		var_dump(mysql_fetch_assoc($res));
+		var_dump($res->fetch_assoc());
 
-	}
-
-	/* For the fun of it and for fetch_assoc */
-	if (!$res = (mysql_query("SELECT f1, f2, f3 FROM mymem_test WHERE id = 'key1'", $link))) {
-		printf("[006] [%d] %s\n", mysql_errno($link), mysql_error($link));
 	} else {
-		var_dump(mysql_fetch_assoc($res));
+		printf("[004] %d %s\n", $link->errno, $link->error);
 	}
+
 	print "done!";
 ?>
 --EXPECT--
@@ -74,13 +70,4 @@ array(3) {
 }
 debug_callback() 00: boolean / true
 NULL
-debug_callback() 00: boolean / true
-array(3) {
-  ["f1"]=>
-  string(1) "a"
-  ["f2"]=>
-  string(1) "b"
-  ["f3"]=>
-  string(1) "c"
-}
 done!
