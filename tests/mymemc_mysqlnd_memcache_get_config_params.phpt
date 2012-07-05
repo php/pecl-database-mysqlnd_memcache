@@ -4,7 +4,6 @@ mysqlnd_memcache_get_config() - parameter
 <?php
 require('skipif.inc');
 _skipif_check_extensions(array("mysqli"));
-_skipif_no_plugin($host, $user, $passwd, $db, $port, $socket);
 ?>
 --FILE--
 <?php

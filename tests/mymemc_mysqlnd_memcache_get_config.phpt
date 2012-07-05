@@ -3,7 +3,7 @@ mysqlnd_memcache_get_config()
 --SKIPIF--
 <?php
 	require('skipif.inc');
-	_skipif_check_extensions(array("mysql"));
+	_skipif_check_extensions(array("mysql", "mysqli"));
 
 	require_once('table.inc');
 	$ret = my_memcache_config::init(array('f1', 'f2', 'f3'), true, '|');

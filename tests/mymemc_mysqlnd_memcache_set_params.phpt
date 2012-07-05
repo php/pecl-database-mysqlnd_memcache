@@ -2,7 +2,14 @@
 mysqlnd_memcache_set(), params
 --SKIPIF--
 <?php
-require('skipif.inc');
+	require('skipif.inc');
+	_skipif_check_extensions(array("mysqli"));
+
+	require_once('table.inc');
+	$ret = my_memcache_config::init(array('f1', 'f2', 'f3'), true, '|');
+	if (true !== $ret) {
+		die(sprintf("SKIP %s\n", $ret));
+	}
 ?>
 --FILE--
 <?php
@@ -25,7 +32,6 @@ if (NULL !== ($tmp = mysqlnd_memcache_set("a", "b"))) {
 	printf("[004] Expecting NULL got %s\n", var_export($tmp, true));
 }
 
-init_memcache_config('f1,f2,f3', true, '|');
 if (!$link = my_mysql_connect($host, $user, $passwd, $db, $port, $socket)) {
 	printf("[005] [%d] %s\n", mysql_errno(), mysql_error());
 }
