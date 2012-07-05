@@ -83,7 +83,6 @@ class my_memcache_config {
 			return sprintf("SHOW PLUGINS failed, [%d] %s\n", $this->link->errno, $this->link->error);
 		}
 		while ($row = $res->fetch_assoc()) {
-
 			if (($row['Name'] == 'daemon_memcached') && ($row['Status'] == 'ACTIVE')) {
 				$plugin_loaded = true;
 				break;
@@ -129,15 +128,27 @@ class my_memcache_config {
 		}
 
 		/* As of today, there seems no other way to notify the plugin of reloading its config */
-		if (!$this->link->query("UNINSTALL PLUGIN daemon_memcached")) {
-			return sprintf("UNINSTALL PLUGIN failed, [%d] %s\n", $this->link->errno, $this->link->error);
-		}
+		$this->link->query("UNINSTALL PLUGIN daemon_memcached");
 
 		if (!$this->link->query("INSTALL PLUGIN  daemon_memcached SONAME 'libmemcached.so'")) {
 			return sprintf("INSTALL PLUGIN failed, [%d] %s\n", $this->link->errno, $this->link->error);
 		}
 
-		return true;
+		$plugin_loaded = false;
+		if (!($res = $this->link->query("SHOW PLUGINS"))) {
+			return sprintf("SHOW PLUGINS failed, [%d] %s\n", $this->link->errno, $this->link->error);
+		}
+		while ($row = $res->fetch_assoc()) {
+			if (($row['Name'] == 'daemon_memcached') && ($row['Status'] == 'ACTIVE')) {
+				$plugin_loaded = true;
+				break;
+			}
+		}
+
+		if (!$plugin_loaded)
+			return sprintf("Failed to install pluginn");
+
+		return $plugin_loaded;
 	}
 
 	public function container_needs_update($value_columns, $separator = '|') {
