@@ -1,7 +1,6 @@
 <?php
 require_once('connect.inc');
 
-
 class my_memcache_config {
 	protected $innodb_schema = 'innodb_memcache';
 	protected static $my_memcache_config = NULL;
@@ -18,6 +17,8 @@ class my_memcache_config {
 
 		if (!($res = self::$my_memcache_config->update_container($value_columns, $separator)))
 			return $ret;
+
+		return true;
 	}
 
 	public function connect($link = NULL) {
@@ -26,8 +27,7 @@ class my_memcache_config {
 		if (!$link && !$this->link) {
 			$link = my_mysqli_connect($host, $user, $passwd, $db, $port, $socket);
 			if (mysqli_connect_errno()) {
-				printf("[%d] %s\n", mysqli_connect_errno(), mysqli_connect_error());
-				return false;
+				return sprintf("[%d] %s\n", mysqli_connect_errno(), mysqli_connect_error());
 			}
 			$this->link = $link;
 		}
@@ -55,8 +55,7 @@ class my_memcache_config {
 			($id_is_string) ? "CHAR(4)" : "INT");
 
 		if (!$this->link->query($sql)) {
-			printf("(%s) [%d] %s\n", $sql, $this->link->errno, $this->link->error);
-			return false;
+			return sprintf("(%s) [%d] %s\n", $sql, $this->link->errno, $this->link->error);
 		}
 
 		$sql = sprintf("INSERT INTO mymem_test(id, f1, f2, f3) VALUES
@@ -68,8 +67,7 @@ class my_memcache_config {
 			($id_is_string) ? "key" : "");
 
 		if (!$this->link->query($sql)) {
-			printf("(%s) [%d] %s\n", $sql, $this->link->errno, $this->link->error);
-			return false;
+			return sprintf("(%s) [%d] %s\n", $sql, $this->link->errno, $this->link->error);
 		}
 
 		return true;
@@ -82,8 +80,7 @@ class my_memcache_config {
 
 		$plugin_loaded = false;
 		if (!($res = $this->link->query("SHOW PLUGINS"))) {
-			printf("SHOW PLUGINS failed, [%d] %s\n", $this->link->errno, $this->link->error);
-			return false;
+			return sprintf("SHOW PLUGINS failed, [%d] %s\n", $this->link->errno, $this->link->error);
 		}
 		while ($row = $res->fetch_assoc()) {
 			if (($row['Name'] == 'daemon_memcached') && ($row['Status'] == 'ACTIVE')) {
@@ -95,9 +92,9 @@ class my_memcache_config {
 		if (!$plugin_loaded) {
 			/* Plugin needs to be installed, we don't need to check config */
 			$update_needed = $this->container_needs_update($value_columns, $separator);
-			if (NULL === $update_needed) {
+			if (is_string($update_needed)) {
 				/* error */
-				return false;
+				return $update_needed;
 			} else if (false === $update_needed) {
 				/* Yeah, we don't need to update the config and reload the plugin */
 				return true;
@@ -119,8 +116,7 @@ class my_memcache_config {
 			$this->link->real_escape_string(implode(',', $value_columns)));
 
 		if (!$this->link->query($sql)) {
-			printf("%s, [%d] %s\n", $sql, $this->link->errno, $this->link->error);
-			return false;
+			return sprintf("%s, [%d] %s\n", $sql, $this->link->errno, $this->link->error);
 		}
 
 		$sql = sprintf("REPLACE INTO %s.config_options(name, value) VALUES ('separator', '%s')",
@@ -129,19 +125,16 @@ class my_memcache_config {
 
 
 		if (!$this->link->query($sql)) {
-			printf("%s, [%d] %s\n", $sql, $this->link->errno, $this->link->error);
-			return false;
+			return sprintf("%s, [%d] %s\n", $sql, $this->link->errno, $this->link->error);
 		}
 
 		/* As of today, there seems no other way to notify the plugin of reloading its config */
 		if (!$this->link->query("UNINSTALL PLUGIN daemon_memcached")) {
-			printf("UNINSTALL PLUGIN failed, [%d] %s\n", $this->link->errno, $this->link->error);
-			return false;
+			return sprintf("UNINSTALL PLUGIN failed, [%d] %s\n", $this->link->errno, $this->link->error);
 		}
 
 		if (!$this->link->query("INSTALL PLUGIN  daemon_memcached SONAME 'libmemcached.so'")) {
-			printf("INSTALL PLUGIN failed, [%d] %s\n", $this->link->errno, $this->link->error);
-			return false;
+			return sprintf("INSTALL PLUGIN failed, [%d] %s\n", $this->link->errno, $this->link->error);
 		}
 
 		return true;
@@ -182,8 +175,7 @@ class my_memcache_config {
 			}
 			$update_needed = (empty($columns) && empty($value_columns)) ? false : true;
 		} else if ($this->link->errno) {
-			printf("%s, [%d] %s\n", $sql, $this->link->errno, $this->link->error);
-			return NULL;
+			return sprintf("%s, [%d] %s\n", $sql, $this->link->errno, $this->link->error);
 		}
 
 		if (!$update_needed) {
@@ -195,8 +187,7 @@ class my_memcache_config {
 				$row = $res->fetch_assoc();
 				$update_needed = ($row['value'] == $separator) ? false : true;
 			} else if ($this->link->errno) {
-				printf("%s, [%d] %s\n", $sql, $this->link->errno, $this->link->error);
-				return NULL;
+				return sprintf("%s, [%d] %s\n", $sql, $this->link->errno, $this->link->error);
 			}
 		}
 

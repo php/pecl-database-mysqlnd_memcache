@@ -2,27 +2,43 @@
 Don't connect to memcached host
 --SKIPIF--
 <?php
-require('skipif.inc');
-_skipif_check_extensions(array("mysqli"));
-_skipif_no_plugin($host, $user, $passwd, $db, $port, $socket);
+	require('skipif.inc');
+	_skipif_check_extensions(array("mysqli"));
+	_skipif_no_plugin($host, $user, $passwd, $db, $port, $socket);
+
+	require_once('table.inc');
+	$ret = my_memcache_config::init(array('f1'), true, '|');
+	if (true !== $ret) {
+		die(sprintf("SKIP %s\n", $ret));
+	}
 ?>
 --FILE--
 <?php
-require_once('connect.inc');
-require_once('table.inc');
-init_memcache_config('f1,f2,f3', true, '|');
-if (!$link = my_mysqli_connect($host, $user, $passwd, $db, $port, $socket)) {
-	die("Connection failed");
-}
+	require_once('connect.inc');
 
-$memc = new memcached();
-mysqlnd_memcache_set($link, $memc);
+	$link = my_mysqli_connect($host, $user, $passwd, $db, $port, $socket);
+	if ($link->connect_errno) {
+		printf("[001] [%d] %s\n", $link->connect_errno, $link->connect_error);
+	}
 
-echo "Run query:\n";
-var_dump($link->query("SELECT f1, f2, f3 FROM mymem_test WHERE id = 1"));
+	/* Unconnected memcache */
+	$memc = new memcached();
+	if (!mysqlnd_memcache_set($link, $memc)) {
+		printf("[002] Failed to register connection\n");
+	}
+
+	/* Query is value but no memcache connection */
+	if ($res = $link->query("SELECT f1 FROM mymem_test WHERE id = 1")) {
+		while ($row = $res->fetch_assoc()) {
+			var_dump($row);
+		}
+	} else {
+		printf("[003] %s, [%d] %s\n", var_export($res, true), $link->errno, $link->error);
+	}
+
+	print "done!";
 ?>
 --EXPECTF--
-Run query:
-
 Warning: mysqli::query(): libmemcached error code 20 in %s on line %d
-bool(false)
+[003] false, [0]
+done!
