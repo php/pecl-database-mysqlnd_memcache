@@ -8,7 +8,10 @@ require_once('skipif.inc');
 <?php
 	$expected = array(
 		"MYSQLND_MEMCACHE_DEFAULT_REGEXP" => true,
+		"MYSQLND_MEMCACHE_VERSION" => true,
+		"MYSQLND_MEMCACHE_VERSION_ID" => true,
 	);
+
 
 	$constants = get_defined_constants(true);
 	$constants = (isset($constants['mysqlnd_memcache'])) ? $constants['mysqlnd_memcache'] : array();
@@ -31,4 +34,6 @@ require_once('skipif.inc');
 ?>
 --EXPECT--
 MYSQLND_MEMCACHE_DEFAULT_REGEXP = '/^\s*SELECT\s*(.+?)\s*FROM\s*`?([a-z0-9_]+)`?\s*WHERE\s*`?([a-z0-9_]+)`?\s*=\s*(?(?=["'])["']([^"']*)["']|([0-9e\.]*))\s*$/is'
+MYSQLND_MEMCACHE_VERSION = '1.0.0-alpha'
+MYSQLND_MEMCACHE_VERSION_ID = '10000'
 done!

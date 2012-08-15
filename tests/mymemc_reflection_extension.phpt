@@ -65,7 +65,7 @@ require('skipif.inc');
 ?>
 --EXPECT--
 Name: mysqlnd_memcache
-Version: 0.1.0
+Version: 1.0.0-alpha
 Dependencies:
   memcached - Required
   pcre - Required

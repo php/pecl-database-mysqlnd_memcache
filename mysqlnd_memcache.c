@@ -41,7 +41,8 @@
 ZEND_DECLARE_MODULE_GLOBALS(mysqlnd_memcache)
  */
 
-#define MYSQLND_MEMCACHE_VERSION "0.1.0"
+#define MYSQLND_MEMCACHE_VERSION "1.0.0-alpha"
+#define MYSQLND_MEMCACHE_VERSION_ID 10000
 
 static unsigned int mysqlnd_memcache_plugin_id;
 
@@ -187,13 +188,13 @@ static enum_func_status mymem_result_fetch_row(MYSQLND_RES *result, void *param,
 	if (result_data->read) {
 		return FAIL;
 	}
-	
+
 	result_data->read = 1;
-	
+
 	if (!param) {
 		return FAIL;
 	}
-	
+
 //	pcre_cache_entry *pattern = pcre_get_compiled_regex_cache("/\\W*,\\W*/", sizeof("/\\W*,\\W*/")-1 TSRMLS_CC);
 //	php_pcre_split_impl(pattern, result_data->data, result_data->data_len, row, 0, 0 TSRMLS_CC);
 /*
@@ -207,9 +208,9 @@ static enum_func_status mymem_result_fetch_row(MYSQLND_RES *result, void *param,
 		Z_ADDREF_P(data);
 		zend_hash_add(Z_ARRVAL_P(row), connection_data->mapping.id_field_name, strlen(connection_data->mapping.id_field_name)+1, &data, sizeof(zval *), NULL);
 	}
-*/	
+*/
 	*fetched_anything = TRUE;
-	
+
 	return PASS;
 }
 /* }}} */
@@ -248,16 +249,16 @@ static void mymem_result_fetch_into(MYSQLND_RES *result, unsigned int flags, zva
 	if (result_data->read || !result_data->data) {
 		return;
 	}
-	
+
 	result_data->read = 1;
-	
+
 	value = strtok_r(result_data->data, result_data->mapping->separator, &value_lasts);
 
 	array_init(return_value);
 	while (value) {
 		ALLOC_INIT_ZVAL(data);
 		ZVAL_STRING(data, value, 1);
-		
+
 		if (flags & MYSQLND_FETCH_NUM) {
 			Z_ADDREF_P(data);
 			zend_hash_next_index_insert(Z_ARRVAL_P(return_value), &data, sizeof(zval *), NULL);
@@ -267,7 +268,7 @@ static void mymem_result_fetch_into(MYSQLND_RES *result, unsigned int flags, zva
 			zend_hash_add(Z_ARRVAL_P(return_value), result_data->mapping->value_columns.v[i], strlen(result_data->mapping->value_columns.v[i])+1, &data, sizeof(zval *), NULL);
 		}
 		zval_ptr_dtor(&data);
-		
+
 		value = strtok_r(NULL, result_data->mapping->separator, &value_lasts);
 		i++;
 	}
@@ -294,7 +295,7 @@ static MYSQLND_ROW_C mymem_result_fetch_row_c(MYSQLND_RES *result TSRMLS_DC) /* 
 	if (result_data->read || !result_data->data) {
 		return NULL;
 	}
-	
+
 	result_data->read = 1;
 	retval = mnd_malloc(field_count * sizeof(char*));
 
@@ -317,7 +318,7 @@ static void mymem_result_fetch_all(MYSQLND_RES *result, unsigned int flags, zval
 {
 	zval *row;
 	mymem_result_data *result_data_p = *(mymem_result_data **)mysqlnd_plugin_get_plugin_result_data(result, mysqlnd_memcache_plugin_id);
-		
+
 	array_init(return_value);
 	if (result_data_p->data) {
 		ALLOC_INIT_ZVAL(row);
@@ -511,9 +512,9 @@ static zval ** mymem_verify_patterns(MYSQLND_CONN_DATA *conn, mymem_connection_d
 	int key_len;
 
 	INIT_ZVAL(return_value); /* This will be a long or bool, no need for a zval_dtor */
-	
+
 	php_pcre_match_impl(connection_data->regexp.pattern, query, query_len, &return_value, subpats, 0, 0, 0, 0 TSRMLS_CC);
-	
+
 	if (!Z_LVAL(return_value)) {
 		return NULL;
 	}
@@ -552,7 +553,7 @@ static zval ** mymem_verify_patterns(MYSQLND_CONN_DATA *conn, mymem_connection_d
 		return NULL;
 	}
 
-	
+
 	return value;
 }
 /* }}} */
@@ -564,10 +565,10 @@ static void mymem_fill_field_data(mymem_result_data *result_data) /* {{{ */
 	result_data->current_field_offset = 0;
 	result_data->fields = safe_emalloc(field_count, sizeof(MYSQLND_FIELD), 0);
 	memset(result_data->fields, 0, field_count*sizeof(MYSQLND_FIELD));
-	
+
 	result_data->lengths = safe_emalloc(field_count, sizeof(unsigned long), 0);
 	memset(result_data->lengths, 0, field_count*sizeof(unsigned long));
-	
+
 	for (i = 0; i < field_count; ++i) {
 		result_data->fields[i].db = result_data->mapping->schema_name;
 		result_data->fields[i].db_length = strlen(result_data->mapping->schema_name);
@@ -609,7 +610,7 @@ static enum_func_status MYSQLND_METHOD(mymem_conn, query)(MYSQLND_CONN_DATA *con
 	zval **query_key = NULL;
 	mymem_mapping **mapping;
 	mymem_connection_data_data *connection_data = *mysqlnd_plugin_get_plugin_connection_data_data(conn, mysqlnd_memcache_plugin_id);
-	
+
 	INIT_ZVAL(subpats);
 
 	if (connection_data) {
@@ -622,7 +623,7 @@ static enum_func_status MYSQLND_METHOD(mymem_conn, query)(MYSQLND_CONN_DATA *con
 	if (query_key) {
 		void **result_data_vpp;
 		mymem_result_data *result_data_p;
-		
+
 		uint32_t flags;
 		size_t value_len;
 		memcached_return error;
@@ -661,30 +662,30 @@ static enum_func_status MYSQLND_METHOD(mymem_conn, query)(MYSQLND_CONN_DATA *con
 			conn->current_result->m.free_result(conn->current_result, TRUE TSRMLS_CC);
 			mnd_efree(conn->current_result);
 		}
-		
+
 		conn->current_result = mysqlnd_result_init(1, conn->persistent TSRMLS_CC);
 		result_data_vpp = mysqlnd_plugin_get_plugin_result_data(conn->current_result, mysqlnd_memcache_plugin_id);
 		*result_data_vpp = emalloc(sizeof(mymem_result_data));
 		result_data_p = *(mymem_result_data **)result_data_vpp;
-		
+
 		result_data_p->data = res;
 		result_data_p->data_len = value_len;
 		result_data_p->read = 0;
 		result_data_p->mapping = *mapping;
-		
+
 		mymem_fill_field_data(result_data_p);
-		
+
 		conn->upsert_status->affected_rows = (uint64_t)-1;
 		conn->upsert_status->warning_count = 0;
 		conn->upsert_status->server_status = 0;
-		
+
 		conn->current_result->conn = conn;
 		conn->current_result->field_count = 1;
 		conn->current_result->m = mymem_query_result_funcs;
-		
+
 		conn->last_query_type = QUERY_SELECT;
 		CONN_SET_STATE(conn, CONN_FETCHING_DATA);
-		
+
 		return PASS;
 	} else {
 		zval_dtor(&subpats);
@@ -700,13 +701,13 @@ static void mymem_free_connection_data_data(MYSQLND_CONN_DATA *conn TSRMLS_DC) /
 
 	if (conn_data) {
 		zend_hash_destroy(&conn_data->mapping);
-		
+
 		zval_ptr_dtor(&conn_data->connection.zv);
 
 		if (conn_data->regexp.str_is_allocated) {
 			efree(conn_data->regexp.str);
 		}
-		
+
 		if (conn_data->callback.exists) {
 			zval_ptr_dtor(&conn_data->callback.fci.function_name);
 			conn_data->callback.fci.function_name = NULL;
@@ -737,13 +738,13 @@ static void mymem_split_columns(mymem_mapping *mapping, char *names, int names_l
 {
 	int i = 0;
 	char *pos_from = names, *pos_to;
-	
+
 	int count = count_char(names, ',') + 1;
-	
+
 	mapping->value_columns.num = count;
 	pos_to = mapping->value_columns.to_free = emalloc(names_len + 1);
 	mapping->value_columns.v = safe_emalloc(count, sizeof(char*), 0);
-	
+
 	mapping->value_columns.v[0] = mapping->value_columns.to_free;
 	while (*pos_from) {
 		switch (*pos_from) {
@@ -792,7 +793,7 @@ static char *mymem_pick_mapping_query(MYSQLND *conn, int *query_len TSRMLS_DC) /
 
 	if (FAIL == orig_mysqlnd_conn_query(conn->data, MAPPING_DECISION_QUERY, sizeof(MAPPING_DECISION_QUERY)-1 TSRMLS_CC)) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "MySQL decision query failed: %s", mysqlnd_error(conn));
-		return NULL;	    
+		return NULL;
 	}
 	res = mysqlnd_store_result(conn);
 	if (!res) {
@@ -830,7 +831,7 @@ static char *mymem_pick_mapping_query(MYSQLND *conn, int *query_len TSRMLS_DC) /
 		return NULL;
 	}
 	mysqlnd_free_result(res, 0);
-	
+
 	return retval;
 }
 /* }}} */
@@ -917,12 +918,12 @@ static PHP_FUNCTION(mysqlnd_memcache_set)
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "zO!|s!f", &mysqlnd_conn_zv, &memcached_zv, *memcached_ce, &regexp, &regexp_len, &fci, &fcc) == FAILURE) {
 		return;
 	}
-	
+
 	if (!(mysqlnd_conn = zval_to_mysqlnd(mysqlnd_conn_zv TSRMLS_CC))) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Passed variable is no mysqlnd-based MySQL connection");
 		RETURN_FALSE;
 	}
-	
+
 	mymem_free_connection_data_data(mysqlnd_conn->data TSRMLS_CC);
 	if (!memcached_zv) {
 		RETURN_TRUE;
@@ -934,11 +935,11 @@ static PHP_FUNCTION(mysqlnd_memcache_set)
 	if (!conn_data) {
 		RETURN_FALSE;
 	}
-	
+
 	conn_data->connection.memc = memcached_obj->obj->memc;
 	Z_ADDREF_P(memcached_zv);
 	conn_data->connection.zv = memcached_zv;
-	
+
 	if (regexp) {
 		conn_data->regexp.str = estrndup(regexp, regexp_len);
 		conn_data->regexp.len = regexp_len;
@@ -948,9 +949,9 @@ static PHP_FUNCTION(mysqlnd_memcache_set)
 		conn_data->regexp.len = SQL_PATTERN_LEN;
 		conn_data->regexp.str_is_allocated = 0;
 	}
-	
+
 	conn_data->regexp.pattern = pcre_get_compiled_regex_cache(conn_data->regexp.str, conn_data->regexp.len TSRMLS_CC);
-	
+
 	if (ZEND_NUM_ARGS() == 4) {
 		Z_ADDREF_P(fci.function_name);
 		if (fci.object_ptr) {
@@ -1063,11 +1064,11 @@ static PHP_MINIT_FUNCTION(mysqlnd_memcache)
 {
 	struct st_mysqlnd_conn_data_methods *data_methods;
 	char *pmversion;
-	
-	/* If you have INI entries, uncomment these lines 
+
+	/* If you have INI entries, uncomment these lines
 	REGISTER_INI_ENTRIES();
 	*/
-	
+
 	if (zend_hash_find(CG(class_table), "memcached", sizeof("memcached"), (void **) &memcached_ce)==FAILURE) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "mysqlnd_memcache failed to get Memcached class");
 		return FAILURE;
@@ -1088,9 +1089,11 @@ static PHP_MINIT_FUNCTION(mysqlnd_memcache)
 
 	orig_mysqlnd_conn_dtor = data_methods->dtor;
         data_methods->dtor = MYSQLND_METHOD(mymem_conn, dtor);
-	
+
 	REGISTER_STRINGL_CONSTANT("MYSQLND_MEMCACHE_DEFAULT_REGEXP", SQL_PATTERN, SQL_PATTERN_LEN, CONST_CS | CONST_PERSISTENT);
-	
+	REGISTER_STRING_CONSTANT("MYSQLND_MEMCACHE_VERSION", MYSQLND_MEMCACHE_VERSION, CONST_CS | CONST_PERSISTENT);
+	REGISTER_LONG_CONSTANT("MYSQLND_MEMCACHE_VERSION_ID", MYSQLND_MEMCACHE_VERSION_ID, CONST_CS | CONST_PERSISTENT);
+
 	return SUCCESS;
 }
 /* }}} */
@@ -1102,7 +1105,7 @@ static PHP_MSHUTDOWN_FUNCTION(mysqlnd_memcache)
 	/* uncomment this line if you have INI entries
 	UNREGISTER_INI_ENTRIES();
 	*/
-    
+
 	return SUCCESS;
 }
 /* }}} */
@@ -1111,9 +1114,11 @@ static PHP_MSHUTDOWN_FUNCTION(mysqlnd_memcache)
  */
 static PHP_MINFO_FUNCTION(mysqlnd_memcache)
 {
+	char buf[64];
+
 	php_info_print_table_start();
-	php_info_print_table_header(2, "mysqlnd_memcache support", "enabled v." MYSQLND_MEMCACHE_VERSION);
-	php_info_print_table_row(2, "mysqlnd version", MYSQLND_VERSION);
+	php_info_print_table_header(2, "mysqlnd_memcache support", "enabled");
+    snprintf(buf, sizeof(buf), "%s (%d)", MYSQLND_MEMCACHE_VERSION, MYSQLND_MEMCACHE_VERSION_ID);
 	php_info_print_table_row(2, "php-memcached version", (*memcached_ce)->info.internal.module->version);
 	php_info_print_table_row(2, "libmemcached version", LIBMEMCACHED_VERSION_STRING);
 	php_info_print_table_end();
