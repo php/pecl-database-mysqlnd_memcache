@@ -1,0 +1,234 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+                      "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
+    <title>PHP Manual: Cache integration</title>
+
+</head>
+<body>
+<table width="100%">
+    <tr valign="top">
+        <td style="font-size: smaller;" width="15%">
+<style type="text/css">
+#leftbar {
+	float: left;
+	width: 186px;
+	padding: 5px;
+	font-size: smaller;
+}
+ul.toc {
+	margin: 0px 5px 5px 5px;
+	padding: 0px;
+}
+ul.toc li {
+	font-size: 85%;
+	margin: 1px 0 1px 1px;
+	padding: 1px 0 1px 11px;
+	list-style-type: none;
+	background-repeat: no-repeat;
+	background-position: center left;
+}
+ul.toc li.header {
+	font-size: 115%;
+	padding: 5px 0px 5px 11px;
+	border-bottom: 1px solid #cccccc;
+	margin-bottom: 5px;
+}
+ul.toc li.active {
+	font-weight: bold;
+}
+ul.toc li a {
+	text-decoration: none;
+}
+ul.toc li a:hover {
+	text-decoration: underline;
+}
+</style>
+ <ul class="toc">
+  <li class="header home"><a href="index.html">PHP Manual</a></li>
+  <li class="header up"><a href="funcref.html">Function Reference</a></li>
+  <li class="header up"><a href="refs.database.html">Database Extensions</a></li>
+  <li class="header up"><a href="refs.database.vendors.html">Vendor Specific Database Extensions</a></li>
+  <li class="header up"><a href="set.mysqlinfo.html">MySQL</a></li>
+  <li class="header up"><a href="book.mysqlnd-memcache.html">mysqlnd_memcache</a></li>
+  <li class="header up"><a href="mysqlnd-memcache.concepts.html">Concepts</a></li>
+  <li><a href="mysqlnd-memcache.architecture.html">Architecture</a></li>
+  <li><a href="mysqlnd-memcache.pooling.html">Connection pooling and switching</a></li>
+  <li><a href="mysqlnd-memcache.transaction.html">Transaction handling</a></li>
+  <li><a href="mysqlnd-memcache.errorhandling.html">Error handling</a></li>
+  <li><a href="mysqlnd-memcache.failover.html">Failover</a></li>
+  <li><a href="mysqlnd-memcache.loadbalancing.html">Load balancing</a></li>
+  <li><a href="mysqlnd-memcache.rwsplit.html">Read-write splitting</a></li>
+  <li><a href="mysqlnd-memcache.filter.html">Filter</a></li>
+  <li><a href="mysqlnd-memcache.qos-consistency.html">Service level and consistency</a></li>
+  <li><a href="mysqlnd-memcache.gtid.html">Global transaction IDs</a></li>
+  <li class="active"><a href="mysqlnd-memcache.concept_cache.html">Cache integration</a></li>
+  <li><a href="mysqlnd-memcache.supportedclusters.html">Supported clusters</a></li>
+ </ul>
+
+        </td>
+        <td width="85%">
+            <div style="text-align: center;">
+                <div class="prev" style="text-align: left; float: left;"><a href="mysqlnd-memcache.gtid.html">Global transaction IDs</a></div>
+                <div class="next" style="text-align: right; float: right;"><a href="mysqlnd-memcache.supportedclusters.html">Supported clusters</a></div>
+                <div class="up"><a href="mysqlnd-memcache.concepts.html">Concepts</a></div>
+                <div class="home"><a href="index.html">PHP Manual</a></div>
+            </div><hr/>
+<div id="mysqlnd-memcache.concept_cache" class="section">
+  <h2 class="title">Cache integration</h2>
+  <blockquote><p><b class="note">Note</b>: 
+   <b>Version requirement</b><br />
+   
+    The feature requires used of PECL/mysqlnd_ms 1.3.0-beta or later
+    and PECL/mysqlnd_qc 1.1.0-alpha or new. PECL/mysqlnd_ms must be
+    compiled to support the feature. PHP 5.4.0 or newer is required.
+   <br />
+  </p></blockquote>
+  <blockquote><p><b class="note">Note</b>: 
+   <b>Suitable MySQL clusters</b><br />
+   
+    The feature is targetted for use with MySQL Replication (primary copy).
+    Currently, no other kinds of MySQL clusters are supported. Users
+    of such cluster must control PECL/mysqlnd_qc manually if they are
+    interested in client-side query caching.
+   <br />
+  </p></blockquote>
+  <p class="para">
+   Support for MySQL replication clusters (asynchronous primary copy) is the
+   main focus of PECL/mysqlnd_ms. The slaves of a MySQL replication cluster
+   may or may not reflect the latest updates from the master.
+   Slaves are asynchronous and can lag behind the master. A read from a slave
+   is eventual consistent from a cluster-wide perspective.
+  </p>
+  <p class="para">
+   The same level of consistency is offered by a local cache using time-to-live (TTL)
+   invalidation strategy. Current data or stale data may be served. Eventually, data
+   searched for in the cache is not available and the source of the cache needs to
+   be accessed.
+  </p>
+  <p class="para">
+   Given that both a MySQL Replication slave (asynchronous secondary) and a local
+   TTL-driven cache deliver the same level of service it is possible to transparently
+   replace a remote database access with a local cache access to gain better possiblity.
+  </p>
+  <p class="para">
+   As of PECL/mysqlnd_ms 1.3.0-beta the plugin is capable of transparently controlling
+   PECL/mysqlnd_ms 1.1.0-alpha or newer to cache a read-only query if explicitly
+   allowed by setting an appropriate quality of service through
+   <span class="function">mysqlnd_ms_set_qos</span>. Please, see the
+   <a href="mysqlnd-memcache.quickstart.cache.html" class="link">quickstart</a> for a code example.
+   Both plugins must be installed, PECL/mysqlnd_ms must be compiled to support the
+   cache feature and PHP 5.4.0 or newer has to be used.
+  </p>
+  <p class="para">
+   Applications have full control of cache usage and can request fresh data
+   at any time, if need be. Thec ache usage can be enabled and disabled
+   time during the execution of a script. The cache will be used
+   if <span class="function">mysqlnd_ms_set_qos</span> sets the quality of service
+   to eventual consistency and enables cache usage. Cache usage is disabled by
+   requesting higher consistency levels, for example,
+   session consistency (read your writes). Once the quality of service has been
+   relaxed to eventual consistency the cache can be used again.
+  </p>
+  <p class="para">
+   If caching is enabled for a read-only statement, PECL/mysqlnd_ms may inject
+   <a href="mysqlnd-qc.quickstart.caching.html" class="link">SQL hints to control caching</a>
+   by PECL/mysqlnd_qc. It may modify the SQL statement it got from the application.
+   Subsequent SQL processors are supposed to ignore the SQL hints. A SQL hint is a
+   SQL comment. Comments must not be ignored, for example, by the database server.
+  </p>
+  <p class="para">
+   The TTL of a cache entry is computed on a per statement basis. Applications
+   set an maximum age for the data they want to retrieve using
+   <span class="function">mysqlnd_ms_set_qos</span>. The age sets an approximate upper limit
+   of how many seconds the data returned may lag behind the master.
+  </p>
+  <p class="para">
+   The following logic is used to compute the actual TTL if caching is enabled.
+   The logic takes the estimated slave lag into account for choosing a TTL. If,
+   for example, there are two slaves lagging 5 and 10 seconds behind and the maximum
+   age allowed is 60 seconds, the TTL is set to 50 seconds. Please note, the
+   age setting is no more than an estimated guess.
+   <ul class="itemizedlist">
+    <li class="listitem">
+     <span class="simpara">
+      Check whether the statement is read-only. If not, don&#039;t cache.
+     </span>
+    </li>
+    <li class="listitem">
+     <span class="simpara">
+      If caching is enabled, check the slave lag of all configured slaves.
+      Establish slave connections if none exist so far and lazy connections are
+      used.
+     </span>
+    </li>
+    <li class="listitem">
+     <span class="simpara">
+      Send <i>SHOW SLAVE STATUS</i> to all slaves. Do not wait
+      for the first slave to reply before sending to the second slave. Clients
+      often wait long for replies, thus we send out all requests in a burst before
+      fetching in a second stage.
+     </span>
+    </li>
+    <li class="listitem">
+     <span class="simpara">
+      Loop over all slaves. For every slave wait for its reply. Do not start
+      checking another slave before the currently waited for slave has replied.
+      Check for <i>Slave_IO_Running=Yes</i> and <i>Slave_SQL_Running=Yes</i>.
+      If both conditions hold true, fetch the value of <i>Seconds_Behind_Master</i>.
+      In case of any errors or if conditions fail, set an error on the slave connection.
+      Skip any such slave connection for the rest of connection filtering.
+     </span>
+    </li>
+    <li class="listitem">
+     <span class="simpara">
+      Search for the maximum value of <i>Seconds_Behind_Master</i> from
+      all slaves that passed the previous conditions. Substract the value from
+      the maximum age provided by the user with <span class="function">mysqlnd_ms_set_qos</span>.
+      Use the result as a TTL.
+     </span>
+    </li>
+    <li class="listitem">
+     <span class="simpara">
+      The filtering may sort out all slaves. If so, the maximum age is used as
+      TTL, because the maximum lag found equals zero. It is perfectly valid to
+      sort out all slaves. In the following it is up to subsequent filter
+      to decide what to do. The built-in load balancing filter will pick the
+      master.
+     </span>
+    </li>
+    <li class="listitem">
+     <span class="simpara">
+      Inject the appropriate SQL hints to enable caching by PECL/mysqlnd_qc.
+     </span>
+    </li>
+    <li class="listitem">
+     <span class="simpara">
+      Proceed with the connection filtering, e.g. apply load balancing rules to
+      pick a slave.
+     </span>
+    </li>
+    <li class="listitem">
+     <span class="simpara">
+      PECL/mysqlnd_qc is loaded after PECL/mysqlnd_ms by PHP. Thus, it will see
+      all query modifications of PECL/mysqlnd_ms and cache the query if instructed
+      to do so.
+     </span>
+    </li>
+   </ul>
+  </p>
+  <p class="para">
+   The algorithm may seem expensive. <i>SHOW SLAVE STATUS</i> is a very
+   fast operation. Given a sufficient number of requests and cache hits per second the cost of
+   checking the slaves lag can easily outweight the costs of the cache decision.
+  </p>
+  <p class="para">
+   Suggestions on a better algorithm are always welcome.
+  </p>
+ </div>
+        </td>
+    </tr>
+</table>
+</body>
+</html>

@@ -1,0 +1,143 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+                      "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
+    <title>PHP Manual: Transaction handling</title>
+
+</head>
+<body>
+<table width="100%">
+    <tr valign="top">
+        <td style="font-size: smaller;" width="15%">
+<style type="text/css">
+#leftbar {
+	float: left;
+	width: 186px;
+	padding: 5px;
+	font-size: smaller;
+}
+ul.toc {
+	margin: 0px 5px 5px 5px;
+	padding: 0px;
+}
+ul.toc li {
+	font-size: 85%;
+	margin: 1px 0 1px 1px;
+	padding: 1px 0 1px 11px;
+	list-style-type: none;
+	background-repeat: no-repeat;
+	background-position: center left;
+}
+ul.toc li.header {
+	font-size: 115%;
+	padding: 5px 0px 5px 11px;
+	border-bottom: 1px solid #cccccc;
+	margin-bottom: 5px;
+}
+ul.toc li.active {
+	font-weight: bold;
+}
+ul.toc li a {
+	text-decoration: none;
+}
+ul.toc li a:hover {
+	text-decoration: underline;
+}
+</style>
+ <ul class="toc">
+  <li class="header home"><a href="index.html">PHP Manual</a></li>
+  <li class="header up"><a href="funcref.html">Function Reference</a></li>
+  <li class="header up"><a href="refs.database.html">Database Extensions</a></li>
+  <li class="header up"><a href="refs.database.vendors.html">Vendor Specific Database Extensions</a></li>
+  <li class="header up"><a href="set.mysqlinfo.html">MySQL</a></li>
+  <li class="header up"><a href="book.mysqlnd-memcache.html">mysqlnd_memcache</a></li>
+  <li class="header up"><a href="mysqlnd-memcache.concepts.html">Concepts</a></li>
+  <li><a href="mysqlnd-memcache.architecture.html">Architecture</a></li>
+  <li><a href="mysqlnd-memcache.pooling.html">Connection pooling and switching</a></li>
+  <li class="active"><a href="mysqlnd-memcache.transaction.html">Transaction handling</a></li>
+  <li><a href="mysqlnd-memcache.errorhandling.html">Error handling</a></li>
+  <li><a href="mysqlnd-memcache.failover.html">Failover</a></li>
+  <li><a href="mysqlnd-memcache.loadbalancing.html">Load balancing</a></li>
+  <li><a href="mysqlnd-memcache.rwsplit.html">Read-write splitting</a></li>
+  <li><a href="mysqlnd-memcache.filter.html">Filter</a></li>
+  <li><a href="mysqlnd-memcache.qos-consistency.html">Service level and consistency</a></li>
+  <li><a href="mysqlnd-memcache.gtid.html">Global transaction IDs</a></li>
+  <li><a href="mysqlnd-memcache.concept_cache.html">Cache integration</a></li>
+  <li><a href="mysqlnd-memcache.supportedclusters.html">Supported clusters</a></li>
+ </ul>
+
+        </td>
+        <td width="85%">
+            <div style="text-align: center;">
+                <div class="prev" style="text-align: left; float: left;"><a href="mysqlnd-memcache.pooling.html">Connection pooling and switching</a></div>
+                <div class="next" style="text-align: right; float: right;"><a href="mysqlnd-memcache.errorhandling.html">Error handling</a></div>
+                <div class="up"><a href="mysqlnd-memcache.concepts.html">Concepts</a></div>
+                <div class="home"><a href="index.html">PHP Manual</a></div>
+            </div><hr/>
+<div id="mysqlnd-memcache.transaction" class="section">
+  <h2 class="title">Transaction handling</h2>
+  <p class="para">
+   Transaction handling is fundamentally changed.
+   An SQL transaction is a unit of work that is run on one database server. The
+   unit of work consists of one or more SQL statements.
+  </p>
+  <p class="para">
+   By default the plugin is not aware of SQL transactions. The plugin may
+   switch connections for load balancing at any point in time. Connection
+   switches may happen in the middle of a transaction. This is against the
+   nature of an SQL transaction. By default, the plugin is not transaction safe.
+  </p>
+  <p class="para">
+   Any kind of MySQL load balancer must be hinted about the begin and end of a
+   transaction. Hinting can either be done implicitly by monitoring API calls
+   or using SQL hints. Both options are supported by the plugin, depending on
+   your PHP version. API monitoring requires PHP 5.4.0 or newer. The plugin,
+   like any other MySQL load balancer, cannot detect transaction boundaries based
+   on the MySQL Client Server Protocol. Thus, entirely transparent transaction
+   aware load balancing is not possible. The least intrusive option is API
+   monitoring, which requires little to no application changes, depending
+   on your application.
+  </p>
+  <p class="para">
+   Please, find examples of using SQL hints or the API monitoring in the
+   <a href="mysqlnd-memcache.quickstart.html" class="link">examples section</a>. The
+   details behind the API monitoring, which makes the plugin transaction
+   aware, are described below.
+  </p>
+  <p class="para">
+   Beginning with PHP 5.4.0, the <a href="book.mysqlnd.html" class="link">mysqlnd</a>
+   library allows this plugin to subclass the library C API call
+   <i>set_autocommit()</i>, to detect the status of
+   <i>autocommit</i> mode.
+  </p>
+  <p class="para">
+   The PHP MySQL extensions either issue a query (such as <i>SET AUTOCOMMIT=0|1</i>),
+   or use the mysqlnd library call <i>set_autcommit()</i> to control
+   the <i>autocommit</i> setting. If an extension makes use of
+   <i>set_autocommit()</i>, the plugin can be made transaction aware.
+   Transaction awareness cannot be achieved if using SQL to set the autocommit
+   mode.
+   The library function <i>set_autocommit()</i> is called by the
+   <span class="function">mysqli_autocommit</span> and
+   <i>PDO::setAttribute(PDO::ATTR_AUTOCOMMIT)</i> user API calls.
+  </p>
+  <p class="para">
+   The plugin configuration option
+   <a href="mysqlnd-memcache.plugin-ini-json.html#ini.mysqlnd-memcache-plugin-config-v2.trx-stickiness" class="link">trx_stickiness=master</a>
+   can be used to make the plugin transactional aware. In this mode, the plugin stops load
+   balancing if autocommit becomes disabled, and directs all statements to the master until
+   autocommit gets enabled.
+  </p>
+  <p class="para">
+   An application that does not want to set SQL hints for transactions but wants
+   to use the transparent API monitoring to avoid application changes must make
+   sure that the autocommit settings is changed exclusively through the listed
+   API calls.
+  </p>
+ </div>
+        </td>
+    </tr>
+</table>
+</body>
+</html>

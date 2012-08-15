@@ -1,0 +1,47 @@
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/repository/!svn/ver/325489/phpdoc/en/trunk/reference/mysqlnd_ms/functions
+END
+mysqlnd-ms-set-user-pick-server.xml
+K 25
+svn:wc:ra_dav:version-url
+V 110
+/repository/!svn/ver/322131/phpdoc/en/trunk/reference/mysqlnd_ms/functions/mysqlnd-ms-set-user-pick-server.xml
+END
+mysqlnd-ms-get-last-gtid.xml
+K 25
+svn:wc:ra_dav:version-url
+V 103
+/repository/!svn/ver/325489/phpdoc/en/trunk/reference/mysqlnd_ms/functions/mysqlnd-ms-get-last-gtid.xml
+END
+mysqlnd-ms-match-wild.xml
+K 25
+svn:wc:ra_dav:version-url
+V 100
+/repository/!svn/ver/321919/phpdoc/en/trunk/reference/mysqlnd_ms/functions/mysqlnd-ms-match-wild.xml
+END
+mysqlnd-ms-get-stats.xml
+K 25
+svn:wc:ra_dav:version-url
+V 99
+/repository/!svn/ver/322131/phpdoc/en/trunk/reference/mysqlnd_ms/functions/mysqlnd-ms-get-stats.xml
+END
+mysqlnd-ms-query-is-select.xml
+K 25
+svn:wc:ra_dav:version-url
+V 105
+/repository/!svn/ver/322131/phpdoc/en/trunk/reference/mysqlnd_ms/functions/mysqlnd-ms-query-is-select.xml
+END
+mysqlnd-ms-get-last-used-connection.xml
+K 25
+svn:wc:ra_dav:version-url
+V 114
+/repository/!svn/ver/322165/phpdoc/en/trunk/reference/mysqlnd_ms/functions/mysqlnd-ms-get-last-used-connection.xml
+END
+mysqlnd-ms-set-qos.xml
+K 25
+svn:wc:ra_dav:version-url
+V 97
+/repository/!svn/ver/324646/phpdoc/en/trunk/reference/mysqlnd_ms/functions/mysqlnd-ms-set-qos.xml
+END

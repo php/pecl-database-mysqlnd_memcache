@@ -1,0 +1,185 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+                      "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
+    <title>PHP Manual: Introduction</title>
+
+</head>
+<body>
+<table width="100%">
+    <tr valign="top">
+        <td style="font-size: smaller;" width="15%">
+<style type="text/css">
+#leftbar {
+	float: left;
+	width: 186px;
+	padding: 5px;
+	font-size: smaller;
+}
+ul.toc {
+	margin: 0px 5px 5px 5px;
+	padding: 0px;
+}
+ul.toc li {
+	font-size: 85%;
+	margin: 1px 0 1px 1px;
+	padding: 1px 0 1px 11px;
+	list-style-type: none;
+	background-repeat: no-repeat;
+	background-position: center left;
+}
+ul.toc li.header {
+	font-size: 115%;
+	padding: 5px 0px 5px 11px;
+	border-bottom: 1px solid #cccccc;
+	margin-bottom: 5px;
+}
+ul.toc li.active {
+	font-weight: bold;
+}
+ul.toc li a {
+	text-decoration: none;
+}
+ul.toc li a:hover {
+	text-decoration: underline;
+}
+</style>
+ <ul class="toc">
+  <li class="header home"><a href="index.html">PHP Manual</a></li>
+  <li class="header up"><a href="funcref.html">Function Reference</a></li>
+  <li class="header up"><a href="refs.database.html">Database Extensions</a></li>
+  <li class="header up"><a href="refs.database.vendors.html">Vendor Specific Database Extensions</a></li>
+  <li class="header up"><a href="set.mysqlinfo.html">MySQL</a></li>
+  <li class="header up"><a href="book.mysqlnd-memcache.html">mysqlnd_memcache</a></li>
+  <li class="active"><a href="intro.mysqlnd-memcache.html">Introduction</a></li>
+  <li><a href="mysqlnd-memcache.quickstart.html">Quickstart and Examples</a></li>
+  <li><a href="mysqlnd-memcache.concepts.html">Concepts</a></li>
+  <li><a href="mysqlnd-memcache.setup.html">Installing/Configuring</a></li>
+  <li><a href="mysqlnd-memcache.constants.html">Predefined Constants</a></li>
+  <li><a href="ref.mysqlnd-memcache.html">Mysqlnd_ms Functions</a></li>
+  <li><a href="mysqlnd-memcache.changes.html">Change History</a></li>
+ </ul>
+
+        </td>
+        <td width="85%">
+            <div style="text-align: center;">
+                <div class="prev" style="text-align: left; float: left;"><a href="book.mysqlnd-memcache.html">mysqlnd_memcache</a></div>
+                <div class="next" style="text-align: right; float: right;"><a href="mysqlnd-memcache.quickstart.html">Quickstart and Examples</a></div>
+                <div class="up"><a href="book.mysqlnd-memcache.html">mysqlnd_memcache</a></div>
+                <div class="home"><a href="index.html">PHP Manual</a></div>
+            </div><hr/>
+<div id="intro.mysqlnd-memcache" class="preface">
+  <h1 class="title">Introduction</h1>
+  <p class="para">
+   The mysqlnd memcache plugin (<i>mysqlnd_memcache</i>)
+   maps SQL SELECT statements to InnoDB Memcache plugin accesses.
+   The plugin supports all PHP MySQL extensions that use
+   <a href="book.mysqlnd.html" class="link">mysqlnd</a>.
+  </p>
+  <p class="para">
+   As of version PHP 5.3.3 the MySQL native driver for PHP
+   (<i>mysqlnd</i>)
+   features an internal plugin C API. C plugins, such as the replication and
+   load balancing plugin, can extend the functionality of
+   <a href="book.mysqlnd.html" class="link">mysqlnd</a>.
+  </p>
+  <p class="para">
+   The MySQL native driver for PHP is a C library that ships together with
+   PHP as of PHP 5.3.0. It serves as a drop-in replacement for the
+   MySQL Client Library (libmysql/libmysqlclient). Using mysqlnd has
+   several advantages: no extra downloads are required because it&#039;s bundled with PHP,
+   it&#039;s under the PHP license, there is lower memory consumption in certain cases, and
+   it contains new functionality such as asynchronous queries.
+  </p>
+  <p class="para">
+   Mysqlnd plugins like <i>mysqlnd_mmemcache</i> operate, for the most part,
+   transparently from a user perspective. The mysqlnd memcache
+   plugin supports all PHP applications, and all MySQL PHP extensions.
+   It does not change existing APIs. Therefore, it can easily be used with
+   existing PHP applications.
+  </p>
+  <p class="para">
+   The MySQL InnoDB Memcache plugin adds an key-value style access method
+   for data stored in InnoDB SQL tables through the Memcache protocol.
+   This type of key-value access if often faster than using SQL.
+  </p>
+  <div class="section" id="mysqlnd-memcache.key-features" name="mysqlnd-memcache.key-features">
+   <h2 class="title">Key Features</h2>
+   <p class="para">
+   The key features of PECL/mysqlnd_memcache are as follows.
+   </p>
+   <p class="para">
+    <ul class="itemizedlist">
+     <li class="listitem">
+      <p class="para">
+       Transparent and therefore easy to use.
+      </p>
+      <p class="para">
+       <ul class="itemizedlist">
+        <li class="listitem">
+         <p class="para">
+          Supports all of the PHP MySQL extensions.
+         </p>
+        </li>
+        <li class="listitem">
+         <p class="para">
+          Little to no application changes required, dependent on the required usage scenario.
+         </p>
+        </li>
+       </ul>
+      </p>
+     </li>
+
+     <li class="listitem">
+      <p class="para">
+       Possible performance benefits
+      </p>
+      <p class="para">
+       <ul class="itemizedlist">
+        <li class="listitem">
+         <p class="para">
+          Client-side: light-weight protocol.
+         </p>
+        </li>
+        <li class="listitem">
+         <p class="para">
+          Server-side: no SQL parsing, direct access to the storage.
+         </p>
+        </li>
+        <li class="listitem">
+         <p class="para">
+          Please, run your own benchmarks! Actual performance results are
+          highly dependent on setup and hardware used.
+         </p>
+        </li>
+       </ul>
+      </p>
+     </li>
+    </ul>
+   </p>
+  </div>
+
+  <div class="section" id="mysqlnd-memcache.limitations" name="mysqlnd-memcache.limitations">
+   <h2 class="title">Limitations</h2>
+   <p class="para">
+    The initial version is not binary safe. Due to the way the InnoDB Memcache
+    plugin works there are restrictions related to seperators.
+   </p>
+  </div>
+
+  <div class="section" id="mysqlnd-memcache.name" name="mysqlnd-memcache.name">
+   <h2 class="title">On the name</h2>
+   <p class="para">
+    The shortcut <i>mysqlnd_memcache</i>
+    stands for <i>mysqlnd memcache plugin</i>.
+    Memcache refers to support of the MySQL InnoDB Memcache plugin.
+    The plugin is not related to Memcached.
+   </p>
+  </div>
+ </div>
+        </td>
+    </tr>
+</table>
+</body>
+</html>

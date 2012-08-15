@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- $Revision: 326346 $ -->
+<chapter xml:id="mysqlnd-memcache.quickstart" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
+ <title>Quickstart and Examples</title>
+ <para>
+  The mysqlnd memcache plugin is easy to use.
+  This quickstart will demo typical use-cases, and provide practical advice on getting
+  started.
+ </para>
+ <para>
+  It is strongly recommended to read the reference sections in addition to the
+  quickstart. The quickstart tries to avoid discussing theoretical concepts
+  and limitations. Instead, it will link to the reference sections. It is safe
+  to begin with the quickstart. However, before using the plugin in mission critical
+  environments we urge you to read additionally the background information from the
+  reference sections.
+ </para>
+ <section xml:id="mysqlnd-memcache.quickstart.configuration">
+  <title>Setup</title>
+  <para>
+   The plugin is implemented as a PHP extension. See also the
+   <link linkend="mysqlnd-memcache.installation">installation instructions</link> to
+   install the
+   <link xlink:href="&url.pecl.package;mysqlnd_ms">PECL/mysqlnd_memcache</link> extension.
+  </para>
+  <para>
+   Compile or configure the PHP MySQL extension (API) (<link linkend="ref.mysqli">mysqli</link>,
+   <link linkend="ref.pdo-mysql">PDO_MYSQL</link>,
+   <link linkend="ref.mysql">mysql</link>) that you plan to use with support
+   for the <link linkend="book.mysqlnd">mysqlnd</link> library. PECL/mysqlnd_memcache
+   is a plugin for the mysqlnd library. To use the plugin with any of the PHP
+   MySQL extensions, the extension has to use the mysqlnd library.
+  </para>
+  <para>
+   Then, load the extension into PHP and activate the plugin in the PHP configuration
+   file using the PHP configuration directive named
+   <link linkend="ini.mysqlnd-memcache.enable">mysqlnd_memcache.enable</link>.
+  </para>
+  <para>
+   <example>
+    <title>Enabling the plugin (php.ini)</title>
+    <programlisting role="ini">
+<![CDATA[
+mysqlnd_memcache.enable=1
+]]>
+    </programlisting>
+    </example>
+  </para>
+  <para>
+   <example>
+    <title>Subtitle example</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+/* Load balanced following "myapp" section rules from the plugins config file */
+$mysqli = new mysqli("myapp", "username", "password", "database");
+$pdo = new PDO('mysql:host=myapp;dbname=database', 'username', 'password');
+$mysql = mysql_connect("myapp", "username", "password");
+?>
+]]>
+    </programlisting>
+   </example>
+  </para>
+  <para>
+   Code example with output.
+  </para>
+  <para>
+   <example>
+    <title>Executing statements</title>
+    <programlisting role="php">
+<![CDATA[
+<?php
+/* Load balanced following "myapp" section rules from the plugins config file */
+$mysqli = new mysqli("myapp", "username", "password", "database");
+if (mysqli_connect_errno())
+  /* Of course, your error handling is nicer... */
+  die(sprintf("[%d] %s\n", mysqli_connect_errno(), mysqli_connect_error()));
+
+/* Statements will be run on the master */
+if (!$mysqli->query("DROP TABLE IF EXISTS test")) {
+ printf("[%d] %s\n", $mysqli->errno, $mysqli->error);
+}
+if (!$mysqli->query("CREATE TABLE test(id INT)")) {
+ printf("[%d] %s\n", $mysqli->errno, $mysqli->error);
+}
+if (!$mysqli->query("INSERT INTO test(id) VALUES (1)")) {
+ printf("[%d] %s\n", $mysqli->errno, $mysqli->error);
+}
+
+/* read-only: statement will be run on a slave */
+if (!($res = $mysqli->query("SELECT id FROM test")) {
+ printf("[%d] %s\n", $mysqli->errno, $mysqli->error);
+} else {
+ $row = $res->fetch_assoc();
+ $res->close();
+ printf("Slave returns id = '%s'\n", $row['id'];
+}
+$mysqli->close();
+?>
+]]>
+    </programlisting>
+    &example.outputs.similar;
+    <screen>
+<![CDATA[
+Slave returns id = '1'
+]]>
+    </screen>
+   </example>
+  </para>
+ </section>
+
+</chapter>
+<!-- Keep this comment at the end of the file
+Local variables:
+mode: sgml
+sgml-omittag:t
+sgml-shorttag:t
+sgml-minimize-attributes:nil
+sgml-always-quote-attributes:t
+sgml-indent-step:1
+sgml-indent-data:t
+indent-tabs-mode:nil
+sgml-parent-document:nil
+sgml-default-dtd-file:"~/.phpdoc/manual.ced"
+sgml-exposed-tags:nil
+sgml-local-catalogs:nil
+sgml-local-ecat-files:nil
+End:
+vim600: syn=xml fen fdm=syntax fdl=2 si
+vim: et tw=78 syn=sgml
+vi: ts=1 sw=1
+-->

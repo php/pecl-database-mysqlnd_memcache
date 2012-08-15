@@ -1,0 +1,245 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+                      "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
+    <title>PHP Manual: Supported clusters</title>
+
+</head>
+<body>
+<table width="100%">
+    <tr valign="top">
+        <td style="font-size: smaller;" width="15%">
+<style type="text/css">
+#leftbar {
+	float: left;
+	width: 186px;
+	padding: 5px;
+	font-size: smaller;
+}
+ul.toc {
+	margin: 0px 5px 5px 5px;
+	padding: 0px;
+}
+ul.toc li {
+	font-size: 85%;
+	margin: 1px 0 1px 1px;
+	padding: 1px 0 1px 11px;
+	list-style-type: none;
+	background-repeat: no-repeat;
+	background-position: center left;
+}
+ul.toc li.header {
+	font-size: 115%;
+	padding: 5px 0px 5px 11px;
+	border-bottom: 1px solid #cccccc;
+	margin-bottom: 5px;
+}
+ul.toc li.active {
+	font-weight: bold;
+}
+ul.toc li a {
+	text-decoration: none;
+}
+ul.toc li a:hover {
+	text-decoration: underline;
+}
+</style>
+ <ul class="toc">
+  <li class="header home"><a href="index.html">PHP Manual</a></li>
+  <li class="header up"><a href="funcref.html">Function Reference</a></li>
+  <li class="header up"><a href="refs.database.html">Database Extensions</a></li>
+  <li class="header up"><a href="refs.database.vendors.html">Vendor Specific Database Extensions</a></li>
+  <li class="header up"><a href="set.mysqlinfo.html">MySQL</a></li>
+  <li class="header up"><a href="book.mysqlnd-memcache.html">mysqlnd_memcache</a></li>
+  <li class="header up"><a href="mysqlnd-memcache.concepts.html">Concepts</a></li>
+  <li><a href="mysqlnd-memcache.architecture.html">Architecture</a></li>
+  <li><a href="mysqlnd-memcache.pooling.html">Connection pooling and switching</a></li>
+  <li><a href="mysqlnd-memcache.transaction.html">Transaction handling</a></li>
+  <li><a href="mysqlnd-memcache.errorhandling.html">Error handling</a></li>
+  <li><a href="mysqlnd-memcache.failover.html">Failover</a></li>
+  <li><a href="mysqlnd-memcache.loadbalancing.html">Load balancing</a></li>
+  <li><a href="mysqlnd-memcache.rwsplit.html">Read-write splitting</a></li>
+  <li><a href="mysqlnd-memcache.filter.html">Filter</a></li>
+  <li><a href="mysqlnd-memcache.qos-consistency.html">Service level and consistency</a></li>
+  <li><a href="mysqlnd-memcache.gtid.html">Global transaction IDs</a></li>
+  <li><a href="mysqlnd-memcache.concept_cache.html">Cache integration</a></li>
+  <li class="active"><a href="mysqlnd-memcache.supportedclusters.html">Supported clusters</a></li>
+ </ul>
+
+        </td>
+        <td width="85%">
+            <div style="text-align: center;">
+                <div class="prev" style="text-align: left; float: left;"><a href="mysqlnd-memcache.concept_cache.html">Cache integration</a></div>
+                <div class="next" style="text-align: right; float: right;"><a href="mysqlnd-memcache.setup.html">Installing/Configuring</a></div>
+                <div class="up"><a href="mysqlnd-memcache.concepts.html">Concepts</a></div>
+                <div class="home"><a href="index.html">PHP Manual</a></div>
+            </div><hr/>
+<div id="mysqlnd-memcache.supportedclusters" class="section">
+  <h2 class="title">Supported clusters</h2>
+  <p class="para">
+   Any application using any kind of MySQL cluster is faced with the same tasks:
+   <ul class="itemizedlist">
+    <li class="listitem">
+     <span class="simpara">
+      Identify nodes capable of executing a given statement with
+      the required service level
+     </span>
+    </li>
+    <li class="listitem">
+     <span class="simpara">
+       Load balance requests within the list of candidates
+     </span>
+   </li>
+   <li class="listitem">
+     <span class="simpara">
+       Automatic fail over within candidates, if needed
+     </span>
+    </li>
+   </ul>
+  </p>
+  <p class="para">
+   The plugin is optimized for fulfilling these tasks in the context of a classical
+   asynchronous MySQL replication cluster consisting of a single master and
+   many slaves (primary copy).  When using classical, asynchronous MySQL replication
+   all of the above listed tasks need to be mastered at the client side.
+  </p>
+  <p class="para">
+   Other types of MySQL cluster may have lower requirements on the application side.
+   For example, if all nodes in the cluster can answer read and write requests, no
+   read-write splitting needs to be done (multi-master, update-all).
+   If all nodes in the cluster are synchronous, they automatically provide the
+   higest possible quality of service which makes choosing a node easier.
+   In this case, the plugin may serve the application after some reconfiguration
+   to disable certain features, such as built-in read-write splitting.
+  </p>
+  <blockquote><p><b class="note">Note</b>: 
+   <b>Documentation focus</b><br />
+   
+    The documentation focusses describing the use of the plugin with classical
+    asynchronous MySQL replication clusters (primary copy). Support for this
+    kind of cluster has been the original development goal. Use of other
+    clusters is briefly described below. Please note, that
+    this is still work in progress.
+   <br />
+  </p></blockquote>
+  <p class="para">
+    <em class="emphasis">Using asynchronous clusters with single master</em>
+  </p>
+  <p class="para">
+   Primary use case of the plugin. Follow the hints given in the descriptions of each feature.
+  </p>
+  <blockquote><p><b class="note">Note</b>: 
+   <b>Version requirement</b><br />
+   
+    The following cluster may require use of settings not available before mysqlnd_ms 1.2.0-alpha.
+   <br />
+  </p></blockquote>
+  <p class="para">
+    <em class="emphasis">Using asynchronous clusters with multiple masters</em>
+  </p>
+  <p class="para">
+   This setup is currently unsupported.
+  </p>
+  <p class="para">
+   The plugin has no built-in functionality to direct certain writes to certain
+   masters. It is considered to add table filtering to future versions. Table filter
+   would allow restricting both read and writes to certain slaves and masters based
+   on the database/schema and table used by a statement.
+  </p>
+  <p class="para">
+   A table filtering feature is prepared in the plugins source code. However, it is
+   instable and must not be used. Bug reports on table filtering will be rejected.
+  </p>
+  <p class="para">
+   <em class="emphasis">Using synchronous clusters such as MySQL Cluster</em>
+  </p>
+  <p class="para">
+   MySQL Cluster is a synchronous cluster solution. All cluster nodes accept
+   read and write requests. In the context of the plugin, all nodes shall
+   be considered as masters.
+  </p>
+  <p class="para">
+   Use the load balancing and fail over features only.
+  </p>
+  <p class="para">
+   <ul class="itemizedlist">
+    <li class="listitem">
+     <span class="simpara">
+      Disable the plugins <a href="mysqlnd-memcache.rwsplit.html" class="link">built-in read-write splitting</a>.
+     </span>
+    </li>
+    <li class="listitem">
+     <span class="simpara">
+      Configure masters only.
+     </span>
+    </li>
+    <li class="listitem">
+     <span class="simpara">
+      Consider random once load balancing strategy, which is the plugins default.
+      If random once is used, only masters are configured and no SQL hints are used
+      to force using a certain node, no connection switches will happen for the
+      duration of a web request. Thus, no special handling is required
+      for transactions. The plugin will pick one master at the beginning of the
+      PHP script and use it until the script terminates.
+     </span>
+    </li>
+    <li class="listitem">
+     <span class="simpara">
+      Do not set the quality of service. All nodes have all the data. This
+      automatically gives you the highest possible service quality (strong consistency).
+     </span>
+    </li>
+    <li class="listitem">
+     <span class="simpara">
+      Do not enable client-side global transaction injection. It is neither
+      required to help with server-side fail over nor to assist the quality of service
+      filter choosing an appropiate node.
+     </span>
+    </li>
+   </ul>
+  </p>
+  <p class="para">
+   Disabling built-in read-write splitting.
+   <ul class="itemizedlist">
+    <li class="listitem">
+     <span class="simpara">
+      Set
+      <a href="mysqlnd-memcache.configuration.html" class="link"><i>mysqlnd_ms.disable_rw_split=1</i></a>
+     </span>
+    </li>
+    <li class="listitem">
+     <span class="simpara">
+      Do not use <a href="mysqlnd-memcache.rwsplit.html" class="link">SQL hints</a>
+      to enforce the use of slaves
+     </span>
+    </li>
+   </ul>
+  </p>
+  <p class="para">
+   Configure masters only.
+   <ul class="itemizedlist">
+    <li class="listitem">
+     <span class="simpara">
+      Set
+      <a href="mysqlnd-memcache.configuration.html" class="link"><i>mysqlnd_ms.multi_master=1</i></a>
+     </span>
+    </li>
+    <li class="listitem">
+     <span class="simpara">Do not configure any slaves</span>
+    </li>
+    <li class="listitem">
+     <span class="simpara">
+      Set
+      <i><a href="mysqlnd-memcache.plugin-ini-json.html" class="link">failover=master</a></i>
+      in the plugins configuration file to avoid warnings about the empty slave list
+     </span>
+    </li>
+   </ul>
+  </p>
+ </div>
+        </td>
+    </tr>
+</table>
+</body>
+</html>
