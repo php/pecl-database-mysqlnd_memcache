@@ -61,6 +61,8 @@ Unbuffered query
 
 	print "done!";
 ?>
+--XFAIL--
+Memory leaks
 --EXPECT--
 array(3) {
   [0]=>

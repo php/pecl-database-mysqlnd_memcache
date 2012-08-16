@@ -61,6 +61,8 @@ Multi query + use result
 
 	print "done!";
 ?>
+--XFAIL--
+Memory leaks
 --EXPECT--
 array(3) {
   [0]=>

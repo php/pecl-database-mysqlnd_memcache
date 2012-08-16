@@ -30,7 +30,6 @@ Simple mysqli test
 	}
 
 	$memc = my_memcache_connect($memcache_host, $memcache_port);
-
 	if (!mysqlnd_memcache_set($link, $memc, NULL, "debug_callback")) {
 		printf("[002] Failed to register connection, [%d] '%s'\n",
 			$link->errno, $link->error);

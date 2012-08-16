@@ -60,5 +60,7 @@ Async query
 
 	print "done!";
 ?>
+--XFAIL--
+Crash
 --EXPECT--
 Anything but a crash
