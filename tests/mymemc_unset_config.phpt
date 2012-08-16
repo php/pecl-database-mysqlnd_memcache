@@ -1,46 +1,61 @@
 --TEST--
-Unsetting/Resetting mysqlnd_memcache data with mysqli
+Unsetting/Resetting mysqlnd_memcache data
 --SKIPIF--
 <?php
-require('skipif.inc');
-_skipif_check_extensions(array("mysqli"));
-_skipif_no_plugin($host, $user, $passwd, $db, $port, $socket);
+	require('skipif.inc');
+	_skipif_check_extensions(array("mysqli"));
+	_skipif_no_plugin($host, $user, $passwd, $db, $port, $socket);
+
+	require_once('table.inc');
+	$ret = my_memcache_config::init(array('f1'), true, '|');
+	if (true !== $ret) {
+		die(sprintf("SKIP %s\n", $ret));
+	}
 ?>
 --FILE--
 <?php
-require 'table.inc';
-init_memcache_config('f1', true, '|');
+	require_once('connect.inc');
 
-if (!$link = my_mysqli_connect($host, $user, $passwd, $db, $port, $socket)) {
-	die("Connection failed");
-}
+	function callback($success) {
+		echo "Went through memcache: ".($success ? 'Yes' : 'No')."\n";
+	}
 
-function callback($success) {
-	echo "Went through memcache: ".($success ? 'Yes' : 'No')."\n";
-}
+	$link = my_mysqli_connect($host, $user, $passwd, $db, $port, $socket);
+	if ($link->connect_errno) {
+		printf("[001] [%d] %s\n", $link->connect_errno, $link->connect_error);
+	}
 
-$memc = my_memcache_connect($memcache_host, $memcache_port);
+	$memc = my_memcache_connect($memcache_host, $memcache_port);
 
-echo "Setting mysqlnd_memcache:\n";
-var_dump(mysqlnd_memcache_set($link, $memc, NULL, "callback"));
+	echo "Setting mysqlnd_memcache:\n";
+	var_dump(mysqlnd_memcache_set($link, $memc, NULL, "callback"));
 
-echo "Querying SELECT f1 FROM mymem_test WHERE id = 'key1', then fetch_all:\n";
-$r = $link->query("SELECT f1 FROM mymem_test WHERE id = 'key1'");
-var_dump($r->fetch_all());
+	echo "Querying SELECT f1 FROM mymem_test WHERE id = 'key1', then fetch_all:\n";
+	if ($r = $link->query("SELECT f1 FROM mymem_test WHERE id = 'key1'")) {
+		var_dump($r->fetch_all());
+	} else {
+		printf("[002] [%d] %s\n", $link->errno, $link->error);
+	}
 
-echo "Unsetting mysqlnd_memcache:\n";
-var_dump(mysqlnd_memcache_set($link, NULL));
+	echo "Unsetting mysqlnd_memcache:\n";
+	var_dump(mysqlnd_memcache_set($link, NULL));
 
-echo "Querying SELECT f1 FROM mymem_test WHERE id = 'key1', then fetch_all:\n";
-$r = $link->query("SELECT f1 FROM mymem_test WHERE id = 'key1'");
-var_dump($r->fetch_all());
+	echo "Querying SELECT f1 FROM mymem_test WHERE id = 'key1', then fetch_all:\n";
+	if ($r = $link->query("SELECT f1 FROM mymem_test WHERE id = 'key1'")) {
+		var_dump($r->fetch_all());
+	} else {
+		printf("[003] [%d] %s\n", $link->errno, $link->error);
+	}
 
-echo "Resetting mysqlnd_memcache:\n";
-var_dump(mysqlnd_memcache_set($link, $memc, NULL, "callback"));
+	echo "Resetting mysqlnd_memcache:\n";
+	var_dump(mysqlnd_memcache_set($link, $memc, NULL, "callback"));
 
-echo "Querying SELECT f1 FROM mymem_test WHERE id = 'key1', then fetch_all:\n";
-$r = $link->query("SELECT f1 FROM mymem_test WHERE id = 'key1'");
-var_dump($r->fetch_all());
+	echo "Querying SELECT f1 FROM mymem_test WHERE id = 'key1', then fetch_all:\n";
+	if ($r = $link->query("SELECT f1 FROM mymem_test WHERE id = 'key1'")) {
+		var_dump($r->fetch_all());
+	} else {
+		printf("[004] [%d] %s\n", $link->errno, $link->error);
+	}
 
 ?>
 --EXPECT--
