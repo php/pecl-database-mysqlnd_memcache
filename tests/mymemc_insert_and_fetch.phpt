@@ -45,14 +45,20 @@ Update (SQL) and fetch (memcache)
 		}
 	}
 
+	if (!($key1 = $memc->get("k4"))) {
+		printf("[006] Failed to fetch 'k4' using native Memcache API.\n");
+	}
+	$columns = explode("|", $key1);
+	var_dump($columns);
+
 	if ($res = $link->query("SELECT f1, f2, f3 FROM mymem_test WHERE id = 'k4'")) {
 		if (!is_object($res)) {
-			printf("[006] No resultset but %s\n", var_export($res, true));
+			printf("[007] No resultset but %s\n", var_export($res, true));
 		} else {
 			var_dump($res->fetch_assoc());
 		}
 	} else {
-		printf("[007] %d %s\n", $link->errno, $link->error);
+		printf("[008] %d %s\n", $link->errno, $link->error);
 	}
 
 	print "done!";
