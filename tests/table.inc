@@ -36,14 +36,22 @@ class my_memcache_config {
 	}
 
 	public function create_test_table($id_is_string = false, $max_retry = 1) {
+		if ($ret = $this->_create_test_table("mymem_test", $id_is_string, $max_retry)) {
+			$ret = $this->_create_test_table("mymem_test_meta", $id_is_string, $max_retry);
+		}
+		return $ret;
+	}
+
+	protected function _create_test_table($table_name, $id_is_string = false, $max_retry = 1) {
 
 		$this->connect();
-		if (!$this->link->query("DROP TABLE IF EXISTS mymem_test")) {
+		$sql = sprintf("DROP TABLE IF EXISTS %s", $this->link->real_escape_string($table_name));
+		if (!$this->link->query($sql)) {
 			printf("[%d] %s\n", $this->link->errno, $this->link->error);
 			return false;
 		}
 
-		$sql = sprintf("CREATE TABLE mymem_test(
+		$sql = sprintf("CREATE TABLE %s(
 			id %s,
 			f1 VARCHAR(255),
 			f2 VARCHAR(255),
@@ -52,7 +60,8 @@ class my_memcache_config {
 			cas_column INT,
 			expire_time_column INT,
 			PRIMARY KEY(id)) ENGINE=InnoDB",
-			($id_is_string) ? "CHAR(4)" : "INT");
+			$this->link->real_escape_string($table_name),
+			($id_is_string) ? "CHAR(255)" : "INT");
 
 		if (!$this->link->query($sql)) {
 
@@ -65,18 +74,24 @@ class my_memcache_config {
 					return $ret;
 
 				$max_retry--;
-				return $this->create_test_table($id_is_string, $max_retry);
+				return $this->_create_test_table($table_name, $id_is_string, $max_retry);
 			}
 			return sprintf("(%s) [%d] %s\n", $sql, $this->link->errno, $this->link->error);
 		}
 
-		$sql = sprintf("INSERT INTO mymem_test(id, f1, f2, f3) VALUES
-				('%s1', 'a', 'b', 'c'),
-				('%s2', 'foo', 'bar', 'baz'),
-				('%s3', 'der Hund', 'liegt in der Kueche', 'und bellt')",
-			($id_is_string) ? "key" : "",
-			($id_is_string) ? "key" : "",
-			($id_is_string) ? "key" : "");
+		if ($id_is_string) {
+			$sql = sprintf("INSERT INTO %s(id, f1, f2, f3) VALUES
+					('key1', 'a', 'b', 'c'),
+					('key2', 'foo', 'bar', 'baz'),
+					('key3', 'der Hund', 'liegt in der Kueche', 'und bellt')",
+				$this->link->real_escape_string($table_name));
+		} else {
+			$sql = sprintf("INSERT INTO %s(id, f1, f2, f3) VALUES
+					(1, 'a', 'b', 'c'),
+					(2, 'foo', 'bar', 'baz'),
+					(3, 'der Hund', 'liegt in der Kueche', 'und bellt')",
+				$this->link->real_escape_string($table_name));
+		}
 
 		if (!$this->link->query($sql)) {
 			return sprintf("(%s) [%d] %s\n", $sql, $this->link->errno, $this->link->error);
