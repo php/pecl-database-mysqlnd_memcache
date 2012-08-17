@@ -58,6 +58,6 @@
 
 		if (!empty($fields2))  {
 			printf("[%03d] Fields missing\n", $offset);
-			var_dump($fields);
+			var_dump($fields2);
 		}
 	}
