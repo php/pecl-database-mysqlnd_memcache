@@ -1,5 +1,5 @@
 --TEST--
-mysqli fetch assoc
+mysqli fetch array
 --SKIPIF--
 <?php
 	require('skipif.inc');
@@ -40,13 +40,13 @@ mysqlnd_memcache.enable=1
 	if (!($res = $link->query("SELECT SQL_NO_CACHE f1, f2, f3 FROM mymem_test WHERE id = 'key2'"))) {
 		printf("[006] %d %s\n", $link->errno, $link->error);
 	}
-	$data = $res->fetch_assoc();
+	$data = $res->fetch_array(MYSQLI_BOTH);
 
 	if ($res = $link->query("SELECT f1, f2, f3 FROM mymem_test WHERE id = 'key2'")) {
 		if (!is_object($res)) {
 			printf("[007] No resultset but %s\n", var_export($res, true));
 		} else {
-			$row = $res->fetch_assoc();
+			$row = $res->fetch_array(MYSQLI_BOTH);
 			if ($row != $data) {
 				printf("[008] Wrong results\n");
 				var_dump($row);
