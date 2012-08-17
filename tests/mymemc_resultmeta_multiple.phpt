@@ -1,0 +1,71 @@
+--TEST--
+Resultset meta - SQL vs. Memcache same table
+--SKIPIF--
+<?php
+	require('skipif.inc');
+	_skipif_check_extensions(array("mysqli"));
+	_skipif_connect($host, $user, $passwd, $db, $port, $socket);
+
+	require_once('table.inc');
+	$ret = my_memcache_config::init(array('f1', 'f2', 'f3'), true, '|');
+	if (true !== $ret) {
+		die(sprintf("SKIP %s\n", $ret));
+	}
+?>
+--INI--
+mysqlnd_memcache.enable=1
+--FILE--
+<?php
+	require_once('connect.inc');
+	require_once("util.inc");
+
+	function debug_callback() {
+		printf("%s()", __FUNCTION__);
+
+		$args = func_get_args();
+		foreach ($args as $k => $arg) {
+			printf(" %02d: %s / %s\n", $k, gettype($arg), var_export($arg, true));
+		}
+	}
+
+	$link = my_mysqli_connect($host, $user, $passwd, $db, $port, $socket);
+	if ($link->connect_errno) {
+		printf("[001] [%d] %s\n", $link->connect_errno, $link->connect_error);
+	}
+
+	$memc = my_memcache_connect($memcache_host, $memcache_port);
+	if (!mysqlnd_memcache_set($link, $memc, NULL, "debug_callback")) {
+		printf("[002] Failed to register connection, [%d] '%s'\n",
+			$link->errno, $link->error);
+	}
+
+
+	if ($res = $link->query("SELECT f1, f2, f3 FROM mymem_test WHERE id = 'key1'")) {
+		$fields_mapped1 = $res->fetch_fields();
+	} else {
+		printf("[003] [%d] %s\n", $link->errno, $link->error);
+	}
+
+	if ($res = $link->query("SELECT f1, f2, f3 FROM mymem_test WHERE id = 'key1'")) {
+		$fields_mapped2 = $res->fetch_fields();
+		my_memcache_compare_meta(4, $fields_mapped1, $fields_mapped2);
+	} else {
+		printf("[005] [%d] %s\n", $link->errno, $link->error);
+	}
+
+	if ($res = $link->query("SELECT SQL_NO_CACHE f1, f2, f3 FROM mymem_test WHERE id = 'key1'")) {
+		$fields_sql_shadow = $res->fetch_fields();
+		$res->free();
+	} else {
+		printf("[006] [%d] %s\n", $link->errno, $link->error);
+	}
+
+	print "done!";
+?>
+--XFAIL--
+Commands out of sync
+--EXPECT--
+debug_callback() 00: boolean / true
+debug_callback() 00: boolean / true
+debug_callback() 00: boolean / false
+done!
