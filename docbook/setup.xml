@@ -10,6 +10,15 @@
     <literal>PHP 5.4.4</literal> or newer.
   </para>
   <para>
+    <literal>PHP</literal> must be compiled with support for Perl regular
+    expressions through the <link linkend="ref.pcre">pcre</link> extension.
+    PCRE is included into PHP by default.
+  </para>
+  <para>
+   The <literal>memcached</literal> extension 2.0.x
+   must be loaded into <literal>PHP</literal>.
+  </para>
+  <para>
    The <literal>mysqlnd_memcache</literal> memcache
    plugin supports all PHP applications and all available PHP MySQL extensions
    (<link linkend="ref.mysqli">mysqli</link>,

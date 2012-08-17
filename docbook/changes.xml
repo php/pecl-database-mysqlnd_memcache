@@ -24,15 +24,15 @@
     </listitem>
     <listitem>
      <simpara>
-      Motto/theme: Basic mapping of SQL SELECT to InnoDB Memcache access
+      Motto/theme: Basic mapping of SQL SELECT to a MySQL Memcache plugin access.
      </simpara>
     </listitem>
    </itemizedlist>
   </para>
   <para>
-   The initial release does map basic SQL SELECT statements to an InnoDB
-   Memcache access. This bares potential performance benefits as the direct
-   key-value access to MySQLInnoDB storage using the Memcache protocol is usually
+   The initial release does map basic SQL SELECT statements to a MySQL Memcache plugin
+   access. This bares potential performance benefits as the direct
+   key-value access to MySQL storage using the Memcache protocol is usually
    faster than using SQL access.
   </para>
  </section>

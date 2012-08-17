@@ -2,7 +2,7 @@
 <!-- $Revision: 317392 $ -->
 
 <reference xml:id="ref.mysqlnd-memcache" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
- <title>Mysqlnd_ms &Functions;</title>
+ <title>Mysqlnd_memcache &Functions;</title>
 
  &reference.mysqlnd-memcache.entities.functions;
 

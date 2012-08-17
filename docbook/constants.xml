@@ -6,6 +6,31 @@
  &extension.constants;
 
  <para>
+  <emphasis role="bold">MySQL Memcache Plugin related</emphasis>
+ </para>
+ <para>
+  <variablelist>
+   <varlistentry xml:id="constant.mysqlnd-memcache-default-regexp">
+    <term>
+     <constant>MYSQLND_MEMCACHE_DEFAULT_REGEXP</constant>
+     (<type>string</type>)
+    </term>
+    <listitem>
+     <simpara>
+      Default regular expression (pcre style) used for matching <literal>SELECT</literal>
+      statements that shall be mapped into a MySQL Memcache Plugin
+      access, if possible.
+     </simpara>
+     <simpara>
+      It is possible to use a different but the defailt regular expression for pattern
+      matching. See also <function>mysqlnd_memcache_set</function>.
+     </simpara>
+    </listitem>
+   </varlistentry>
+  </variablelist>
+ </para>
+
+ <para>
   <emphasis role="bold">Assorted</emphasis>
  </para>
  <para>
@@ -56,7 +81,7 @@
     </term>
     <listitem>
      <simpara>
-      Plugin version string, for example, <quote>1.0.0-prototype</quote>.
+      Plugin version string, for example, <quote>1.0.0-alpha</quote>.
      </simpara>
     </listitem>
    </varlistentry>

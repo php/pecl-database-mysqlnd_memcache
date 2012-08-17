@@ -21,7 +21,7 @@
    The plugin is implemented as a PHP extension. See also the
    <link linkend="mysqlnd-memcache.installation">installation instructions</link> to
    install the
-   <link xlink:href="&url.pecl.package;mysqlnd_ms">PECL/mysqlnd_memcache</link> extension.
+   <link xlink:href="&url.pecl.package;mysqlnd_memcache">PECL/mysqlnd_memcache</link> extension.
   </para>
   <para>
    Compile or configure the PHP MySQL extension (API) (<link linkend="ref.mysqli">mysqli</link>,
@@ -47,65 +47,49 @@ mysqlnd_memcache.enable=1
     </example>
   </para>
   <para>
+   Follow the instructions given in the MySQL Reference Manual on installing
+   the Memcache plugins for the MySQL server. Activate the plugins and
+   configure the Memcache access to SQL tables.
+  </para>
+  <para>
+   For all future examples it is assumed that you have created a SQL table
+   like the following and configured Memcache access to it.
+  </para>
+  <para>
    <example>
-    <title>Subtitle example</title>
-    <programlisting role="php">
+    <title>SQL table used for the Quickstart</title>
+    <programlisting role="sql">
 <![CDATA[
-<?php
-/* Load balanced following "myapp" section rules from the plugins config file */
-$mysqli = new mysqli("myapp", "username", "password", "database");
-$pdo = new PDO('mysql:host=myapp;dbname=database', 'username', 'password');
-$mysql = mysql_connect("myapp", "username", "password");
-?>
+CREATE TABLE test(
+  id CHAR(16),
+  f1 VARCHAR(255),
+  f2 VARCHAR(255),
+  f3 VARCHAR(255),
+  flags INT NOT NULL,
+  cas_column INT,
+  expire_time_column INT,
+  PRIMARY KEY(id)
+) ENGINE=InnoDB
 ]]>
     </programlisting>
    </example>
   </para>
+ </section>
+ <section xml:id="mysqlnd-memcache.quickstart.usage">
+  <title>Usage</title>
   <para>
-   Code example with output.
+   The plugin attempts to transparently replace a SQL <literal>SELECT</literal>
+   statement by a memcache access. For that purpose the plugin monitors
+   all SQL statements executed and tries to match the statement string
+   against <constant>MYSQLND_MEMCACHE_DEFAULT_REGEXP</constant>.
+   In case of a match, the mysqlnd memcache plugin checks whether the
+   <literal>SELECT</literal> is accessing all columns of a mapped table and
+   the <literal>WHERE</literal> clause does a unique key lookup.
   </para>
   <para>
-   <example>
-    <title>Executing statements</title>
-    <programlisting role="php">
-<![CDATA[
-<?php
-/* Load balanced following "myapp" section rules from the plugins config file */
-$mysqli = new mysqli("myapp", "username", "password", "database");
-if (mysqli_connect_errno())
-  /* Of course, your error handling is nicer... */
-  die(sprintf("[%d] %s\n", mysqli_connect_errno(), mysqli_connect_error()));
-
-/* Statements will be run on the master */
-if (!$mysqli->query("DROP TABLE IF EXISTS test")) {
- printf("[%d] %s\n", $mysqli->errno, $mysqli->error);
-}
-if (!$mysqli->query("CREATE TABLE test(id INT)")) {
- printf("[%d] %s\n", $mysqli->errno, $mysqli->error);
-}
-if (!$mysqli->query("INSERT INTO test(id) VALUES (1)")) {
- printf("[%d] %s\n", $mysqli->errno, $mysqli->error);
-}
-
-/* read-only: statement will be run on a slave */
-if (!($res = $mysqli->query("SELECT id FROM test")) {
- printf("[%d] %s\n", $mysqli->errno, $mysqli->error);
-} else {
- $row = $res->fetch_assoc();
- $res->close();
- printf("Slave returns id = '%s'\n", $row['id'];
-}
-$mysqli->close();
-?>
-]]>
-    </programlisting>
-    &example.outputs.similar;
-    <screen>
-<![CDATA[
-Slave returns id = '1'
-]]>
-    </screen>
-   </example>
+   In case of the example SQL table, the plugin will use the Memcache interface
+   of the MySQL server to fetch results for a SQL query like
+   <literal>SELECT f1, f2, f3 WHERE id = n</literal>.
   </para>
  </section>
 

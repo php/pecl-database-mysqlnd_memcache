@@ -9,7 +9,7 @@
   &reftitle.intro;
   <para>
    The mysqlnd memcache plugin (<literal>mysqlnd_memcache</literal>)
-   maps SQL SELECT statements to InnoDB Memcache plugin accesses.
+   maps SQL SELECT statements to MySQL Memcache plugin accesses.
    The plugin supports all PHP MySQL extensions that use
    <link linkend="book.mysqlnd">mysqlnd</link>.
   </para>
@@ -36,8 +36,8 @@
    existing PHP applications.
   </para>
   <para>
-   The MySQL InnoDB Memcache plugin adds an key-value style access method
-   for data stored in InnoDB SQL tables through the Memcache protocol.
+   The MySQL Memcache plugins add key-value style access method for data stored
+   in InnoDB resp. NDB (MySQL Cluster) SQL tables through the Memcache protocol.
    This type of key-value access if often faster than using SQL.
   </para>
   <section xml:id="mysqlnd-memcache.key-features">
@@ -47,26 +47,6 @@
    </para>
    <para>
     <itemizedlist>
-     <listitem>
-      <para>
-       Transparent and therefore easy to use.
-      </para>
-      <para>
-       <itemizedlist>
-        <listitem>
-         <para>
-          Supports all of the PHP MySQL extensions.
-         </para>
-        </listitem>
-        <listitem>
-         <para>
-          Little to no application changes required, dependent on the required usage scenario.
-         </para>
-        </listitem>
-       </itemizedlist>
-      </para>
-     </listitem>
-
      <listitem>
       <para>
        Possible performance benefits
@@ -99,8 +79,12 @@
   <section xml:id="mysqlnd-memcache.limitations">
    <title>Limitations</title>
    <para>
-    The initial version is not binary safe. Due to the way the InnoDB Memcache
-    plugin works there are restrictions related to seperators.
+    The initial version is not binary safe. Due to the way the MySQL Memcache
+    plugins works there are restrictions related to seperators.
+   </para>
+   <para>
+    Prepared statements, unbuffered result set and result set meta data
+    are not supported.
    </para>
   </section>
 
@@ -109,14 +93,14 @@
    <para>
     The shortcut <literal>mysqlnd_memcache</literal>
     stands for <literal>mysqlnd memcache plugin</literal>.
-    Memcache refers to support of the MySQL InnoDB Memcache plugin.
-    The plugin is not related to Memcached.
+    Memcache refers to support of the MySQL Memcache plugins
+    for InnoDB and NDB (MySQL Cluster). The plugin is not
+    related to the Memcached cache server.
    </para>
   </section>
  </preface>
 
  &reference.mysqlnd-memcache.quickstart;
- &reference.mysqlnd-memcache.concepts;
  &reference.mysqlnd-memcache.setup;
  &reference.mysqlnd-memcache.constants;
  &reference.mysqlnd-memcache.reference;
