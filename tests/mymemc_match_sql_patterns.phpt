@@ -4,6 +4,8 @@ MySQL Query pattern matching
 <?php
 require('skipif.inc');
 ?>
+--INI--
+mysqlnd_memcache.enable=1
 --FILE--
 <?php
 $sqls = [

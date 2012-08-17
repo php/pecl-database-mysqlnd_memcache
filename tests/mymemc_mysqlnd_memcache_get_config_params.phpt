@@ -5,6 +5,8 @@ mysqlnd_memcache_get_config() - parameter
 require('skipif.inc');
 _skipif_check_extensions(array("mysqli"));
 ?>
+--INI--
+mysqlnd_memcache.enable=1
 --FILE--
 <?php
 	require_once("connect.inc");

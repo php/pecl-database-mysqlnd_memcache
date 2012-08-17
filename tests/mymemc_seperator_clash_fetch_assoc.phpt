@@ -12,6 +12,8 @@ Seperator clash and fetch assoc
 		die(sprintf("SKIP %s\n", $ret));
 	}
 ?>
+--INI--
+mysqlnd_memcache.enable=1
 --FILE--
 <?php
 	require_once('connect.inc');
@@ -50,7 +52,6 @@ Seperator clash and fetch assoc
 	} else {
 		printf("[005] %d %s\n", $link->errno, $link->error);
 	}
-
 
 
 	print "done!";

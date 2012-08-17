@@ -11,6 +11,8 @@ Don't connect to memcached host
 		die(sprintf("SKIP %s\n", $ret));
 	}
 ?>
+--INI--
+mysqlnd_memcache.enable=1
 --FILE--
 <?php
 	require_once('connect.inc');

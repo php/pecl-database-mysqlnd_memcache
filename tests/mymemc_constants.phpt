@@ -4,6 +4,8 @@ Constants
 <?php
 require_once('skipif.inc');
 ?>
+--INI--
+mysqlnd_memcache.enable=1
 --FILE--
 <?php
 	$expected = array(

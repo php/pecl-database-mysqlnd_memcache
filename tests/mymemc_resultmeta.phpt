@@ -12,6 +12,8 @@ Resultset meta
 		die(sprintf("SKIP %s\n", $ret));
 	}
 ?>
+--INI--
+mysqlnd_memcache.enable=1
 --FILE--
 <?php
 	require_once('connect.inc');
@@ -35,17 +37,20 @@ Resultset meta
 			$link->errno, $link->error);
 	}
 
-	if (!($key1 = $memc->get("key1"))) {
-		printf("[003] Failed to fetch 'key1' using native Memcache API.\n");
-	}
-	$columns = explode("|", $key1);
-	var_dump($columns);
-
-	if ($res = $link->query("SELECT f1, f2, f3 FROM mymem_test WHERE id = 'key1'")) {
+	if ($res = $link->query("SELECT f1, f2, f3 FROM mymem_test_meta WHERE id = 'key1'")) {
 		$fields = $res->fetch_fields();
+		$res->free();
 	} else {
 		printf("[004] [%d] %s\n", $link->errno, $link->error);
 	}
+	var_dump($fields);
+
+	if ($res = $link->query("SELECT f1, f2, f3 FROM mymem_test_meta WHERE id = 'key1'")) {
+		$fields = $res->fetch_fields();
+	} else {
+		printf("[005] [%d] %s\n", $link->errno, $link->error);
+	}
+	var_dump($fields);
 
 	if ($res = $link->query("SELECT f1, f2, f3 FROM mymem_test WHERE id = 'key1'")) {
 		$row = $res->fetch_row();

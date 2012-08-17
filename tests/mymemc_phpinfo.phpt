@@ -4,6 +4,8 @@ phpinfo() section
 <?php
 require_once('skipif.inc');
 ?>
+--INI--
+mysqlnd_memcache.enable=1
 --FILE--
 <?php
 	ob_start();

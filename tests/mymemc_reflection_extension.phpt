@@ -4,6 +4,8 @@ Extension interface
 <?php
 require('skipif.inc');
 ?>
+--INI--
+mysqlnd_memcache.enable=1
 --FILE--
 <?php
 	$r = new ReflectionExtension("mysqlnd_memcache");

@@ -12,6 +12,8 @@ Resultset meta from the server
 		die(sprintf("SKIP %s\n", $ret));
 	}
 ?>
+--INI--
+mysqlnd_memcache.enable=1
 --FILE--
 <?php
 	require_once('connect.inc');

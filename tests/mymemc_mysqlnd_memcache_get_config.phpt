@@ -11,6 +11,8 @@ mysqlnd_memcache_get_config()
 		die(sprintf("SKIP %s\n", $ret));
 	}
 ?>
+--INI--
+mysqlnd_memcache.enable=1
 --FILE--
 <?php
 	require 'table.inc';

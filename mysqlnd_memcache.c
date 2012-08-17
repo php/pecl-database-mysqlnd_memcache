@@ -37,9 +37,14 @@
 #include "ext/pcre/php_pcre.h"
 #include "libmemcached/memcached.h"
 
-/* If you declare any globals in php_mysqlnd_memcache.h uncomment this:
 ZEND_DECLARE_MODULE_GLOBALS(mysqlnd_memcache)
- */
+
+#ifdef ZTS
+#define MYSQLND_MEMCACHE_G(v) TSRMG(mysqlnd_memcache_globals_id, zend_mysqlnd_memcache_globals *, v)
+#else
+#define MYSQLND_MEMCACHE_G(v) (mysqlnd_memcache_globals.v)
+#endif
+
 
 #define MYSQLND_MEMCACHE_VERSION "1.0.0-alpha"
 #define MYSQLND_MEMCACHE_VERSION_ID 10000
@@ -152,25 +157,23 @@ static int count_char(char *pos, char v) /* {{{ */
 		php_error_docref(NULL TSRMLS_CC, E_ERROR, "Connection data was unset but result set using it still exists"); \
 	}
 
+
 /* {{{ PHP_INI
  */
-/* Remove comments and fill if you need to have entries in php.ini
 PHP_INI_BEGIN()
-    STD_PHP_INI_ENTRY("mysqlnd_memcache.global_value",      "42", PHP_INI_ALL, OnUpdateLong, global_value, zend_mysqlnd_memcache_globals, mysqlnd_memcache_globals)
-    STD_PHP_INI_ENTRY("mysqlnd_memcache.global_string", "foobar", PHP_INI_ALL, OnUpdateString, global_string, zend_mysqlnd_memcache_globals, mysqlnd_memcache_globals)
+
+	STD_PHP_INI_BOOLEAN("mysqlnd_memcache.enable", "0", PHP_INI_SYSTEM, OnUpdateBool, enable, zend_mysqlnd_memcache_globals, mysqlnd_memcache_globals)
 PHP_INI_END()
-*/
+
 /* }}} */
 
 /* {{{ php_mysqlnd_memcache_init_globals
  */
-/* Uncomment this function if you have INI entries
 static void php_mysqlnd_memcache_init_globals(zend_mysqlnd_memcache_globals *mysqlnd_memcache_globals)
 {
-	mysqlnd_memcache_globals->global_value = 0;
-	mysqlnd_memcache_globals->global_string = NULL;
+	mysqlnd_memcache_globals->enable = FALSE;
 }
-*/
+
 /* }}} */
 
 /* {{{ MYSQLND_MEMCACHE_RESULT */
@@ -1058,6 +1061,14 @@ static const zend_function_entry mymem_functions[] = {
 /* }}} */
 
 /* {{{ PHP Infrastructure */
+
+/* {{{ PHP_GINIT_FUNCTION */
+static PHP_GINIT_FUNCTION(mysqlnd_memcache)
+{
+	php_mysqlnd_memcache_init_globals(mysqlnd_memcache_globals);
+}
+/* }}} */
+
 /* {{{ PHP_MINIT_FUNCTION
  */
 static PHP_MINIT_FUNCTION(mysqlnd_memcache)
@@ -1065,9 +1076,6 @@ static PHP_MINIT_FUNCTION(mysqlnd_memcache)
 	struct st_mysqlnd_conn_data_methods *data_methods;
 	char *pmversion;
 
-	/* If you have INI entries, uncomment these lines
-	REGISTER_INI_ENTRIES();
-	*/
 
 	if (zend_hash_find(CG(class_table), "memcached", sizeof("memcached"), (void **) &memcached_ce)==FAILURE) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "mysqlnd_memcache failed to get Memcached class");
@@ -1080,16 +1088,21 @@ static PHP_MINIT_FUNCTION(mysqlnd_memcache)
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "mysqlnd_memcache is only tested with php_memcached 2.0.x, %s might cause errors", pmversion);
 	}
 
-	mysqlnd_memcache_plugin_id = mysqlnd_plugin_register();
+	ZEND_INIT_MODULE_GLOBALS(mysqlnd_memcache, php_mysqlnd_memcache_init_globals, NULL);
+	REGISTER_INI_ENTRIES();
 
-	data_methods = mysqlnd_conn_data_get_methods();
+	if (MYSQLND_MEMCACHE_G(enable)) {
 
-	orig_mysqlnd_conn_query = data_methods->query;
-        data_methods->query = MYSQLND_METHOD(mymem_conn, query);
+		mysqlnd_memcache_plugin_id = mysqlnd_plugin_register();
 
-	orig_mysqlnd_conn_dtor = data_methods->dtor;
-        data_methods->dtor = MYSQLND_METHOD(mymem_conn, dtor);
+		data_methods = mysqlnd_conn_data_get_methods();
 
+		orig_mysqlnd_conn_query = data_methods->query;
+		data_methods->query = MYSQLND_METHOD(mymem_conn, query);
+
+		orig_mysqlnd_conn_dtor = data_methods->dtor;
+			data_methods->dtor = MYSQLND_METHOD(mymem_conn, dtor);
+	}
 	REGISTER_STRINGL_CONSTANT("MYSQLND_MEMCACHE_DEFAULT_REGEXP", SQL_PATTERN, SQL_PATTERN_LEN, CONST_CS | CONST_PERSISTENT);
 	REGISTER_STRING_CONSTANT("MYSQLND_MEMCACHE_VERSION", MYSQLND_MEMCACHE_VERSION, CONST_CS | CONST_PERSISTENT);
 	REGISTER_LONG_CONSTANT("MYSQLND_MEMCACHE_VERSION_ID", MYSQLND_MEMCACHE_VERSION_ID, CONST_CS | CONST_PERSISTENT);
@@ -1102,9 +1115,8 @@ static PHP_MINIT_FUNCTION(mysqlnd_memcache)
  */
 static PHP_MSHUTDOWN_FUNCTION(mysqlnd_memcache)
 {
-	/* uncomment this line if you have INI entries
+
 	UNREGISTER_INI_ENTRIES();
-	*/
 
 	return SUCCESS;
 }
@@ -1119,13 +1131,14 @@ static PHP_MINFO_FUNCTION(mysqlnd_memcache)
 	php_info_print_table_start();
 	php_info_print_table_header(2, "mysqlnd_memcache support", "enabled");
     snprintf(buf, sizeof(buf), "%s (%d)", MYSQLND_MEMCACHE_VERSION, MYSQLND_MEMCACHE_VERSION_ID);
+	php_info_print_table_row(2, "Plugin active", MYSQLND_MEMCACHE_G(enable) ? "yes" : "no");
 	php_info_print_table_row(2, "php-memcached version", (*memcached_ce)->info.internal.module->version);
 	php_info_print_table_row(2, "libmemcached version", LIBMEMCACHED_VERSION_STRING);
 	php_info_print_table_end();
 
-	/* Remove comments if you have entries in php.ini
+
 	DISPLAY_INI_ENTRIES();
-	*/
+
 }
 /* }}} */
 
