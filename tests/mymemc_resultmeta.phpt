@@ -63,7 +63,7 @@ mysqlnd_memcache.enable=1
 --XFAIL--
 Meta incomplete, type looks suspicious, orgname missing
 --EXPECT--
-ebug_callback() 00: boolean / false
+debug_callback() 00: boolean / false
 debug_callback() 00: boolean / true
 array(3) {
   [0]=>
