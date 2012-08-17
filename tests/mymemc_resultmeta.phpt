@@ -17,6 +17,8 @@ mysqlnd_memcache.enable=1
 --FILE--
 <?php
 	require_once('connect.inc');
+	require_once("util.inc");
+
 	function debug_callback() {
 		printf("%s()", __FUNCTION__);
 
@@ -37,42 +39,32 @@ mysqlnd_memcache.enable=1
 			$link->errno, $link->error);
 	}
 
-	if ($res = $link->query("SELECT f1, f2, f3 FROM mymem_test_meta WHERE id = 'key1'")) {
-		$fields = $res->fetch_fields();
+	if ($res = $link->query("SELECT SQL_NO_CACHE f1, f2, f3 FROM mymem_test_meta WHERE id = 'key1'")) {
+		$fields_sql_shadow = $res->fetch_fields();
 		$res->free();
 	} else {
-		printf("[004] [%d] %s\n", $link->errno, $link->error);
+		printf("[003] [%d] %s\n", $link->errno, $link->error);
 	}
-	var_dump($fields);
-
-	if ($res = $link->query("SELECT f1, f2, f3 FROM mymem_test_meta WHERE id = 'key1'")) {
-		$fields = $res->fetch_fields();
-	} else {
-		printf("[005] [%d] %s\n", $link->errno, $link->error);
-	}
-	var_dump($fields);
 
 	if ($res = $link->query("SELECT f1, f2, f3 FROM mymem_test WHERE id = 'key1'")) {
 		$row = $res->fetch_row();
+		var_dump($row);
 
-		if ($row != $columns) {
-			printf("[005] Native Memcache and SQL results differ\n");
-			var_dump(array_diff($row, $columns));
-		}
 		$fields_mapped = $res->fetch_fields();
-		if ($fields != $fields_mapped) {
-			var_dump(array_diff($fields, $fields_mapped));
-		}
+
+		my_memcache_compare_meta(4, $fields_sql_shadow, $fields_mapped);
 
 	} else {
-		printf("[004] [%d] %s\n", $link->errno, $link->error);
+		printf("[005] [%d] %s\n", $link->errno, $link->error);
 	}
 
 	print "done!";
 ?>
 --XFAIL--
-Test does not expose it but server returns incomplete meta
+Meta incomplete, type looks suspicious, orgname missing
 --EXPECT--
+ebug_callback() 00: boolean / false
+debug_callback() 00: boolean / true
 array(3) {
   [0]=>
   string(1) "a"
@@ -81,6 +73,28 @@ array(3) {
   [2]=>
   string(1) "c"
 }
-debug_callback() 00: boolean / true
-debug_callback() 00: boolean / true
+[004] Field values for field 0 differ
+  orgname: 'f1' != ''
+  table: 'mymem_test_meta' != 'mymem_test'
+  orgtable: 'mymem_test_meta' != 'mymem_test'
+  max_length: '%d' != '0'
+  length: '%d' != '0'
+  charsetnr: '%d' != '0'
+  type: '253' != '254'
+[004] Field values for field 1 differ
+  orgname: 'f2' != ''
+  table: 'mymem_test_meta' != 'mymem_test'
+  orgtable: 'mymem_test_meta' != 'mymem_test'
+  max_length: '%d' != '0'
+  length: '%d' != '0'
+  charsetnr: '%d' != '0'
+  type: '253' != '254'
+[004] Field values for field 2 differ
+  orgname: 'f3' != ''
+  table: 'mymem_test_meta' != 'mymem_test'
+  orgtable: 'mymem_test_meta' != 'mymem_test'
+  max_length: '%d' != '0'
+  length: '%d' != '0'
+  charsetnr: '%d' != '0'
+  type: '253' != '254'
 done!
