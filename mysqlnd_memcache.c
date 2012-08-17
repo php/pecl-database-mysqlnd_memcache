@@ -846,8 +846,13 @@ static mymem_connection_data_data *mymem_init_mysqlnd(MYSQLND *conn TSRMLS_DC) /
 	MYSQLND_ROW_C row;
 	MYSQLND_RES *res;
 	int query_len;
-	char *query = mymem_pick_mapping_query(conn, &query_len TSRMLS_CC);
+	char *query = NULL;
 
+	if (!MYSQLND_MEMCACHE_G(enable)) {
+		return NULL;
+	}
+
+	query = mymem_pick_mapping_query(conn, &query_len TSRMLS_CC);
 	if (!query) {
 		return NULL;
 	}
