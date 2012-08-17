@@ -54,10 +54,9 @@ ul.toc li a:hover {
   <li class="header up"><a href="book.mysqlnd-memcache.html">mysqlnd_memcache</a></li>
   <li class="active"><a href="intro.mysqlnd-memcache.html">Introduction</a></li>
   <li><a href="mysqlnd-memcache.quickstart.html">Quickstart and Examples</a></li>
-  <li><a href="mysqlnd-memcache.concepts.html">Concepts</a></li>
   <li><a href="mysqlnd-memcache.setup.html">Installing/Configuring</a></li>
   <li><a href="mysqlnd-memcache.constants.html">Predefined Constants</a></li>
-  <li><a href="ref.mysqlnd-memcache.html">Mysqlnd_ms Functions</a></li>
+  <li><a href="ref.mysqlnd-memcache.html">Mysqlnd_memcache Functions</a></li>
   <li><a href="mysqlnd-memcache.changes.html">Change History</a></li>
  </ul>
 
@@ -73,7 +72,7 @@ ul.toc li a:hover {
   <h1 class="title">Introduction</h1>
   <p class="para">
    The mysqlnd memcache plugin (<i>mysqlnd_memcache</i>)
-   maps SQL SELECT statements to InnoDB Memcache plugin accesses.
+   maps SQL SELECT statements to MySQL Memcache plugin accesses.
    The plugin supports all PHP MySQL extensions that use
    <a href="book.mysqlnd.html" class="link">mysqlnd</a>.
   </p>
@@ -100,8 +99,8 @@ ul.toc li a:hover {
    existing PHP applications.
   </p>
   <p class="para">
-   The MySQL InnoDB Memcache plugin adds an key-value style access method
-   for data stored in InnoDB SQL tables through the Memcache protocol.
+   The MySQL Memcache plugins add key-value style access method for data stored
+   in InnoDB resp. NDB (MySQL Cluster) SQL tables through the Memcache protocol.
    This type of key-value access if often faster than using SQL.
   </p>
   <div class="section" id="mysqlnd-memcache.key-features" name="mysqlnd-memcache.key-features">
@@ -111,26 +110,6 @@ ul.toc li a:hover {
    </p>
    <p class="para">
     <ul class="itemizedlist">
-     <li class="listitem">
-      <p class="para">
-       Transparent and therefore easy to use.
-      </p>
-      <p class="para">
-       <ul class="itemizedlist">
-        <li class="listitem">
-         <p class="para">
-          Supports all of the PHP MySQL extensions.
-         </p>
-        </li>
-        <li class="listitem">
-         <p class="para">
-          Little to no application changes required, dependent on the required usage scenario.
-         </p>
-        </li>
-       </ul>
-      </p>
-     </li>
-
      <li class="listitem">
       <p class="para">
        Possible performance benefits
@@ -163,8 +142,12 @@ ul.toc li a:hover {
   <div class="section" id="mysqlnd-memcache.limitations" name="mysqlnd-memcache.limitations">
    <h2 class="title">Limitations</h2>
    <p class="para">
-    The initial version is not binary safe. Due to the way the InnoDB Memcache
-    plugin works there are restrictions related to seperators.
+    The initial version is not binary safe. Due to the way the MySQL Memcache
+    plugins works there are restrictions related to seperators.
+   </p>
+   <p class="para">
+    Prepared statements, unbuffered result set and result set meta data
+    are not supported.
    </p>
   </div>
 
@@ -173,8 +156,9 @@ ul.toc li a:hover {
    <p class="para">
     The shortcut <i>mysqlnd_memcache</i>
     stands for <i>mysqlnd memcache plugin</i>.
-    Memcache refers to support of the MySQL InnoDB Memcache plugin.
-    The plugin is not related to Memcached.
+    Memcache refers to support of the MySQL Memcache plugins
+    for InnoDB and NDB (MySQL Cluster). The plugin is not
+    related to the Memcached cache server.
    </p>
   </div>
  </div>

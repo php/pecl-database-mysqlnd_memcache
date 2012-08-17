@@ -54,13 +54,14 @@ ul.toc li a:hover {
   <li class="header up"><a href="book.mysqlnd-memcache.html">mysqlnd_memcache</a></li>
   <li class="header up"><a href="mysqlnd-memcache.quickstart.html">Quickstart and Examples</a></li>
   <li class="active"><a href="mysqlnd-memcache.quickstart.configuration.html">Setup</a></li>
+  <li><a href="mysqlnd-memcache.quickstart.usage.html">Usage</a></li>
  </ul>
 
         </td>
         <td width="85%">
             <div style="text-align: center;">
                 <div class="prev" style="text-align: left; float: left;"><a href="mysqlnd-memcache.quickstart.html">Quickstart and Examples</a></div>
-                <div class="next" style="text-align: right; float: right;"><a href="mysqlnd-memcache.concepts.html">Concepts</a></div>
+                <div class="next" style="text-align: right; float: right;"><a href="mysqlnd-memcache.quickstart.usage.html">Usage</a></div>
                 <div class="up"><a href="mysqlnd-memcache.quickstart.html">Quickstart and Examples</a></div>
                 <div class="home"><a href="index.html">PHP Manual</a></div>
             </div><hr/>
@@ -70,7 +71,7 @@ ul.toc li a:hover {
    The plugin is implemented as a PHP extension. See also the
    <a href="mysqlnd-memcache.installation.html" class="link">installation instructions</a> to
    install the
-   <a href="http://pecl.php.net/package/mysqlnd_ms" class="link external">&raquo; PECL/mysqlnd_memcache</a> extension.
+   <a href="http://pecl.php.net/package/mysqlnd_memcache" class="link external">&raquo; PECL/mysqlnd_memcache</a> extension.
   </p>
   <p class="para">
    Compile or configure the PHP MySQL extension (API) (<a href="ref.mysqli.html" class="link">mysqli</a>,
@@ -96,37 +97,31 @@ ul.toc li a:hover {
     </div>
   </p>
   <p class="para">
-   <div class="example">
-    <p><b>Example #2 Subtitle example</b></p>
-    <div class="example-contents">
-<div class="phpcode"><code><span style="color: #000000">
-<span style="color: #0000BB">&lt;?php<br /></span><span style="color: #FF8000">/*&nbsp;Load&nbsp;balanced&nbsp;following&nbsp;"myapp"&nbsp;section&nbsp;rules&nbsp;from&nbsp;the&nbsp;plugins&nbsp;config&nbsp;file&nbsp;*/<br /></span><span style="color: #0000BB">$mysqli&nbsp;</span><span style="color: #007700">=&nbsp;new&nbsp;</span><span style="color: #0000BB">mysqli</span><span style="color: #007700">(</span><span style="color: #DD0000">"myapp"</span><span style="color: #007700">,&nbsp;</span><span style="color: #DD0000">"username"</span><span style="color: #007700">,&nbsp;</span><span style="color: #DD0000">"password"</span><span style="color: #007700">,&nbsp;</span><span style="color: #DD0000">"database"</span><span style="color: #007700">);<br /></span><span style="color: #0000BB">$pdo&nbsp;</span><span style="color: #007700">=&nbsp;new&nbsp;</span><span style="color: #0000BB">PDO</span><span style="color: #007700">(</span><span style="color: #DD0000">'mysql:host=myapp;dbname=database'</span><span style="color: #007700">,&nbsp;</span><span style="color: #DD0000">'username'</span><span style="color: #007700">,&nbsp;</span><span style="color: #DD0000">'password'</span><span style="color: #007700">);<br /></span><span style="color: #0000BB">$mysql&nbsp;</span><span style="color: #007700">=&nbsp;</span><span style="color: #0000BB">mysql_connect</span><span style="color: #007700">(</span><span style="color: #DD0000">"myapp"</span><span style="color: #007700">,&nbsp;</span><span style="color: #DD0000">"username"</span><span style="color: #007700">,&nbsp;</span><span style="color: #DD0000">"password"</span><span style="color: #007700">);<br /></span><span style="color: #0000BB">?&gt;</span>
-</span>
-</code></div>
-    </div>
-
-   </div>
+   Follow the instructions given in the MySQL Reference Manual on installing
+   the Memcache plugins for the MySQL server. Activate the plugins and
+   configure the Memcache access to SQL tables.
   </p>
   <p class="para">
-   Code example with output.
+   For all future examples it is assumed that you have created a SQL table
+   like the following and configured Memcache access to it.
   </p>
   <p class="para">
    <div class="example">
-    <p><b>Example #3 Executing statements</b></p>
+    <p><b>Example #2 SQL table used for the Quickstart</b></p>
     <div class="example-contents">
-<div class="phpcode"><code><span style="color: #000000">
-<span style="color: #0000BB">&lt;?php<br /></span><span style="color: #FF8000">/*&nbsp;Load&nbsp;balanced&nbsp;following&nbsp;"myapp"&nbsp;section&nbsp;rules&nbsp;from&nbsp;the&nbsp;plugins&nbsp;config&nbsp;file&nbsp;*/<br /></span><span style="color: #0000BB">$mysqli&nbsp;</span><span style="color: #007700">=&nbsp;new&nbsp;</span><span style="color: #0000BB">mysqli</span><span style="color: #007700">(</span><span style="color: #DD0000">"myapp"</span><span style="color: #007700">,&nbsp;</span><span style="color: #DD0000">"username"</span><span style="color: #007700">,&nbsp;</span><span style="color: #DD0000">"password"</span><span style="color: #007700">,&nbsp;</span><span style="color: #DD0000">"database"</span><span style="color: #007700">);<br />if&nbsp;(</span><span style="color: #0000BB">mysqli_connect_errno</span><span style="color: #007700">())<br />&nbsp;&nbsp;</span><span style="color: #FF8000">/*&nbsp;Of&nbsp;course,&nbsp;your&nbsp;error&nbsp;handling&nbsp;is&nbsp;nicer...&nbsp;*/<br />&nbsp;&nbsp;</span><span style="color: #007700">die(</span><span style="color: #0000BB">sprintf</span><span style="color: #007700">(</span><span style="color: #DD0000">"[%d]&nbsp;%s\n"</span><span style="color: #007700">,&nbsp;</span><span style="color: #0000BB">mysqli_connect_errno</span><span style="color: #007700">(),&nbsp;</span><span style="color: #0000BB">mysqli_connect_error</span><span style="color: #007700">()));<br /><br /></span><span style="color: #FF8000">/*&nbsp;Statements&nbsp;will&nbsp;be&nbsp;run&nbsp;on&nbsp;the&nbsp;master&nbsp;*/<br /></span><span style="color: #007700">if&nbsp;(!</span><span style="color: #0000BB">$mysqli</span><span style="color: #007700">-&gt;</span><span style="color: #0000BB">query</span><span style="color: #007700">(</span><span style="color: #DD0000">"DROP&nbsp;TABLE&nbsp;IF&nbsp;EXISTS&nbsp;test"</span><span style="color: #007700">))&nbsp;{<br />&nbsp;</span><span style="color: #0000BB">printf</span><span style="color: #007700">(</span><span style="color: #DD0000">"[%d]&nbsp;%s\n"</span><span style="color: #007700">,&nbsp;</span><span style="color: #0000BB">$mysqli</span><span style="color: #007700">-&gt;</span><span style="color: #0000BB">errno</span><span style="color: #007700">,&nbsp;</span><span style="color: #0000BB">$mysqli</span><span style="color: #007700">-&gt;</span><span style="color: #0000BB">error</span><span style="color: #007700">);<br />}<br />if&nbsp;(!</span><span style="color: #0000BB">$mysqli</span><span style="color: #007700">-&gt;</span><span style="color: #0000BB">query</span><span style="color: #007700">(</span><span style="color: #DD0000">"CREATE&nbsp;TABLE&nbsp;test(id&nbsp;INT)"</span><span style="color: #007700">))&nbsp;{<br />&nbsp;</span><span style="color: #0000BB">printf</span><span style="color: #007700">(</span><span style="color: #DD0000">"[%d]&nbsp;%s\n"</span><span style="color: #007700">,&nbsp;</span><span style="color: #0000BB">$mysqli</span><span style="color: #007700">-&gt;</span><span style="color: #0000BB">errno</span><span style="color: #007700">,&nbsp;</span><span style="color: #0000BB">$mysqli</span><span style="color: #007700">-&gt;</span><span style="color: #0000BB">error</span><span style="color: #007700">);<br />}<br />if&nbsp;(!</span><span style="color: #0000BB">$mysqli</span><span style="color: #007700">-&gt;</span><span style="color: #0000BB">query</span><span style="color: #007700">(</span><span style="color: #DD0000">"INSERT&nbsp;INTO&nbsp;test(id)&nbsp;VALUES&nbsp;(1)"</span><span style="color: #007700">))&nbsp;{<br />&nbsp;</span><span style="color: #0000BB">printf</span><span style="color: #007700">(</span><span style="color: #DD0000">"[%d]&nbsp;%s\n"</span><span style="color: #007700">,&nbsp;</span><span style="color: #0000BB">$mysqli</span><span style="color: #007700">-&gt;</span><span style="color: #0000BB">errno</span><span style="color: #007700">,&nbsp;</span><span style="color: #0000BB">$mysqli</span><span style="color: #007700">-&gt;</span><span style="color: #0000BB">error</span><span style="color: #007700">);<br />}<br /><br /></span><span style="color: #FF8000">/*&nbsp;read-only:&nbsp;statement&nbsp;will&nbsp;be&nbsp;run&nbsp;on&nbsp;a&nbsp;slave&nbsp;*/<br /></span><span style="color: #007700">if&nbsp;(!(</span><span style="color: #0000BB">$res&nbsp;</span><span style="color: #007700">=&nbsp;</span><span style="color: #0000BB">$mysqli</span><span style="color: #007700">-&gt;</span><span style="color: #0000BB">query</span><span style="color: #007700">(</span><span style="color: #DD0000">"SELECT&nbsp;id&nbsp;FROM&nbsp;test"</span><span style="color: #007700">))&nbsp;{<br />&nbsp;</span><span style="color: #0000BB">printf</span><span style="color: #007700">(</span><span style="color: #DD0000">"[%d]&nbsp;%s\n"</span><span style="color: #007700">,&nbsp;</span><span style="color: #0000BB">$mysqli</span><span style="color: #007700">-&gt;</span><span style="color: #0000BB">errno</span><span style="color: #007700">,&nbsp;</span><span style="color: #0000BB">$mysqli</span><span style="color: #007700">-&gt;</span><span style="color: #0000BB">error</span><span style="color: #007700">);<br />}&nbsp;else&nbsp;{<br />&nbsp;</span><span style="color: #0000BB">$row&nbsp;</span><span style="color: #007700">=&nbsp;</span><span style="color: #0000BB">$res</span><span style="color: #007700">-&gt;</span><span style="color: #0000BB">fetch_assoc</span><span style="color: #007700">();<br />&nbsp;</span><span style="color: #0000BB">$res</span><span style="color: #007700">-&gt;</span><span style="color: #0000BB">close</span><span style="color: #007700">();<br />&nbsp;</span><span style="color: #0000BB">printf</span><span style="color: #007700">(</span><span style="color: #DD0000">"Slave&nbsp;returns&nbsp;id&nbsp;=&nbsp;'%s'\n"</span><span style="color: #007700">,&nbsp;</span><span style="color: #0000BB">$row</span><span style="color: #007700">[</span><span style="color: #DD0000">'id'</span><span style="color: #007700">];<br />}<br /></span><span style="color: #0000BB">$mysqli</span><span style="color: #007700">-&gt;</span><span style="color: #0000BB">close</span><span style="color: #007700">();<br /></span><span style="color: #0000BB">?&gt;</span>
-</span>
-</code></div>
+<div class="sqlcode"><pre class="sqlcode">CREATE TABLE test(
+  id CHAR(16),
+  f1 VARCHAR(255),
+  f2 VARCHAR(255),
+  f3 VARCHAR(255),
+  flags INT NOT NULL,
+  cas_column INT,
+  expire_time_column INT,
+  PRIMARY KEY(id)
+) ENGINE=InnoDB</pre>
+</div>
     </div>
 
-    <div class="example-contents"><p>The above example will output
-something similar to:</p></div>
-    <div class="example-contents screen">
-<div class="cdata"><pre>
-Slave returns id = &#039;1&#039;
-</pre></div>
-    </div>
    </div>
   </p>
  </div>

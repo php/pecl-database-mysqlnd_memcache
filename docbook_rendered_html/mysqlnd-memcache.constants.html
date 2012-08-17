@@ -54,10 +54,9 @@ ul.toc li a:hover {
   <li class="header up"><a href="book.mysqlnd-memcache.html">mysqlnd_memcache</a></li>
   <li><a href="intro.mysqlnd-memcache.html">Introduction</a></li>
   <li><a href="mysqlnd-memcache.quickstart.html">Quickstart and Examples</a></li>
-  <li><a href="mysqlnd-memcache.concepts.html">Concepts</a></li>
   <li><a href="mysqlnd-memcache.setup.html">Installing/Configuring</a></li>
   <li class="active"><a href="mysqlnd-memcache.constants.html">Predefined Constants</a></li>
-  <li><a href="ref.mysqlnd-memcache.html">Mysqlnd_ms Functions</a></li>
+  <li><a href="ref.mysqlnd-memcache.html">Mysqlnd_memcache Functions</a></li>
   <li><a href="mysqlnd-memcache.changes.html">Change History</a></li>
  </ul>
 
@@ -65,7 +64,7 @@ ul.toc li a:hover {
         <td width="85%">
             <div style="text-align: center;">
                 <div class="prev" style="text-align: left; float: left;"><a href="mysqlnd-memcache.configuration.html">Runtime Configuration</a></div>
-                <div class="next" style="text-align: right; float: right;"><a href="ref.mysqlnd-memcache.html">Mysqlnd_ms Functions</a></div>
+                <div class="next" style="text-align: right; float: right;"><a href="ref.mysqlnd-memcache.html">Mysqlnd_memcache Functions</a></div>
                 <div class="up"><a href="book.mysqlnd-memcache.html">mysqlnd_memcache</a></div>
                 <div class="home"><a href="index.html">PHP Manual</a></div>
             </div><hr/>
@@ -76,6 +75,36 @@ The constants below are defined by this extension, and
 will only be available when the extension has either
 been compiled into PHP or dynamically loaded at runtime.
 </p>
+
+ <p class="para">
+  <em class="emphasis">MySQL Memcache Plugin related</em>
+ </p>
+ <p class="para">
+  <dl>
+
+   <dt id="constant.mysqlnd-memcache-default-regexp">
+    <span class="term">
+     <b><tt>MYSQLND_MEMCACHE_DEFAULT_REGEXP</tt></b>
+     ( <span class="type">string</span> )
+    </span>
+    <dd>
+
+     <span class="simpara">
+      Default regular expression (pcre style) used for matching <i>SELECT</i>
+      statements that shall be mapped into a MySQL Memcache Plugin
+      access, if possible.
+     </span>
+     <span class="simpara">
+      It is possible to use a different but the defailt regular expression for pattern
+      matching. See also <span class="function">mysqlnd_memcache_set</span>.
+     </span>
+    </dd>
+
+   </dt>
+
+  </dl>
+
+ </p>
 
  <p class="para">
   <em class="emphasis">Assorted</em>
@@ -137,7 +166,7 @@ been compiled into PHP or dynamically loaded at runtime.
     <dd>
 
      <span class="simpara">
-      Plugin version string, for example, "<span class="quote">1.0.0-prototype</span>".
+      Plugin version string, for example, "<span class="quote">1.0.0-alpha</span>".
      </span>
     </dd>
 
