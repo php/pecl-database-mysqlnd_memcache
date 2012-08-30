@@ -829,6 +829,7 @@ static char *mymem_pick_mapping_query(MYSQLND *conn, int *query_len TSRMLS_DC) /
 	} else if (!strncmp(row[0], "ndbmemcache", sizeof("ndbmemcache")-1)) {
 		retval = MAPPING_QUERY_NDB;
 		*query_len = sizeof(MAPPING_QUERY_NDB)-1;
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "MySQL Cluster support is not fully tested, yet");
 	} else {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Invalid memcache configuration table found, this error should be impossible to hit");
 		/* We make a SQL query using IN("innodb_memcache", "ndmemcache") but something different is being returned, major bug */
