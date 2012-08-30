@@ -819,6 +819,11 @@ static char *mymem_pick_mapping_query(MYSQLND *conn, int *query_len TSRMLS_DC) /
 		return NULL;
 	}
 	if (!strncmp(row[0], "innodb_memcache", sizeof("innodb_memcache")-1)) {
+		if (mysqlnd_get_server_version(conn) < 50606) {
+			php_error_docref(NULL TSRMLS_CC, E_WARNING, "invalid MySQL Server version, require at least MySQL 5.6.6");
+			mysqlnd_free_result(res, 0);
+			return NULL;
+		}
 		retval = MAPPING_QUERY_INNODB;
 		*query_len = sizeof(MAPPING_QUERY_INNODB)-1;
 	} else if (!strncmp(row[0], "ndbmemcache", sizeof("ndbmemcache")-1)) {
