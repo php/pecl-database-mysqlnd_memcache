@@ -67,10 +67,14 @@ static func_mysqlnd_conn_data__dtor orig_mysqlnd_conn_dtor;
                                " WHERE TABLE_NAME = 'containers' "\
                                "   AND TABLE_SCHEMA IN ('innodb_memcache', 'ndbmemcache')"
 
-#define MAPPING_QUERY_INNODB "    SELECT c.name, '' key_prefix, c.db_schema, c.db_table, c.key_columns, c.value_columns, o.value sep " \
-                             "      FROM innodb_memcache.containers c " \
-                             " LEFT JOIN innodb_memcache.config_options o " \
-                             "        ON o.name = 'separator'"
+#define MAPPING_QUERY_INNODB "    SELECT c.name, " \
+                             "           CONCAT('@@', c.name, (SELECT value FROM innodb_memcache.config_options WHERE name = 'table_map_delimiter')) AS key_prefix, " \
+                             "           c.db_schema, " \
+                             "           c.db_table, " \
+                             "           c.key_columns, "\
+                             "           c.value_columns, "\
+                             "           (SELECT value FROM innodb_memcache.config_options WHERE name = 'separator') AS sep " \
+                             "      FROM innodb_memcache.containers c "
 
 #define MAPPING_QUERY_NDB    "    SELECT c.name, p.key_prefix, c.db_schema, c.db_table, c.key_columns, c.value_columns, '|' separator " \
                              "      FROM ndbmemcache.containers c " \

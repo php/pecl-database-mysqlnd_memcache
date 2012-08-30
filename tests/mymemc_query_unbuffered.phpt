@@ -38,7 +38,7 @@ mysqlnd_memcache.enable=1
 			$link->errno, $link->error);
 	}
 
-	if (!($key1 = $memc->get("key1"))) {
+	if (!($key1 = $memc->get("@@mymem_test.key1"))) {
 		printf("[003] Failed to fetch 'key1' using native Memcache API.\n");
 	}
 	$columns = explode("|", $key1);
