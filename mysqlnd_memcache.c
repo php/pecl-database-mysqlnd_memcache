@@ -166,7 +166,7 @@ static int count_char(char *pos, char v) /* {{{ */
  */
 PHP_INI_BEGIN()
 
-	STD_PHP_INI_BOOLEAN("mysqlnd_memcache.enable", "0", PHP_INI_SYSTEM, OnUpdateBool, enable, zend_mysqlnd_memcache_globals, mysqlnd_memcache_globals)
+	STD_PHP_INI_BOOLEAN("mysqlnd_memcache.enable", "1", PHP_INI_SYSTEM, OnUpdateBool, enable, zend_mysqlnd_memcache_globals, mysqlnd_memcache_globals)
 PHP_INI_END()
 
 /* }}} */
@@ -175,7 +175,7 @@ PHP_INI_END()
  */
 static void php_mysqlnd_memcache_init_globals(zend_mysqlnd_memcache_globals *mysqlnd_memcache_globals)
 {
-	mysqlnd_memcache_globals->enable = FALSE;
+	mysqlnd_memcache_globals->enable = TRUE;
 }
 
 /* }}} */
