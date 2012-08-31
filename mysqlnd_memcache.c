@@ -859,6 +859,7 @@ static mymem_connection_data_data *mymem_init_mysqlnd(MYSQLND *conn TSRMLS_DC) /
 	char *query = NULL;
 
 	if (!MYSQLND_MEMCACHE_G(enable)) {
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "mysqlnd_memcache.enable not set in php.ini. Enable it and restart PHP");
 		return NULL;
 	}
 
