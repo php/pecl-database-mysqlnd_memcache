@@ -17,7 +17,7 @@
   <para>
    This function returns an array containing all the mysqlnd_memcache related
    configuration attached to a MySQL connection. This includes MySQL the 
-   Memcache object provided via <methodname>mysqlnd_memcache_set</methodname>
+   Memcache object provided via <function>mysqlnd_memcache_set</function>
    as well as the table mapping configuration which was automatically collected
    from the MySQL server.
   </para>

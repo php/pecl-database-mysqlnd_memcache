@@ -4,7 +4,7 @@
 <refentry xml:id="function.mysqlnd-memcache-set" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
  <refnamediv>
   <refname>mysqlnd_memcache_set</refname>
-  <refpurpose>Associate aMySQLconnection with a Memcache connection</refpurpose>
+  <refpurpose>Associate a MySQL connection with a Memcache connection</refpurpose>
  </refnamediv>
 
  <refsect1 role="description">
