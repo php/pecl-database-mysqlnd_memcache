@@ -9,8 +9,9 @@
   &reftitle.intro;
   <para>
    The mysqlnd memcache plugin (<literal>mysqlnd_memcache</literal>)
-   maps SQL SELECT statements to MySQL Memcache plugin accesses.
-   The plugin supports all PHP MySQL extensions that use
+   maps SQL SELECT statements to MySQL InnoDB Memcached Daemon Plugin accesses.
+   It includes experimental support for the MySQL Cluster Memcached Daemon 
+   Plugin. The plugin supports all PHP MySQL extensions that use
    <link linkend="book.mysqlnd">mysqlnd</link>.
   </para>
   <para>

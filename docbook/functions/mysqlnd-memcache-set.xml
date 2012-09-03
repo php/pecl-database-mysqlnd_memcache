@@ -4,7 +4,7 @@
 <refentry xml:id="function.mysqlnd-memcache-set" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
  <refnamediv>
   <refname>mysqlnd_memcache_set</refname>
-  <refpurpose>TODO</refpurpose>
+  <refpurpose>Associate aMySQLconnection with a Memcache connection</refpurpose>
  </refnamediv>
 
  <refsect1 role="description">
@@ -40,7 +40,8 @@
     <term><parameter>memcache_connection</parameter></term>
     <listitem>
      <para>
-      TODO
+      A Memcached instance with an connection to the MySQL Memcache Daemon
+      plugin.
      </para>
     </listitem>
    </varlistentry>
@@ -53,7 +54,7 @@
     </listitem>
    </varlistentry>
    <varlistentry>
-    <term><parameter>callaback</parameter></term>
+    <term><parameter>callback</parameter></term>
     <listitem>
      <para>
       TODO
