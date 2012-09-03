@@ -892,7 +892,45 @@ static mymem_connection_data_data *mymem_init_mysqlnd(MYSQLND *conn TSRMLS_DC) /
 	while (row = mysqlnd_fetch_row_c(res)) {
 		char *key = NULL;
 		int key_len;
-		mymem_mapping *mapping = emalloc(sizeof(mymem_mapping));
+		mymem_mapping *mapping;
+		
+		if (UNEXPECTED(!row[1])) {
+			if (query == MAPPING_QUERY_INNODB) {
+				/* with InnoDB column 1 is a concat of the name and table_map_deimiter, if the result is NULL one of those has to be NULL */
+				if (!row[0]) {
+					php_error_docref(NULL TSRMLS_CC, E_WARNING, "Found innodb_memcache.containers entry without name using %s.%s", row[3] ? row[3] : '(table null)', row[4] ? row[4] : '(id column null)');
+					continue; /* next one might work fine */
+				} else {
+					php_error_docref(NULL TSRMLS_CC, E_WARNING, "'table_map_delimiter' is not set in innodb_memcache.config_options");
+					break; /* This will hit any container, no point to continue */
+				}
+			}
+		}
+		
+		if (UNEXPECTED(!row[6])) {
+			if (query == MAPPING_QUERY_INNODB) {
+				php_error_docref(NULL TSRMLS_CC, E_WARNING, "'separator' is not set in innodb_memcache.config_options");
+				break; /* This will hit any container, no point to continue */
+			}
+			/* With NDB this currently can't happen as this is a literal in the query */
+		}
+		
+		if (UNEXPECTED(!row[2] || !row[3] || !row[4] || !row[5])) {
+			/* row[0] is handled along with row[1] above */
+			const char *error_col = "(unknown)";
+			int i;
+			for (i = 2; i <= 5; ++i) {
+				if (!row[i]) {
+					MYSQLND_FIELD *f = mysqlnd_fetch_field_direct(res, i);
+					error_col = f->name;
+				}
+			}
+			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Field '%s' for '%s' is NULL in innodb_memcache.containers", error_col, row[0]);
+			continue;
+		}
+		
+		mapping = emalloc(sizeof(mymem_mapping));
+		
 		/*
 		For highest performance we might cache this persistently, globally,
 		this creates the risk of stuff going wrong if servers don't match
