@@ -3,7 +3,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
     <meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
-    <title>PHP Manual: Runtime Configuration</title>
+    <title>Mysqlnd Memache plugin: Runtime Configuration</title>
 
 </head>
 <body>
@@ -46,11 +46,7 @@ ul.toc li a:hover {
 }
 </style>
  <ul class="toc">
-  <li class="header home"><a href="index.html">PHP Manual</a></li>
-  <li class="header up"><a href="funcref.html">Function Reference</a></li>
-  <li class="header up"><a href="refs.database.html">Database Extensions</a></li>
-  <li class="header up"><a href="refs.database.vendors.html">Vendor Specific Database Extensions</a></li>
-  <li class="header up"><a href="set.mysqlinfo.html">MySQL</a></li>
+  <li class="header home"><a href="book.mysqlnd-memcache.html">Mysqlnd Memache plugin</a></li>
   <li class="header up"><a href="book.mysqlnd-memcache.html">mysqlnd_memcache</a></li>
   <li class="header up"><a href="mysqlnd-memcache.setup.html">Installing/Configuring</a></li>
   <li><a href="mysqlnd-memcache.requirements.html">Requirements</a></li>
@@ -64,7 +60,7 @@ ul.toc li a:hover {
                 <div class="prev" style="text-align: left; float: left;"><a href="mysqlnd-memcache.installation.html">Installation</a></div>
                 <div class="next" style="text-align: right; float: right;"><a href="mysqlnd-memcache.constants.html">Predefined Constants</a></div>
                 <div class="up"><a href="mysqlnd-memcache.setup.html">Installing/Configuring</a></div>
-                <div class="home"><a href="index.html">PHP Manual</a></div>
+                <div class="home"><a href="book.mysqlnd-memcache.html">Mysqlnd Memache plugin</a></div>
             </div><hr/>
 <div id="mysqlnd-memcache.configuration" class="section">
  <h2 class="title">Runtime Configuration</h2>
@@ -73,10 +69,10 @@ The behaviour of these functions is affected by settings in <var class="filename
 </p>
  <p class="para">
   <table class="doctable table">
-   <caption><b>Mysqlnd_memcache Configure Options</b></caption>
+   <caption><strong>Mysqlnd_memcache Configure Options</strong></caption>
    
-    <thead valign="middle">
-     <tr valign="middle">
+    <thead>
+     <tr>
       <th>Name</th>
       <th>Default</th>
       <th>Changeable</th>
@@ -85,12 +81,12 @@ The behaviour of these functions is affected by settings in <var class="filename
 
     </thead>
 
-    <tbody valign="middle" class="tbody">
-     <tr valign="middle">
-      <td align="left"><a href="mysqlnd-memcache.configuration.html#ini.mysqlnd-memcache.enable" class="link">mysqlnd_memcache.enable</a></td>
-      <td align="left">0</td>
-      <td align="left">PHP_INI_SYSTEM</td>
-      <td align="left"></td>
+    <tbody class="tbody">
+     <tr>
+      <td><a href="mysqlnd-memcache.configuration.html#ini.mysqlnd-memcache.enable" class="link">mysqlnd_memcache.enable</a></td>
+      <td>1</td>
+      <td>PHP_INI_SYSTEM</td>
+      <td></td>
      </tr>
 
     </tbody>
@@ -108,16 +104,24 @@ the configuration directives.</p>
 
    <dt id="ini.mysqlnd-memcache.enable">
     <span class="term">
-     <i><tt class="parameter">mysqlnd_memcache.enable</tt></i>
-      <span class="type">integer</span> 
+     <em><code class="parameter">mysqlnd_memcache.enable</code></em>
+     <span class="type">integer</span>
     </span>
     <dd>
 
      <p class="para">
       Enables or disables the plugin. If disabled, the extension will not plug
       into
-      <a href="book.mysqlnd.html" class="link">mysqlnd</a> to proxy internal
-      <a href="book.mysqlnd.html" class="link">mysqlnd</a> C API calls.
+      <a href="" class="link">mysqlnd</a> to proxy internal
+      <a href="" class="link">mysqlnd</a> C API calls.
+      <blockquote class="note"><p><strong class="note">Note</strong>: 
+       <p class="para">
+        This option is mostly meant to be used by developers building this
+        extension static into PHP. In general users are encouraged to build
+        this extension as shared object and unloading it completely if not
+        needed.
+       </p>
+      </p></blockquote>
      </p>
     </dd>
 

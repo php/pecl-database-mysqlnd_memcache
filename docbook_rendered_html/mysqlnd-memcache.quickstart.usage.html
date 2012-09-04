@@ -3,7 +3,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
     <meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
-    <title>PHP Manual: Usage</title>
+    <title>Mysqlnd Memache plugin: Usage</title>
 
 </head>
 <body>
@@ -46,11 +46,7 @@ ul.toc li a:hover {
 }
 </style>
  <ul class="toc">
-  <li class="header home"><a href="index.html">PHP Manual</a></li>
-  <li class="header up"><a href="funcref.html">Function Reference</a></li>
-  <li class="header up"><a href="refs.database.html">Database Extensions</a></li>
-  <li class="header up"><a href="refs.database.vendors.html">Vendor Specific Database Extensions</a></li>
-  <li class="header up"><a href="set.mysqlinfo.html">MySQL</a></li>
+  <li class="header home"><a href="book.mysqlnd-memcache.html">Mysqlnd Memache plugin</a></li>
   <li class="header up"><a href="book.mysqlnd-memcache.html">mysqlnd_memcache</a></li>
   <li class="header up"><a href="mysqlnd-memcache.quickstart.html">Quickstart and Examples</a></li>
   <li><a href="mysqlnd-memcache.quickstart.configuration.html">Setup</a></li>
@@ -63,23 +59,23 @@ ul.toc li a:hover {
                 <div class="prev" style="text-align: left; float: left;"><a href="mysqlnd-memcache.quickstart.configuration.html">Setup</a></div>
                 <div class="next" style="text-align: right; float: right;"><a href="mysqlnd-memcache.setup.html">Installing/Configuring</a></div>
                 <div class="up"><a href="mysqlnd-memcache.quickstart.html">Quickstart and Examples</a></div>
-                <div class="home"><a href="index.html">PHP Manual</a></div>
+                <div class="home"><a href="book.mysqlnd-memcache.html">Mysqlnd Memache plugin</a></div>
             </div><hr/>
 <div id="mysqlnd-memcache.quickstart.usage" class="section">
   <h2 class="title">Usage</h2>
   <p class="para">
-   The plugin attempts to transparently replace a SQL <i>SELECT</i>
+   The plugin attempts to transparently replace a SQL <em>SELECT</em>
    statement by a memcache access. For that purpose the plugin monitors
    all SQL statements executed and tries to match the statement string
-   against <b><tt>MYSQLND_MEMCACHE_DEFAULT_REGEXP</tt></b>.
+   against <strong><code>MYSQLND_MEMCACHE_DEFAULT_REGEXP</code></strong>.
    In case of a match, the mysqlnd memcache plugin checks whether the
-   <i>SELECT</i> is accessing all columns of a mapped table and
-   the <i>WHERE</i> clause does a unique key lookup.
+   <em>SELECT</em> is accessing all columns of a mapped table and
+   the <em>WHERE</em> clause does a unique key lookup.
   </p>
   <p class="para">
    In case of the example SQL table, the plugin will use the Memcache interface
    of the MySQL server to fetch results for a SQL query like
-   <i>SELECT f1, f2, f3 WHERE id = n</i>.
+   <em>SELECT f1, f2, f3 WHERE id = n</em>.
   </p>
  </div>
         </td>

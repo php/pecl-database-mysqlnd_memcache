@@ -46,6 +46,12 @@
    <para>
    The key features of PECL/mysqlnd_memcache are as follows.
    </para>
+   <mediaobject>
+    <alt>mysqlnd_memcache data flow</alt>
+    <imageobject>
+     <imagedata fileref="en/reference/mysqlnd_memcache/figures/mymemflow.png"/>
+    </imageobject>
+   </mediaobject>
    <para>
     <itemizedlist>
      <listitem>
@@ -86,6 +92,12 @@
    <para>
     Prepared statements, unbuffered result set and result set meta data
     are not supported.
+   </para>
+   <para>
+    The mapping information for tables accessible via Memcache is not cached
+    in the plugin between requests but fetched from the MySQL server each time 
+    a MySQL connection is associated with a Memcache connection. See
+    <function>mysqlnd_memcache_set</function> for details.
    </para>
   </section>
 

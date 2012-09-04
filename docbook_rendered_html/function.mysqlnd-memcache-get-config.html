@@ -3,7 +3,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
     <meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
-    <title>PHP Manual: Returns information about the plugin configuration</title>
+    <title>Mysqlnd Memache plugin: Returns information about the plugin configuration</title>
 
 </head>
 <body>
@@ -46,11 +46,7 @@ ul.toc li a:hover {
 }
 </style>
  <ul class="toc">
-  <li class="header home"><a href="index.html">PHP Manual</a></li>
-  <li class="header up"><a href="funcref.html">Function Reference</a></li>
-  <li class="header up"><a href="refs.database.html">Database Extensions</a></li>
-  <li class="header up"><a href="refs.database.vendors.html">Vendor Specific Database Extensions</a></li>
-  <li class="header up"><a href="set.mysqlinfo.html">MySQL</a></li>
+  <li class="header home"><a href="book.mysqlnd-memcache.html">Mysqlnd Memache plugin</a></li>
   <li class="header up"><a href="book.mysqlnd-memcache.html">mysqlnd_memcache</a></li>
   <li class="header up"><a href="ref.mysqlnd-memcache.html">Mysqlnd_memcache Functions</a></li>
   <li class="active"><a href="function.mysqlnd-memcache-get-config.html">mysqlnd_memcache_get_config</a></li>
@@ -63,7 +59,7 @@ ul.toc li a:hover {
                 <div class="prev" style="text-align: left; float: left;"><a href="ref.mysqlnd-memcache.html">Mysqlnd_memcache Functions</a></div>
                 <div class="next" style="text-align: right; float: right;"><a href="function.mysqlnd-memcache-set.html">mysqlnd_memcache_set</a></div>
                 <div class="up"><a href="ref.mysqlnd-memcache.html">Mysqlnd_memcache Functions</a></div>
-                <div class="home"><a href="index.html">PHP Manual</a></div>
+                <div class="home"><a href="book.mysqlnd-memcache.html">Mysqlnd Memache plugin</a></div>
             </div><hr/>
 <div id="function.mysqlnd-memcache-get-config" class="refentry">
  <div class="refnamediv">
@@ -71,33 +67,37 @@ ul.toc li a:hover {
   <p class="refpurpose">Returns information about the plugin configuration</p>
  </div>
 
- <div class="refsect1 description">
+ <div class="refsect1 description" id="refsect1-function.mysqlnd-memcache-get-config-description">
   <h3 class="title">Description</h3>
   <div class="methodsynopsis dc-description">
-    <span class="type">array</span> 
+   <span class="type">array</span>
     <span class="methodname">mysqlnd_memcache_get_config</span>
-    ( <span class="methodparam"> <span class="type">mixed</span>  <tt class="parameter">$connection</tt></span>
+    ( <span class="methodparam"><span class="type">mixed</span> <code class="parameter">$connection</code></span>
    )</div>
 
   <p class="para rdfs-comment">
-   Description missing!
+   This function returns an array containing all the mysqlnd_memcache related
+   configuration attached to a MySQL connection. This includes MySQL the 
+   Memcache object provided via <span class="function">mysqlnd_memcache_set</span>
+   as well as the table mapping configuration which was automatically collected
+   from the MySQL server.
   </p>
  </div>
 
 
- <div class="refsect1 parameters">
+ <div class="refsect1 parameters" id="refsect1-function.mysqlnd-memcache-get-config-parameters">
   <h3 class="title">Parameters</h3>
   <dl>
 
    <dt>
 
-    <span class="term"><i><tt class="parameter">connection</tt></i></span>
+    <span class="term"><em><code class="parameter">connection</code></em></span>
     <dd>
 
      <p class="para">
       A handle to a MySQL server of the type
-      <a href="ref.pdo-mysql.html" class="link">PDO_MYSQL</a>, <a href="book.mysqli.html" class="link">mysqli</a> or
-      <a href="book.mysql.html" class="link">ext/mysql</a> for which the configuration is to
+      <a href="" class="link">PDO_MYSQL</a>, <a href="" class="link">mysqli</a> or
+      <a href="" class="link">ext/mysql</a> for which the configuration is to
       be returned.
      </p>
     </dd>
@@ -109,19 +109,158 @@ ul.toc li a:hover {
  </div>
 
 
- <div class="refsect1 returnvalues">
+ <div class="refsect1 returnvalues" id="refsect1-function.mysqlnd-memcache-get-config-returnvalues">
   <h3 class="title">Return Values</h3>
   <p class="para">
-   Description missing!
+   If the connection is associated with a memcache connection an array will
+   be returned. Otherwise this function will return <em>false</em>.
+  </p>
+  <p class="para">
+   The returned array has these elements:
+  </p>
+  <p class="para">
+   <table class="doctable table">
+    <caption><strong>mysqlnd_memcache_get_config array structure</strong></caption>
+     
+     <thead>
+      <tr>
+       <th>Array Key</th>
+       <th>Description</th>
+      </tr>
+
+     </thead>
+
+     <tbody class="tbody"> 
+      <tr>
+       <td>memcached</td>
+       <td>
+        Instance of Memcached associated to this MySQL connection
+        by  <span class="methodname">mysqlnd_memcache_set</span>. You can use this to
+        change settings of the memcache connection or directly querying the
+        server onthis connection.
+       </td>
+      </tr>
+
+      <tr>
+       <td>pattern</td>
+       <td>
+        Regular expression used to match an SQL query being sent to the server.
+        Queries matching this pattern will be further analyzed to decide whether
+        the query can be intercepted and sent via the memcache interface or
+        whether the query is sent using the general MySQL protocol to the
+        server. The pattern either is the default pattern,
+        <em>MYSQLND_MEMCACHE_DEFAULT_REGEXP</em> or set via
+         <span class="methodname">mysqlnd_memcache_set</span>.
+       </td>
+      </tr>
+
+      <tr>
+       <td>mappings</td>
+       <td>
+        An associative array with a list of all configured containers as they
+        were discovered by this plugin. The key for these elements is the name
+        of the container in the MySQL configuration. The value is described
+        below. The contents of this field is created by querying the MySQL
+        server during associting a MySQL and a memcache connection using
+         <span class="methodname">mysqlnd_memcache_set</span>.
+       </td>
+      </tr>
+
+      <tr>
+       <td>mapping_query</td>
+       <td>An SQL query used during
+         <span class="methodname">mysqlnd_memcache_set</span>
+        to identify the available containers and mappings. The result of that 
+        query is provided in the mappings element.
+       </td>
+      </tr>
+
+     </tbody>
+    
+   </table>
+
+   <table class="doctable table">
+    <caption><strong>Mapping entry structure</strong></caption>
+    
+     <thead>
+      <tr>
+       <th>Array Key</th>
+       <th>Description</th>
+      </tr>
+
+     </thead>
+
+     <tbody class="tbody">
+      <tr>
+       <td>prefix</td>
+       <td>
+        A prefix used while accessing data via memcache. With the MySQL InnoDB 
+        Memcache Deamon plugin this usully begins with @@ and ends with a
+        configurable separator. This prefix is placed in front of the key value
+        while using the memcache protocol.
+       </td>
+      </tr>
+
+      <tr>
+       <td>schema_name</td>
+       <td>
+        Name of the schema (database) which contains the table being accessed.
+       </td>
+      </tr>
+
+      <tr>
+       <td>table_name</td>
+       <td>
+        Name of the table which contins the data accessible via memcache
+        protocol.
+       </td>
+      </tr>
+
+      <tr>
+       <td>id_field_name</td>
+       <td>
+        Name of the database field (column) with the id used as key when
+        accessing the table vi a memcache. Often this is the database field
+        having a primary key.
+       </td>
+      </tr>
+
+      <tr>
+       <td>separator</td>
+       <td>
+        A seprator used to split different field values. This is needed as
+        memcache only provides access to a single value while MySQL can map
+        multiple columns to this value.
+        <blockquote class="note"><p><strong class="note">Note</strong>: 
+         <p class="para">
+          The separator, which can be set in the MySQL Server configuration
+          should not be part ofany value retrieved via memcache as proper
+          mapping can&#039;t be guranteed.
+         </p>
+        </p></blockquote>
+       </td>
+      </tr>
+
+      <tr>
+       <td>fields</td>
+       <td>
+        An array with the names of all fields availle forthis mapping.
+       </td>
+      </tr>
+
+     </tbody>
+    
+   </table>
+
   </p>
  </div>
 
 
- <div class="refsect1 examples">
+ <div class="refsect1 examples" id="refsect1-function.mysqlnd-memcache-get-config-examples">
   <h3 class="title">Examples</h3>
   <p class="para">
-   <div class="example">
-    <p><b>Example #1 <span class="function">mysqlnd_memcache_get_config</span> example</b></p>
+   <div class="example" id="example-3">
+    <p><strong>Example #1 <span class="function">mysqlnd_memcache_get_config</span> example</strong></p>
     <div class="example-contents">
 <div class="phpcode"><code><span style="color: #000000">
 <span style="color: #0000BB">&lt;?php<br />$mysqli&nbsp;</span><span style="color: #007700">=&nbsp;new&nbsp;</span><span style="color: #0000BB">mysqli</span><span style="color: #007700">(</span><span style="color: #DD0000">"host"</span><span style="color: #007700">,&nbsp;</span><span style="color: #DD0000">"user"</span><span style="color: #007700">,&nbsp;</span><span style="color: #DD0000">"passwd"</span><span style="color: #007700">,&nbsp;</span><span style="color: #DD0000">"database"</span><span style="color: #007700">);<br /></span><span style="color: #0000BB">$memc&nbsp;</span><span style="color: #007700">=&nbsp;new&nbsp;</span><span style="color: #0000BB">Memcached</span><span style="color: #007700">();<br /></span><span style="color: #0000BB">$memc</span><span style="color: #007700">-&gt;</span><span style="color: #0000BB">addServer</span><span style="color: #007700">(</span><span style="color: #DD0000">"host"</span><span style="color: #007700">,&nbsp;</span><span style="color: #0000BB">11211</span><span style="color: #007700">);<br /></span><span style="color: #0000BB">mysqlnd_memcache_set</span><span style="color: #007700">(</span><span style="color: #0000BB">$mysqli</span><span style="color: #007700">,&nbsp;</span><span style="color: #0000BB">$memc</span><span style="color: #007700">);<br /><br /></span><span style="color: #0000BB">var_dump</span><span style="color: #007700">(</span><span style="color: #0000BB">mysqlnd_memcache_get_config</span><span style="color: #007700">(</span><span style="color: #0000BB">$mysqli</span><span style="color: #007700">));<br /></span><span style="color: #0000BB">?&gt;</span>
@@ -164,7 +303,10 @@ array(4) {
     }
   }
   [&quot;mapping_query&quot;]=&gt;
-  string(218) &quot;    SELECT c.name, &#039;&#039; key_prefix, c.db_schema, c.db_table, c.key_columns, c.value_columns, o.value sep       FROM innodb_memcache.containers c  LEFT JOIN innodb_memcache.config_options o         ON o.name = &#039;separator&#039;&quot;
+  string(218) &quot;    SELECT c.name, &#039;&#039; key_prefix, c.db_schema, c.db_table, c.key_columns, c.value_columns, o.value sep
+  FROM innodb_memcache.containers c
+  LEFT JOIN innodb_memcache.config_options o
+  ON o.name = &#039;separator&#039;&quot;
 }
 </pre></div>
     </div>
@@ -173,12 +315,12 @@ array(4) {
  </div>
 
 
- <div class="refsect1 seealso">
+ <div class="refsect1 seealso" id="refsect1-function.mysqlnd-memcache-get-config-seealso">
   <h3 class="title">See Also</h3>
   <p class="para">
    <ul class="simplelist">
     <li class="member">
-     TODO
+      <span class="methodname">mysqlnd_memcache_set</span>
     </li>
    </ul>
   </p>

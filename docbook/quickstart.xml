@@ -69,7 +69,14 @@ CREATE TABLE test(
   cas_column INT,
   expire_time_column INT,
   PRIMARY KEY(id)
-) ENGINE=InnoDB
+  ) ENGINE=InnoDB;
+
+INSERT INTO innodb_memcache.containers(
+  name, db_schema, db_table, key_columns, value_columns, 
+  flags, cas_column, expire_time_column, unique_idx_name_on_key)
+VALUES (
+  'plugin_test', 'test', 'test', 'id', 'f1,f2,f3',
+  'flags', 'cas_column', 'expire_time_column', 'PRIMARY KEY');
 ]]>
     </programlisting>
    </example>

@@ -3,7 +3,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
     <meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
-    <title>PHP Manual: TODO</title>
+    <title>Mysqlnd Memache plugin: Associate a MySQL connection with a Memcache connection</title>
 
 </head>
 <body>
@@ -46,11 +46,7 @@ ul.toc li a:hover {
 }
 </style>
  <ul class="toc">
-  <li class="header home"><a href="index.html">PHP Manual</a></li>
-  <li class="header up"><a href="funcref.html">Function Reference</a></li>
-  <li class="header up"><a href="refs.database.html">Database Extensions</a></li>
-  <li class="header up"><a href="refs.database.vendors.html">Vendor Specific Database Extensions</a></li>
-  <li class="header up"><a href="set.mysqlinfo.html">MySQL</a></li>
+  <li class="header home"><a href="book.mysqlnd-memcache.html">Mysqlnd Memache plugin</a></li>
   <li class="header up"><a href="book.mysqlnd-memcache.html">mysqlnd_memcache</a></li>
   <li class="header up"><a href="ref.mysqlnd-memcache.html">Mysqlnd_memcache Functions</a></li>
   <li><a href="function.mysqlnd-memcache-get-config.html">mysqlnd_memcache_get_config</a></li>
@@ -63,23 +59,23 @@ ul.toc li a:hover {
                 <div class="prev" style="text-align: left; float: left;"><a href="function.mysqlnd-memcache-get-config.html">mysqlnd_memcache_get_config</a></div>
                 <div class="next" style="text-align: right; float: right;"><a href="mysqlnd-memcache.changes.html">Change History</a></div>
                 <div class="up"><a href="ref.mysqlnd-memcache.html">Mysqlnd_memcache Functions</a></div>
-                <div class="home"><a href="index.html">PHP Manual</a></div>
+                <div class="home"><a href="book.mysqlnd-memcache.html">Mysqlnd Memache plugin</a></div>
             </div><hr/>
 <div id="function.mysqlnd-memcache-set" class="refentry">
  <div class="refnamediv">
   <h1 class="refname">mysqlnd_memcache_set</h1>
-  <p class="refpurpose">TODO</p>
+  <p class="refpurpose">Associate a MySQL connection with a Memcache connection</p>
  </div>
 
- <div class="refsect1 description">
+ <div class="refsect1 description" id="refsect1-function.mysqlnd-memcache-set-description">
   <h3 class="title">Description</h3>
   <div class="methodsynopsis dc-description">
-    <span class="type">bool</span> 
+   <span class="type">bool</span>
     <span class="methodname">mysqlnd_memcache_set</span>
-    ( <span class="methodparam"> <span class="type">mixed</span>  <tt class="parameter">$mysql_connection</tt></span>
-   , <span class="methodparam"> <span class="type">object</span>  <tt class="parameter">$memcache_connection</tt></span>
-   , <span class="methodparam"> <span class="type">string</span>  <tt class="parameter">$pattern</tt></span>
-   , <span class="methodparam"> <span class="type">string</span>  <tt class="parameter">$callback</tt></span>
+    ( <span class="methodparam"><span class="type">mixed</span> <code class="parameter">$mysql_connection</code></span>
+   , <span class="methodparam"><span class="type">object</span> <code class="parameter">$memcache_connection</code></span>
+   , <span class="methodparam"><span class="type">string</span> <code class="parameter">$pattern</code></span>
+   , <span class="methodparam"><span class="type">string</span> <code class="parameter">$callback</code></span>
    )</div>
 
   <p class="para rdfs-comment">
@@ -88,19 +84,19 @@ ul.toc li a:hover {
  </div>
 
 
- <div class="refsect1 parameters">
+ <div class="refsect1 parameters" id="refsect1-function.mysqlnd-memcache-set-parameters">
   <h3 class="title">Parameters</h3>
   <dl>
 
    <dt>
 
-    <span class="term"><i><tt class="parameter">mysql_connection</tt></i></span>
+    <span class="term"><em><code class="parameter">mysql_connection</code></em></span>
     <dd>
 
      <p class="para">
       A handle to a MySQL server of the type
-      <a href="ref.pdo-mysql.html" class="link">PDO_MYSQL</a>, <a href="book.mysqli.html" class="link">mysqli</a> or
-      <a href="book.mysql.html" class="link">ext/mysql</a> for which the configuration is to
+      <a href="" class="link">PDO_MYSQL</a>, <a href="" class="link">mysqli</a> or
+      <a href="" class="link">ext/mysql</a> for which the configuration is to
       be returned.
      </p>
     </dd>
@@ -109,7 +105,20 @@ ul.toc li a:hover {
 
    <dt>
 
-    <span class="term"><i><tt class="parameter">memcache_connection</tt></i></span>
+    <span class="term"><em><code class="parameter">memcache_connection</code></em></span>
+    <dd>
+
+     <p class="para">
+      A Memcached instance with an connection to the MySQL Memcache Daemon
+      plugin.
+     </p>
+    </dd>
+
+   </dt>
+
+   <dt>
+
+    <span class="term"><em><code class="parameter">pattern</code></em></span>
     <dd>
 
      <p class="para">
@@ -121,19 +130,7 @@ ul.toc li a:hover {
 
    <dt>
 
-    <span class="term"><i><tt class="parameter">pattern</tt></i></span>
-    <dd>
-
-     <p class="para">
-      TODO
-     </p>
-    </dd>
-
-   </dt>
-
-   <dt>
-
-    <span class="term"><i><tt class="parameter">callaback</tt></i></span>
+    <span class="term"><em><code class="parameter">callback</code></em></span>
     <dd>
 
      <p class="para">
@@ -148,7 +145,7 @@ ul.toc li a:hover {
  </div>
 
 
- <div class="refsect1 returnvalues">
+ <div class="refsect1 returnvalues" id="refsect1-function.mysqlnd-memcache-set-returnvalues">
   <h3 class="title">Return Values</h3>
   <p class="para">
    TODO
@@ -156,11 +153,11 @@ ul.toc li a:hover {
  </div>
 
 
- <div class="refsect1 examples">
+ <div class="refsect1 examples" id="refsect1-function.mysqlnd-memcache-set-examples">
   <h3 class="title">Examples</h3>
   <p class="para">
-   <div class="example">
-    <p><b>Example #1 <span class="function">mysqlnd_memcache_set</span> example</b></p>
+   <div class="example" id="example-4">
+    <p><strong>Example #1 <span class="function">mysqlnd_memcache_set</span> example</strong></p>
 
     <div class="example-contents">
 <div class="phpcode"><code><span style="color: #000000">
@@ -179,7 +176,7 @@ TODO
  </div>
 
 
- <div class="refsect1 seealso">
+ <div class="refsect1 seealso" id="refsect1-function.mysqlnd-memcache-set-seealso">
   <h3 class="title">See Also</h3>
   <p class="para">
    <ul class="simplelist">

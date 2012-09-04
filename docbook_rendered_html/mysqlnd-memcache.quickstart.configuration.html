@@ -3,7 +3,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
     <meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
-    <title>PHP Manual: Setup</title>
+    <title>Mysqlnd Memache plugin: Setup</title>
 
 </head>
 <body>
@@ -46,11 +46,7 @@ ul.toc li a:hover {
 }
 </style>
  <ul class="toc">
-  <li class="header home"><a href="index.html">PHP Manual</a></li>
-  <li class="header up"><a href="funcref.html">Function Reference</a></li>
-  <li class="header up"><a href="refs.database.html">Database Extensions</a></li>
-  <li class="header up"><a href="refs.database.vendors.html">Vendor Specific Database Extensions</a></li>
-  <li class="header up"><a href="set.mysqlinfo.html">MySQL</a></li>
+  <li class="header home"><a href="book.mysqlnd-memcache.html">Mysqlnd Memache plugin</a></li>
   <li class="header up"><a href="book.mysqlnd-memcache.html">mysqlnd_memcache</a></li>
   <li class="header up"><a href="mysqlnd-memcache.quickstart.html">Quickstart and Examples</a></li>
   <li class="active"><a href="mysqlnd-memcache.quickstart.configuration.html">Setup</a></li>
@@ -63,7 +59,7 @@ ul.toc li a:hover {
                 <div class="prev" style="text-align: left; float: left;"><a href="mysqlnd-memcache.quickstart.html">Quickstart and Examples</a></div>
                 <div class="next" style="text-align: right; float: right;"><a href="mysqlnd-memcache.quickstart.usage.html">Usage</a></div>
                 <div class="up"><a href="mysqlnd-memcache.quickstart.html">Quickstart and Examples</a></div>
-                <div class="home"><a href="index.html">PHP Manual</a></div>
+                <div class="home"><a href="book.mysqlnd-memcache.html">Mysqlnd Memache plugin</a></div>
             </div><hr/>
 <div id="mysqlnd-memcache.quickstart.configuration" class="section">
   <h2 class="title">Setup</h2>
@@ -71,13 +67,13 @@ ul.toc li a:hover {
    The plugin is implemented as a PHP extension. See also the
    <a href="mysqlnd-memcache.installation.html" class="link">installation instructions</a> to
    install the
-   <a href="http://pecl.php.net/package/mysqlnd_memcache" class="link external">&raquo; PECL/mysqlnd_memcache</a> extension.
+   <a href="http://pecl.php.net/package/mysqlnd_memcache" class="link external">&raquo;&nbsp;PECL/mysqlnd_memcache</a> extension.
   </p>
   <p class="para">
-   Compile or configure the PHP MySQL extension (API) (<a href="ref.mysqli.html" class="link">mysqli</a>,
-   <a href="ref.pdo-mysql.html" class="link">PDO_MYSQL</a>,
-   <a href="ref.mysql.html" class="link">mysql</a>) that you plan to use with support
-   for the <a href="book.mysqlnd.html" class="link">mysqlnd</a> library. PECL/mysqlnd_memcache
+   Compile or configure the PHP MySQL extension (API) (<a href="" class="link">mysqli</a>,
+   <a href="" class="link">PDO_MYSQL</a>,
+   <a href="" class="link">mysql</a>) that you plan to use with support
+   for the <a href="" class="link">mysqlnd</a> library. PECL/mysqlnd_memcache
    is a plugin for the mysqlnd library. To use the plugin with any of the PHP
    MySQL extensions, the extension has to use the mysqlnd library.
   </p>
@@ -87,8 +83,8 @@ ul.toc li a:hover {
    <a href="mysqlnd-memcache.configuration.html#ini.mysqlnd-memcache.enable" class="link">mysqlnd_memcache.enable</a>.
   </p>
   <p class="para">
-   <div class="example">
-    <p><b>Example #1 Enabling the plugin (php.ini)</b></p>
+   <div class="example" id="example-1">
+    <p><strong>Example #1 Enabling the plugin (php.ini)</strong></p>
     <div class="example-contents">
 <div class="inicode"><pre class="inicode">mysqlnd_memcache.enable=1</pre>
 </div>
@@ -106,8 +102,8 @@ ul.toc li a:hover {
    like the following and configured Memcache access to it.
   </p>
   <p class="para">
-   <div class="example">
-    <p><b>Example #2 SQL table used for the Quickstart</b></p>
+   <div class="example" id="example-2">
+    <p><strong>Example #2 SQL table used for the Quickstart</strong></p>
     <div class="example-contents">
 <div class="sqlcode"><pre class="sqlcode">CREATE TABLE test(
   id CHAR(16),
