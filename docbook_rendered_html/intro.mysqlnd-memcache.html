@@ -1,70 +1,16 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
-                      "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
-<head>
-    <meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
-    <title>Mysqlnd Memache plugin: Introduction</title>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+ <head>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <title>Introduction</title>
 
-</head>
-<body>
-<table width="100%">
-    <tr valign="top">
-        <td style="font-size: smaller;" width="15%">
-<style type="text/css">
-#leftbar {
-	float: left;
-	width: 186px;
-	padding: 5px;
-	font-size: smaller;
-}
-ul.toc {
-	margin: 0px 5px 5px 5px;
-	padding: 0px;
-}
-ul.toc li {
-	font-size: 85%;
-	margin: 1px 0 1px 1px;
-	padding: 1px 0 1px 11px;
-	list-style-type: none;
-	background-repeat: no-repeat;
-	background-position: center left;
-}
-ul.toc li.header {
-	font-size: 115%;
-	padding: 5px 0px 5px 11px;
-	border-bottom: 1px solid #cccccc;
-	margin-bottom: 5px;
-}
-ul.toc li.active {
-	font-weight: bold;
-}
-ul.toc li a {
-	text-decoration: none;
-}
-ul.toc li a:hover {
-	text-decoration: underline;
-}
-</style>
- <ul class="toc">
-  <li class="header home"><a href="book.mysqlnd-memcache.html">Mysqlnd Memache plugin</a></li>
-  <li class="header up"><a href="book.mysqlnd-memcache.html">mysqlnd_memcache</a></li>
-  <li class="active"><a href="intro.mysqlnd-memcache.html">Introduction</a></li>
-  <li><a href="mysqlnd-memcache.quickstart.html">Quickstart and Examples</a></li>
-  <li><a href="mysqlnd-memcache.setup.html">Installing/Configuring</a></li>
-  <li><a href="mysqlnd-memcache.constants.html">Predefined Constants</a></li>
-  <li><a href="ref.mysqlnd-memcache.html">Mysqlnd_memcache Functions</a></li>
-  <li><a href="mysqlnd-memcache.changes.html">Change History</a></li>
- </ul>
-
-        </td>
-        <td width="85%">
-            <div style="text-align: center;">
-                <div class="prev" style="text-align: left; float: left;"><a href="book.mysqlnd-memcache.html">mysqlnd_memcache</a></div>
-                <div class="next" style="text-align: right; float: right;"><a href="mysqlnd-memcache.quickstart.html">Quickstart and Examples</a></div>
-                <div class="up"><a href="book.mysqlnd-memcache.html">mysqlnd_memcache</a></div>
-                <div class="home"><a href="book.mysqlnd-memcache.html">Mysqlnd Memache plugin</a></div>
-            </div><hr/>
-<div id="intro.mysqlnd-memcache" class="preface">
+ </head>
+ <body><div class="manualnavbar" style="text-align: center;">
+ <div class="prev" style="text-align: left; float: left;"><a href="book.mysqlnd-memcache.html">mysqlnd_memcache</a></div>
+ <div class="next" style="text-align: right; float: right;"><a href="mysqlnd-memcache.quickstart.html">Quickstart and Examples</a></div>
+ <div class="up"><a href="book.mysqlnd-memcache.html">mysqlnd_memcache</a></div>
+ <div class="home"><a href="index.html">PHP Manual</a></div>
+</div><hr /><div id="intro.mysqlnd-memcache" class="preface">
   <h1 class="title">Introduction</h1>
   <p class="para">
    The mysqlnd memcache plugin (<em>mysqlnd_memcache</em>)
@@ -105,6 +51,12 @@ ul.toc li a:hover {
    <p class="para">
    The key features of PECL/mysqlnd_memcache are as follows.
    </p>
+   <div class="mediaobject">
+    
+    <div class="imageobject">
+     <img src="images/55c7816ef6df6821f05678a68b4e4e63-mymemflow.png" alt="mysqlnd_memcache data flow" width="813" height="276" />
+    </div>
+   </div>
    <p class="para">
     <ul class="itemizedlist">
      <li class="listitem">
@@ -146,6 +98,12 @@ ul.toc li a:hover {
     Prepared statements, unbuffered result set and result set meta data
     are not supported.
    </p>
+   <p class="para">
+    The mapping information for tables accessible via Memcache is not cached
+    in the plugin between requests but fetched from the MySQL server each time 
+    a MySQL connection is associated with a Memcache connection. See
+    <span class="function"><a href="function.mysqlnd-memcache-set.html" class="function">mysqlnd_memcache_set()</a></span> for details.
+   </p>
   </div>
 
   <div class="section" id="mysqlnd-memcache.name">
@@ -158,9 +116,9 @@ ul.toc li a:hover {
     related to the Memcached cache server.
    </p>
   </div>
- </div>
-        </td>
-    </tr>
-</table>
-</body>
-</html>
+ </div><hr /><div class="manualnavbar" style="text-align: center;">
+ <div class="prev" style="text-align: left; float: left;"><a href="book.mysqlnd-memcache.html">mysqlnd_memcache</a></div>
+ <div class="next" style="text-align: right; float: right;"><a href="mysqlnd-memcache.quickstart.html">Quickstart and Examples</a></div>
+ <div class="up"><a href="book.mysqlnd-memcache.html">mysqlnd_memcache</a></div>
+ <div class="home"><a href="index.html">PHP Manual</a></div>
+</div></body></html>
