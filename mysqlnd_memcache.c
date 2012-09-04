@@ -109,7 +109,7 @@ typedef struct {
 		int  str_is_allocated;
 	} regexp;
 	HashTable mapping;
-	char *mapping_query;
+	const char *mapping_query;
 	struct {
 		zend_fcall_info fci;
 		zend_fcall_info_cache fcc;
@@ -809,11 +809,11 @@ static void mymem_free_mapping(void *mapping_v) /* {{{ */
 }
 /* }}} */
 
-static char *mymem_pick_mapping_query(MYSQLND *conn, int *query_len TSRMLS_DC) /* {{{ */
+static const char *mymem_pick_mapping_query(MYSQLND *conn, int *query_len TSRMLS_DC) /* {{{ */
 {
 	MYSQLND_ROW_C row;
 	MYSQLND_RES *res;
-	char *retval;
+	const char *retval;
 
 	if (FAIL == orig_mysqlnd_conn_query(conn->data, MAPPING_DECISION_QUERY, sizeof(MAPPING_DECISION_QUERY)-1 TSRMLS_CC)) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "MySQL decision query failed: %s", mysqlnd_error(conn));
@@ -873,7 +873,7 @@ static mymem_connection_data_data *mymem_init_mysqlnd(MYSQLND *conn TSRMLS_DC) /
 	MYSQLND_ROW_C row;
 	MYSQLND_RES *res;
 	int query_len;
-	char *query = NULL;
+	const char *query = NULL;
 
 	if (!MYSQLND_MEMCACHE_G(enable)) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "mysqlnd_memcache.enable not set in php.ini. Enable it and restart PHP");
@@ -906,7 +906,7 @@ static mymem_connection_data_data *mymem_init_mysqlnd(MYSQLND *conn TSRMLS_DC) /
 	zend_hash_init(&plugin_data_p->mapping, mysqlnd_num_rows(res), 0, mymem_free_mapping, 0);
 	plugin_data_p->mapping_query = query;
 
-	while (row = mysqlnd_fetch_row_c(res)) {
+	while ((row = mysqlnd_fetch_row_c(res))) {
 		char *key = NULL;
 		int key_len;
 		mymem_mapping *mapping;
