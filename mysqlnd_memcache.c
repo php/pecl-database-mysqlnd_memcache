@@ -259,9 +259,26 @@ static void mymem_result_fetch_into(MYSQLND_RES *result, unsigned int flags, zva
 
 	result_data->read = 1;
 
-	value = strtok_r(result_data->data, result_data->mapping->separator, &value_lasts);
-
 	array_init(return_value);
+	
+	if (*result_data->data == *result_data->mapping->separator) {
+		ALLOC_INIT_ZVAL(data);
+		ZVAL_EMPTY_STRING(data);
+		if (flags & MYSQLND_FETCH_NUM) {
+			Z_ADDREF_P(data);
+			zend_hash_next_index_insert(Z_ARRVAL_P(return_value), &data, sizeof(zval *), NULL);
+		}
+		if (flags & MYSQLND_FETCH_ASSOC) {
+			Z_ADDREF_P(data);
+			zend_hash_add(Z_ARRVAL_P(return_value), result_data->mapping->value_columns.v[i], strlen(result_data->mapping->value_columns.v[i])+1, &data, sizeof(zval *), NULL);
+		}
+		zval_ptr_dtor(&data);
+
+		i++;
+	}
+	
+	value = strtok_r(result_data->data, result_data->mapping->separator, &value_lasts);
+	
 	while (value) {
 		ALLOC_INIT_ZVAL(data);
 		ZVAL_STRING(data, value, 1);
