@@ -67,19 +67,19 @@ static func_mysqlnd_conn_data__dtor orig_mysqlnd_conn_dtor;
                                " WHERE TABLE_NAME = 'containers' "\
                                "   AND TABLE_SCHEMA IN ('innodb_memcache', 'ndbmemcache')"
 
-#define MAPPING_QUERY_INNODB "    SELECT c.name, " \
-                             "           CONCAT('@@', c.name, (SELECT value FROM innodb_memcache.config_options WHERE name = 'table_map_delimiter')) AS key_prefix, " \
-                             "           c.db_schema, " \
-                             "           c.db_table, " \
-                             "           c.key_columns, "\
-                             "           c.value_columns, "\
-                             "           (SELECT value FROM innodb_memcache.config_options WHERE name = 'separator') AS sep " \
-                             "      FROM innodb_memcache.containers c "
+const char *MAPPING_QUERY_INNODB = "    SELECT c.name, "
+                                   "           CONCAT('@@', c.name, (SELECT value FROM innodb_memcache.config_options WHERE name = 'table_map_delimiter')) AS key_prefix, "
+                                   "           c.db_schema, "
+                                   "           c.db_table, "
+                                   "           c.key_columns, "
+                                   "           c.value_columns, "
+                                   "           (SELECT value FROM innodb_memcache.config_options WHERE name = 'separator') AS sep "
+                                   "      FROM innodb_memcache.containers c ";
 
-#define MAPPING_QUERY_NDB    "    SELECT c.name, p.key_prefix, c.db_schema, c.db_table, c.key_columns, c.value_columns, '|' separator " \
-                             "      FROM ndbmemcache.containers c " \
-                             " LEFT JOIN ndbmemcache.key_prefixes p " \
-                             "        ON p.container = c.name"
+const char *MAPPING_QUERY_NDB = "    SELECT c.name, p.key_prefix, c.db_schema, c.db_table, c.key_columns, c.value_columns, '|' separator "
+                                "      FROM ndbmemcache.containers c "
+                                " LEFT JOIN ndbmemcache.key_prefixes p "
+                                "        ON p.container = c.name";
 /* }}} */
 
 /* {{{ STRUCTURES */
@@ -842,10 +842,10 @@ static char *mymem_pick_mapping_query(MYSQLND *conn, int *query_len TSRMLS_DC) /
 			return NULL;
 		}
 		retval = MAPPING_QUERY_INNODB;
-		*query_len = sizeof(MAPPING_QUERY_INNODB)-1;
+		*query_len = strlen(MAPPING_QUERY_INNODB);
 	} else if (!strncmp(row[0], "ndbmemcache", sizeof("ndbmemcache")-1)) {
 		retval = MAPPING_QUERY_NDB;
-		*query_len = sizeof(MAPPING_QUERY_NDB)-1;
+		*query_len = strlen(MAPPING_QUERY_NDB);
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "MySQL Cluster support is not fully tested, yet");
 	} else {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Invalid memcache configuration table found, this error should be impossible to hit");
@@ -915,7 +915,7 @@ static mymem_connection_data_data *mymem_init_mysqlnd(MYSQLND *conn TSRMLS_DC) /
 			if (query == MAPPING_QUERY_INNODB) {
 				/* with InnoDB column 1 is a concat of the name and table_map_deimiter, if the result is NULL one of those has to be NULL */
 				if (!row[0]) {
-					php_error_docref(NULL TSRMLS_CC, E_WARNING, "Found innodb_memcache.containers entry without name using %s.%s", row[3] ? row[3] : '(table null)', row[4] ? row[4] : '(id column null)');
+					php_error_docref(NULL TSRMLS_CC, E_WARNING, "Found innodb_memcache.containers entry without name using %s.%s", row[3] ? row[3] : "(table null)", row[4] ? row[4] : "(id column null)");
 					continue; /* next one might work fine */
 				} else {
 					php_error_docref(NULL TSRMLS_CC, E_WARNING, "'table_map_delimiter' is not set in innodb_memcache.config_options");
