@@ -18,6 +18,7 @@
 
 /* $Id$ */
 
+/* {{{ includes */
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -36,8 +37,7 @@
 #include "php_mysqlnd_memcache.h"
 #include "ext/pcre/php_pcre.h"
 #include "libmemcached/memcached.h"
-
-ZEND_DECLARE_MODULE_GLOBALS(mysqlnd_memcache)
+/* }}} */
 
 #ifdef ZTS
 #define MYSQLND_MEMCACHE_G(v) TSRMG(mysqlnd_memcache_globals_id, zend_mysqlnd_memcache_globals *, v)
@@ -129,11 +129,11 @@ typedef struct {
 } mymem_result_data;
 /* }}} */
 
-
 ZEND_BEGIN_MODULE_GLOBALS(mysqlnd_memcache)
 	zend_bool enable;
 ZEND_END_MODULE_GLOBALS(mysqlnd_memcache)
 
+/* {{{ php-memcache interface */
 /*
  * I'd prefer having those exported from php-memcached.
  */
@@ -145,7 +145,7 @@ typedef struct {
 } fake_memcached_object;
 
 static zend_class_entry **memcached_ce = NULL;
-
+/* }}} */
 
 static int count_char(char *pos, char v) /* {{{ */
 {
