@@ -129,6 +129,11 @@ typedef struct {
 } mymem_result_data;
 /* }}} */
 
+
+ZEND_BEGIN_MODULE_GLOBALS(mysqlnd_memcache)
+	zend_bool enable;
+ZEND_END_MODULE_GLOBALS(mysqlnd_memcache)
+
 /*
  * I'd prefer having those exported from php-memcached.
  */
@@ -162,24 +167,6 @@ static int count_char(char *pos, char v) /* {{{ */
 		php_error_docref(NULL TSRMLS_CC, E_ERROR, "Connection data was unset but result set using it still exists"); \
 	}
 
-
-/* {{{ PHP_INI
- */
-PHP_INI_BEGIN()
-
-	STD_PHP_INI_BOOLEAN("mysqlnd_memcache.enable", "1", PHP_INI_SYSTEM, OnUpdateBool, enable, zend_mysqlnd_memcache_globals, mysqlnd_memcache_globals)
-PHP_INI_END()
-
-/* }}} */
-
-/* {{{ php_mysqlnd_memcache_init_globals
- */
-static void php_mysqlnd_memcache_init_globals(zend_mysqlnd_memcache_globals *mysqlnd_memcache_globals)
-{
-	mysqlnd_memcache_globals->enable = TRUE;
-}
-
-/* }}} */
 
 /* {{{ MYSQLND_MEMCACHE_RESULT */
 static enum_func_status mymem_result_fetch_row(MYSQLND_RES *result, void *param, unsigned int flags, zend_bool *fetched_anything TSRMLS_DC) /* {{{ */
@@ -1144,6 +1131,20 @@ static const zend_function_entry mymem_functions[] = {
 /* }}} */
 
 /* {{{ PHP Infrastructure */
+
+/* {{{ PHP_INI */
+PHP_INI_BEGIN()
+	STD_PHP_INI_BOOLEAN("mysqlnd_memcache.enable", "1", PHP_INI_SYSTEM, OnUpdateBool, enable, zend_mysqlnd_memcache_globals, mysqlnd_memcache_globals)
+PHP_INI_END()
+/* }}} */
+
+/* {{{ php_mysqlnd_memcache_init_globals
+ */
+static void php_mysqlnd_memcache_init_globals(zend_mysqlnd_memcache_globals *mysqlnd_memcache_globals)
+{
+	mysqlnd_memcache_globals->enable = TRUE;
+}
+/* }}} */
 
 /* {{{ PHP_GINIT_FUNCTION */
 static PHP_GINIT_FUNCTION(mysqlnd_memcache)
