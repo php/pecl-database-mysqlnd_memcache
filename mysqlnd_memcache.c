@@ -655,6 +655,8 @@ static enum_func_status MYSQLND_METHOD(mymem_conn_data, query)(MYSQLND_CONN_DATA
 			memcpy(key+prefix_len, Z_STRVAL_PP(query_key), Z_STRLEN_PP(query_key));
 			key[key_len] = '\0';
 		} else {
+			/* This shouldn't happen anymore as we nowadays enforce getting a prefix,
+			   this was needed with MySQL 5.6.5, which couldn't use prefixes at all */
 			key = Z_STRVAL_PP(query_key);
 			key_len = Z_STRLEN_PP(query_key);
 		}
