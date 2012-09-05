@@ -250,6 +250,7 @@ static void mymem_result_fetch_into(MYSQLND_RES *result, unsigned int flags, zva
 
 	int i = 0;
 	zval *data;
+	char *raw_data;
 	char *value, *value_lasts;
 
 	BAILOUT_IF_CONN_DATA_UNSET(connection_data)
@@ -259,10 +260,12 @@ static void mymem_result_fetch_into(MYSQLND_RES *result, unsigned int flags, zva
 	}
 
 	result_data->read = 1;
+	
+	raw_data = estrdup(result_data->data);
 
 	array_init(return_value);
 	
-	if (*result_data->data == *result_data->mapping->separator) {
+	if (*raw_data == *result_data->mapping->separator) {
 		ALLOC_INIT_ZVAL(data);
 		ZVAL_EMPTY_STRING(data);
 		if (flags & MYSQLND_FETCH_NUM) {
@@ -278,7 +281,7 @@ static void mymem_result_fetch_into(MYSQLND_RES *result, unsigned int flags, zva
 		i++;
 	}
 	
-	value = strtok_r(result_data->data, result_data->mapping->separator, &value_lasts);
+	value = strtok_r(raw_data, result_data->mapping->separator, &value_lasts);
 	
 	while (value) {
 		ALLOC_INIT_ZVAL(data);
@@ -299,6 +302,7 @@ static void mymem_result_fetch_into(MYSQLND_RES *result, unsigned int flags, zva
 	}
 
 	CONN_SET_STATE(result->conn, CONN_READY);
+	efree(raw_data);
 }
 /* }}} */
 
@@ -379,7 +383,7 @@ static unsigned int mymem_result_num_fields(const MYSQLND_RES * const result TSR
 
 static enum_func_status	mymem_result_seek_data(MYSQLND_RES * result, uint64_t row TSRMLS_DC) /* {{{ */
 {
-	if (row == 1) {
+	if (row == 0) {
 		mymem_result_data *result_data = *mysqlnd_plugin_get_plugin_result_data(result, mysqlnd_memcache_plugin_id);
 		result_data->read = 0;
 		return PASS;
@@ -1112,7 +1116,7 @@ static PHP_FUNCTION(mysqlnd_memcache_get_config)
 	zend_hash_apply_with_argument(&conn_data->mapping, mymemm_add_mapping_to_zv, mapping TSRMLS_CC);
 
 	add_assoc_zval(return_value, "mappings", mapping);
-	add_assoc_string(return_value, "mapping_query", conn_data->mapping_query, 1);
+	add_assoc_string(return_value, "mapping_query", (char*)conn_data->mapping_query, 1);
 }
 /* }}} */
 

@@ -41,8 +41,6 @@ mysqlnd_memcache.enable=1
 
 	print "done!";
 ?>
---XFAIL--
-Seeking fails
 --EXPECT--
 bool(false)
 array(3) {
