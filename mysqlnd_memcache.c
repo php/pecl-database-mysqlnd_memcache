@@ -51,8 +51,9 @@ ZEND_DECLARE_MODULE_GLOBALS(mysqlnd_memcache)
 
 static unsigned int mysqlnd_memcache_plugin_id;
 
-static func_mysqlnd_conn_data__query orig_mysqlnd_conn_query;
-static func_mysqlnd_conn_data__dtor orig_mysqlnd_conn_dtor;
+static func_mysqlnd_conn_data__query orig_mysqlnd_conn_data_query;
+static func_mysqlnd_conn__close orig_mysqlnd_conn_close;
+static func_mysqlnd_conn_data__end_psession orig_mysqlnd_conn_data_end_psession;
 
 #define SQL_FIELD_LIST "(.+?)"
 #define SQL_IDENTIFIER "`?([a-z0-9_]+)`?"
@@ -628,7 +629,7 @@ static void mymem_notify_decision(mymem_connection_data_data *conn_data, zend_bo
 /* }}} */
 /* }}} */
 
-static enum_func_status MYSQLND_METHOD(mymem_conn, query)(MYSQLND_CONN_DATA *conn, const char *query, unsigned int query_len TSRMLS_DC) /* {{{ */
+static enum_func_status MYSQLND_METHOD(mymem_conn_data, query)(MYSQLND_CONN_DATA *conn, const char *query, unsigned int query_len TSRMLS_DC) /* {{{ */
 {
 	zval subpats;
 	zval **query_key = NULL;
@@ -713,7 +714,7 @@ static enum_func_status MYSQLND_METHOD(mymem_conn, query)(MYSQLND_CONN_DATA *con
 		return PASS;
 	} else {
 		zval_dtor(&subpats);
-		return orig_mysqlnd_conn_query(conn, query, query_len TSRMLS_CC);
+		return orig_mysqlnd_conn_data_query(conn, query, query_len TSRMLS_CC);
 	}
 }
 /* }}} */
@@ -748,11 +749,17 @@ static void mymem_free_connection_data_data(MYSQLND_CONN_DATA *conn TSRMLS_DC) /
 }
 /* }}} */
 
-static void MYSQLND_METHOD(mymem_conn, dtor)(MYSQLND_CONN_DATA *conn TSRMLS_DC) /* {{{ */
+static enum_func_status MYSQLND_METHOD(mymem_conn_data, end_psession)(MYSQLND_CONN_DATA *conn TSRMLS_DC) /* {{{ */
 {
-        /* TODO: This has to be run per request, even with persistent conns, is this the correct hook? */
 	mymem_free_connection_data_data(conn TSRMLS_CC);
-	orig_mysqlnd_conn_dtor(conn TSRMLS_CC);
+	return orig_mysqlnd_conn_data_end_psession(conn TSRMLS_CC);
+}
+/* }}} */
+
+static enum_func_status MYSQLND_METHOD(mymem_conn, close)(MYSQLND* conn, enum_connection_close_type close_type TSRMLS_DC) /* {{{ */
+{
+	mymem_free_connection_data_data(conn->data TSRMLS_CC);
+	return orig_mysqlnd_conn_close(conn, close_type TSRMLS_CC);
 }
 /* }}} */
 /* }}} */
@@ -815,7 +822,7 @@ static const char *mymem_pick_mapping_query(MYSQLND *conn, int *query_len TSRMLS
 	MYSQLND_RES *res;
 	const char *retval;
 
-	if (FAIL == orig_mysqlnd_conn_query(conn->data, MAPPING_DECISION_QUERY, sizeof(MAPPING_DECISION_QUERY)-1 TSRMLS_CC)) {
+	if (FAIL == orig_mysqlnd_conn_data_query(conn->data, MAPPING_DECISION_QUERY, sizeof(MAPPING_DECISION_QUERY)-1 TSRMLS_CC)) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "MySQL decision query failed: %s", mysqlnd_error(conn));
 		return NULL;
 	}
@@ -884,7 +891,7 @@ static mymem_connection_data_data *mymem_init_mysqlnd(MYSQLND *conn TSRMLS_DC) /
 	if (!query) {
 		return NULL;
 	}
-	if (FAIL == orig_mysqlnd_conn_query(conn->data, query, query_len TSRMLS_CC)) {
+	if (FAIL == orig_mysqlnd_conn_data_query(conn->data, query, query_len TSRMLS_CC)) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "MySQL mapping query failed: %s", mysqlnd_error(conn));
 		return NULL;
 	}
@@ -1144,9 +1151,7 @@ static PHP_GINIT_FUNCTION(mysqlnd_memcache)
  */
 static PHP_MINIT_FUNCTION(mysqlnd_memcache)
 {
-	struct st_mysqlnd_conn_data_methods *data_methods;
 	char *pmversion;
-
 
 	if (zend_hash_find(CG(class_table), "memcached", sizeof("memcached"), (void **) &memcached_ce)==FAILURE) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "mysqlnd_memcache failed to get Memcached class");
@@ -1163,16 +1168,22 @@ static PHP_MINIT_FUNCTION(mysqlnd_memcache)
 	REGISTER_INI_ENTRIES();
 
 	if (MYSQLND_MEMCACHE_G(enable)) {
-
+		struct st_mysqlnd_conn_methods *conn_methods;
+		struct st_mysqlnd_conn_data_methods *conn_data_methods;
+		
 		mysqlnd_memcache_plugin_id = mysqlnd_plugin_register();
 
-		data_methods = mysqlnd_conn_data_get_methods();
+		conn_methods = mysqlnd_conn_get_methods();
+		conn_data_methods = mysqlnd_conn_data_get_methods();
 
-		orig_mysqlnd_conn_query = data_methods->query;
-		data_methods->query = MYSQLND_METHOD(mymem_conn, query);
+		orig_mysqlnd_conn_data_query = conn_data_methods->query;
+		conn_data_methods->query = MYSQLND_METHOD(mymem_conn_data, query);
 
-		orig_mysqlnd_conn_dtor = data_methods->dtor;
-			data_methods->dtor = MYSQLND_METHOD(mymem_conn, dtor);
+		orig_mysqlnd_conn_close = conn_methods->close;
+		conn_methods->close = MYSQLND_METHOD(mymem_conn, close);
+		
+		orig_mysqlnd_conn_data_end_psession = conn_data_methods->end_psession;
+		conn_data_methods->end_psession = MYSQLND_METHOD(mymem_conn_data, end_psession);
 	}
 	REGISTER_STRINGL_CONSTANT("MYSQLND_MEMCACHE_DEFAULT_REGEXP", SQL_PATTERN, SQL_PATTERN_LEN, CONST_CS | CONST_PERSISTENT);
 	REGISTER_STRING_CONSTANT("MYSQLND_MEMCACHE_VERSION", MYSQLND_MEMCACHE_VERSION, CONST_CS | CONST_PERSISTENT);
