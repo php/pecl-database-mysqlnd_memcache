@@ -61,10 +61,8 @@ mysqlnd_memcache.enable=1
 
 	print "done!";
 ?>
---XFAIL--
-Wrong results
 --EXPECT--
-ebug_callback() 00: boolean / false
+debug_callback() 00: boolean / false
 debug_callback() 00: boolean / false
 debug_callback() 00: boolean / true
 done!
