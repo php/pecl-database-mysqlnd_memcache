@@ -63,8 +63,6 @@ mysqlnd_memcache.enable=1
 
 	print "done!";
 ?>
---XFAIL--
-Memory leaks
 --EXPECT--
 array(3) {
   [0]=>
