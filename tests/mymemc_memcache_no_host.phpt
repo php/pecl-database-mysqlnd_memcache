@@ -40,6 +40,6 @@ mysqlnd_memcache.enable=1
 	print "done!";
 ?>
 --EXPECTF--
-Warning: mysqli::query(): libmemcached error code 20 in %s on line %d
+Warning: mysqli::query(): libmemcached error %s (%d) in %s on line %d
 [003] false, [0] ''
 done!

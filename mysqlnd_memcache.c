@@ -679,7 +679,7 @@ static enum_func_status MYSQLND_METHOD(mymem_conn_data, query)(MYSQLND_CONN_DATA
 			 * protocol for some?
 			 */
 			/* TODO: Map to MySQL error codes */
-			php_error_docref(NULL TSRMLS_CC, E_WARNING, "libmemcached error code %i", (int)error);
+			php_error_docref(NULL TSRMLS_CC, E_WARNING, "libmemcached error %s (%i)", memcached_strerror(connection_data->connection.memc, error), (int)error);
 			return FAIL;
 		}
 
