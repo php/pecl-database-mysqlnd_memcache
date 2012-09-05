@@ -261,7 +261,8 @@ static void mymem_result_fetch_into(MYSQLND_RES *result, unsigned int flags, zva
 
 	result_data->read = 1;
 	
-	raw_data = estrdup(result_data->data);
+	/* We need this copy as strtok_r changes the data and seek might bring us back here*/
+	raw_data = estrndup(result_data->data, result_data->data_len);
 
 	array_init(return_value);
 	
