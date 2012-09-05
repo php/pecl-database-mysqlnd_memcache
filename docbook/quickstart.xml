@@ -21,18 +21,24 @@
    The plugin is implemented as a PHP extension. See also the
    <link linkend="mysqlnd-memcache.installation">installation instructions</link> to
    install the
-   <link xlink:href="&url.pecl.package;mysqlnd_memcache">PECL/mysqlnd_memcache</link> extension.
+   <link xlink:href="&url.pecl.package;mysqlnd_memcache">mysqlnd_memcache</link> extension.
   </para>
   <para>
    Compile or configure the PHP MySQL extension (API) (<link linkend="ref.mysqli">mysqli</link>,
    <link linkend="ref.pdo-mysql">PDO_MYSQL</link>,
    <link linkend="ref.mysql">mysql</link>) that you plan to use with support
-   for the <link linkend="book.mysqlnd">mysqlnd</link> library. PECL/mysqlnd_memcache
+   for the <link linkend="book.mysqlnd">mysqlnd</link> library. mysqlnd_memcache
    is a plugin for the mysqlnd library. To use the plugin with any of the PHP
    MySQL extensions, the extension has to use the mysqlnd library.
   </para>
   <para>
-   Then, load the extension into PHP and activate the plugin in the PHP configuration
+   The mysqlnd_memcche PHP extension depends on the
+   <link linkend="book.memcached">memcached</link> extension. Refer to the
+   according <link linkend="memcached.installation">installation
+   instructions</link> for installing that module.
+  </para>
+  <para>
+   Then, load this extension into PHP and activate the plugin in the PHP configuration
    file using the PHP configuration directive named
    <link linkend="ini.mysqlnd-memcache.enable">mysqlnd_memcache.enable</link>.
   </para>
@@ -41,6 +47,8 @@
     <title>Enabling the plugin (php.ini)</title>
     <programlisting role="ini">
 <![CDATA[
+; On Windows the filename is php_mysqnd_memcache.dll
+extension=mysqlnd_memcache.so
 mysqlnd_memcache.enable=1
 ]]>
     </programlisting>
@@ -85,13 +93,15 @@ VALUES (
  <section xml:id="mysqlnd-memcache.quickstart.usage">
   <title>Usage</title>
   <para>
-   The plugin attempts to transparently replace a SQL <literal>SELECT</literal>
-   statement by a memcache access. For that purpose the plugin monitors
+   After associating a MySQL connection with a Memcache connection using 
+   <function>mysqnd_memcache_set</function> the plugin attempts to transparently
+   replace SQL <literal>SELECT</literal>
+   statements by a memcache access. For that purpose the plugin monitors
    all SQL statements executed and tries to match the statement string
    against <constant>MYSQLND_MEMCACHE_DEFAULT_REGEXP</constant>.
    In case of a match, the mysqlnd memcache plugin checks whether the
-   <literal>SELECT</literal> is accessing all columns of a mapped table and
-   the <literal>WHERE</literal> clause does a unique key lookup.
+   <literal>SELECT</literal> is accessing only columns of a mapped table and
+   the <literal>WHERE</literal> clause is limited to a single key lookup.
   </para>
   <para>
    In case of the example SQL table, the plugin will use the Memcache interface

@@ -8,19 +8,32 @@
  <preface xml:id="intro.mysqlnd-memcache">
   &reftitle.intro;
   <para>
-   The mysqlnd memcache plugin (<literal>mysqlnd_memcache</literal>)
-   maps SQL SELECT statements to MySQL InnoDB Memcached Daemon Plugin accesses.
-   It includes experimental support for the MySQL Cluster Memcached Daemon 
-   Plugin. The plugin supports all PHP MySQL extensions that use
-   <link linkend="book.mysqlnd">mysqlnd</link>.
+   The mysqlnd memcache plugin (<literal>mysqlnd_memcache</literal>) is an PHP
+   extension for transparently translating SQL into requests for the
+   MySQL InnoDB Memcached Daemon Plugin (server plugin). It includes
+   experimental support for the MySQL Cluster Memcached Daemon. The server
+   plugin provides access to data stored inside MySQL InnoDB (respectively
+   MySQL Cluster NDB) tables using the Memcache protocol. 
+   This PHP extension, which supports all PHP MySQL extensions that use
+   <link linkend="book.mysqlnd">mysqlnd</link>, will identify tables exported in
+   this way and will translate specific SELECT queries into Memcache requests. 
   </para>
-  <para>
-   As of version PHP 5.3.3 the MySQL native driver for PHP
-   (<literal>mysqlnd</literal>)
-   features an internal plugin C API. C plugins, such as the replication and
-   load balancing plugin, can extend the functionality of
-   <link linkend="book.mysqlnd">mysqlnd</link>.
-  </para>
+  <mediaobject>
+   <alt>mysqlnd_memcache data flow</alt>
+   <imageobject>
+    <imagedata fileref="en/reference/mysqlnd_memcache/figures/mymemflow.png"/>
+   </imageobject>
+  </mediaobject>
+  <note>
+   <para>
+    This plugin depends on the MySQL InnoDB Memcached Daemon Plugin. It is not
+    provided to be used with a stand-alone Memcached. For a generic query cache
+    using Memcached look at the <link linkend="book.mysqlnd-qc">mysqlnd query
+    cache plugin</link>. For direct Memcache access look at the
+	<link linkend="book.memcache">memcache</link> and 
+	<link linkend="book.memcached">memcached</link> extension.
+   </para>
+  </note>
   <para>
    The MySQL native driver for PHP is a C library that ships together with
    PHP as of PHP 5.3.0. It serves as a drop-in replacement for the
@@ -30,7 +43,7 @@
    it contains new functionality such as asynchronous queries.
   </para>
   <para>
-   Mysqlnd plugins like <literal>mysqlnd_mmemcache</literal> operate, for the most part,
+   The <literal>mysqlnd_mmemcache</literal> operates, for the most part,
    transparently from a user perspective. The mysqlnd memcache
    plugin supports all PHP applications, and all MySQL PHP extensions.
    It does not change existing APIs. Therefore, it can easily be used with
@@ -46,12 +59,6 @@
    <para>
    The key features of PECL/mysqlnd_memcache are as follows.
    </para>
-   <mediaobject>
-    <alt>mysqlnd_memcache data flow</alt>
-    <imageobject>
-     <imagedata fileref="en/reference/mysqlnd_memcache/figures/mymemflow.png"/>
-    </imageobject>
-   </mediaobject>
    <para>
     <itemizedlist>
      <listitem>
@@ -87,11 +94,11 @@
    <title>Limitations</title>
    <para>
     The initial version is not binary safe. Due to the way the MySQL Memcache
-    plugins works there are restrictions related to seperators.
+    plugins works there are restrictions related to separators.
    </para>
    <para>
-    Prepared statements, unbuffered result set and result set meta data
-    are not supported.
+    Prepared statements and asynchronous queries are not supported. Result set
+    meta data support is limited.
    </para>
    <para>
     The mapping information for tables accessible via Memcache is not cached

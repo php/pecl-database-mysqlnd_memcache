@@ -34,6 +34,15 @@
    as decision Regexp and <em><code class="parameter">callback</code></em> as notification
    callback or unset the association of <em><code class="parameter">mysql_connection</code></em>.
   </p>
+  <p class="para">
+   While associating a MySQL connection with a Memcache connection this function
+   will query the MySQL server for its configuration. It will automatically
+   detect whether the server is configured to use the InnoDB Memcache Daemon
+   Plugin or MySQL Cluster NDB Memcache support. It will also query the server
+   to automatically identify exported tables and other configuration options.
+   The results of this automatic configuration can be retrieved using
+   <span class="function"><a href="function.mysqlnd-memcache-get-config.html" class="function">mysqlnd_memcache_get_config()</a></span>.
+  </p>
  </div>
 
 

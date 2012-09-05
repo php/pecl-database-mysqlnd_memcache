@@ -201,7 +201,7 @@ array(4) {
     ["mymem_test"]=>
     array(6) {
       ["prefix"]=>
-      string(0) ""
+      string(13) "@@mymem_test."
       ["schema_name"]=>
       string(4) "test"
       ["table_name"]=>
@@ -222,10 +222,14 @@ array(4) {
     }
   }
   ["mapping_query"]=>
-  string(218) "    SELECT c.name, '' key_prefix, c.db_schema, c.db_table, c.key_columns, c.value_columns, o.value sep
-  FROM innodb_memcache.containers c
-  LEFT JOIN innodb_memcache.config_options o
-  ON o.name = 'separator'"
+  string(209) "    SELECT c.name,
+                          CONCAT('@@', c.name, (SELECT value FROM innodb_memcache.config_options WHERE name = 'table_map_delimiter')) AS key_prefix, 
+                          c.db_schema, 
+                          c.db_table, 
+                          c.key_columns, 
+                          c.value_columns, 
+                          (SELECT value FROM innodb_memcache.config_options WHERE name = 'separator') AS sep 
+                     FROM innodb_memcache.containers c"
 }
 ]]>
     </screen>
