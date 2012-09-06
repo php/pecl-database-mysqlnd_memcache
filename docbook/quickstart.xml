@@ -79,6 +79,9 @@ CREATE TABLE test(
   PRIMARY KEY(id)
   ) ENGINE=InnoDB;
 
+INSERT INTO test (id, f1, f2, f3) VALUES (1, 'Hello', 'World', '!');
+INSERT INTO test (id, f1, f2, f3) VALUES (2, 'Lady', 'and', 'the tramp');
+
 INSERT INTO innodb_memcache.containers(
   name, db_schema, db_table, key_columns, value_columns, 
   flags, cas_column, expire_time_column, unique_idx_name_on_key)
@@ -108,6 +111,57 @@ VALUES (
    of the MySQL server to fetch results for a SQL query like
    <literal>SELECT f1, f2, f3 WHERE id = n</literal>.
   </para>
+  <para>
+   <example>
+    <title>
+     Basic example.</title>
+
+    <programlisting role="php">
+<![CDATA[
+<?php
+$mysqli = new mysqli("host", "user", "passwd", "database");
+$memc = new Memcached();
+$memc->addServer("host", 11211);
+mysqlnd_memcache_set($mysqli, $memc);
+
+/*
+   This is a query which queries table test using id as key in the WHERE part
+   and is accessing fields f1, f2 and f3. Therefore  mysqlnd_memcache
+   will intercept it and route it ia memcache.
+*/
+$result = $mysqli->query("SELECT f1, f2, f3 FROM test WHERE id = 1");
+while ($row = $result->fetch_row()) {
+    print_r($row);
+}
+
+/*
+   This is a query which queries table test but using f1 in the WHERE clause.
+   Therefore  mysqlnd_memcache can't intercept it. This will be executed
+   using the MySQL protocol
+*/
+$mysqli->query("SELECT id FROM test WHERE f1 = 'Lady'");
+while ($row = $result->fetch_row()) {
+    print_r($row);
+}
+?>
+]]>
+    </programlisting>
+    &example.outputs;
+    <screen>
+<![CDATA[
+array(
+    [f1] => Hello
+    [f2] => World
+    [f3] => !
+)
+array(
+    [id] => 2
+)
+]]>
+    </screen>
+   </example>
+  </para>
+
  </section>
 
 </chapter>
