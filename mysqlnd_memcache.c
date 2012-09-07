@@ -39,12 +39,6 @@
 #include "libmemcached/memcached.h"
 /* }}} */
 
-#ifdef ZTS
-#define MYSQLND_MEMCACHE_G(v) TSRMG(mysqlnd_memcache_globals_id, zend_mysqlnd_memcache_globals *, v)
-#else
-#define MYSQLND_MEMCACHE_G(v) (mysqlnd_memcache_globals.v)
-#endif
-
 
 #define MYSQLND_MEMCACHE_VERSION "1.0.0-alpha"
 #define MYSQLND_MEMCACHE_VERSION_ID 10000
@@ -129,10 +123,6 @@ typedef struct {
 } mymem_result_data;
 /* }}} */
 
-ZEND_BEGIN_MODULE_GLOBALS(mysqlnd_memcache)
-	zend_bool enable;
-ZEND_END_MODULE_GLOBALS(mysqlnd_memcache)
-
 /* {{{ php-memcache interface */
 /*
  * I'd prefer having those exported from php-memcached.
@@ -161,6 +151,7 @@ static int count_char(char *pos, char v) /* {{{ */
 	return retval;
 }
 /* }}} */
+
 
 #define BAILOUT_IF_CONN_DATA_UNSET(connection_data) \
 	if (UNEXPECTED(!connection_data)) { \
@@ -247,12 +238,12 @@ static void mymem_result_fetch_into(MYSQLND_RES *result, unsigned int flags, zva
 	}
 
 	result_data->read = 1;
-	
+
 	/* We need this copy as strtok_r changes the data and seek might bring us back here*/
 	raw_data = estrndup(result_data->data, result_data->data_len);
 
 	array_init(return_value);
-	
+
 	if (*raw_data == *result_data->mapping->separator) {
 		ALLOC_INIT_ZVAL(data);
 		ZVAL_EMPTY_STRING(data);
@@ -268,9 +259,9 @@ static void mymem_result_fetch_into(MYSQLND_RES *result, unsigned int flags, zva
 
 		i++;
 	}
-	
+
 	value = strtok_r(raw_data, result_data->mapping->separator, &value_lasts);
-	
+
 	while (value) {
 		ALLOC_INIT_ZVAL(data);
 		ZVAL_STRING(data, value, 1);
@@ -911,7 +902,7 @@ static mymem_connection_data_data *mymem_init_mysqlnd(MYSQLND *conn TSRMLS_DC) /
 		char *key = NULL;
 		int key_len;
 		mymem_mapping *mapping;
-		
+
 		if (UNEXPECTED(!row[1])) {
 			if (query == MAPPING_QUERY_INNODB) {
 				/* with InnoDB column 1 is a concat of the name and table_map_deimiter, if the result is NULL one of those has to be NULL */
@@ -924,7 +915,7 @@ static mymem_connection_data_data *mymem_init_mysqlnd(MYSQLND *conn TSRMLS_DC) /
 				}
 			}
 		}
-		
+
 		if (UNEXPECTED(!row[6])) {
 			if (query == MAPPING_QUERY_INNODB) {
 				php_error_docref(NULL TSRMLS_CC, E_WARNING, "'separator' is not set in innodb_memcache.config_options");
@@ -932,7 +923,7 @@ static mymem_connection_data_data *mymem_init_mysqlnd(MYSQLND *conn TSRMLS_DC) /
 			}
 			/* With NDB this currently can't happen as this is a literal in the query */
 		}
-		
+
 		if (UNEXPECTED(!row[2] || !row[3] || !row[4] || !row[5])) {
 			/* row[0] is handled along with row[1] above */
 			const char *error_col = "(unknown)";
@@ -946,9 +937,9 @@ static mymem_connection_data_data *mymem_init_mysqlnd(MYSQLND *conn TSRMLS_DC) /
 			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Field '%s' for '%s' is NULL in innodb_memcache.containers", error_col, row[0]);
 			continue;
 		}
-		
+
 		mapping = emalloc(sizeof(mymem_mapping));
-		
+
 		/*
 		For highest performance we might cache this persistently, globally,
 		this creates the risk of stuff going wrong if servers don't match
@@ -1178,7 +1169,7 @@ static PHP_MINIT_FUNCTION(mysqlnd_memcache)
 	if (MYSQLND_MEMCACHE_G(enable)) {
 		struct st_mysqlnd_conn_methods *conn_methods;
 		struct st_mysqlnd_conn_data_methods *conn_data_methods;
-		
+
 		mysqlnd_memcache_plugin_id = mysqlnd_plugin_register();
 
 		conn_methods = mysqlnd_conn_get_methods();
@@ -1189,7 +1180,7 @@ static PHP_MINIT_FUNCTION(mysqlnd_memcache)
 
 		orig_mysqlnd_conn_close = conn_methods->close;
 		conn_methods->close = MYSQLND_METHOD(mymem_conn, close);
-		
+
 		orig_mysqlnd_conn_data_end_psession = conn_data_methods->end_psession;
 		conn_data_methods->end_psession = MYSQLND_METHOD(mymem_conn_data, end_psession);
 	}
