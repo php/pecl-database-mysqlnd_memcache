@@ -226,7 +226,7 @@ static MYSQLND_RES *mymem_result_use_result(MYSQLND_RES *const result, zend_bool
 	if (UNEXPECTED(ps_protocol)) {
 		php_error_docref(NULL TSRMLS_CC, E_ERROR, "mysqlnd_memcache store result called with ps_protocol, not expected, bailing out");
 	}
-	DBUG_RETURN(result);
+	DBG_RETURN(result);
 }
 /* }}} */
 
