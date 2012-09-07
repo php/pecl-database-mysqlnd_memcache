@@ -100,7 +100,7 @@ class my_memcache_config {
 		return true;
 	}
 
-	public function update_container($value_columns, $separator = '|') {
+	public function update_container($value_columns, $separator = '|', $table_map_delimiter = '.') {
 		global $db;
 
 		$this->connect();
@@ -145,10 +145,19 @@ class my_memcache_config {
 			return sprintf("%s, [%d] %s\n", $sql, $this->link->errno, $this->link->error);
 		}
 
+		/* early plugin version */
 		$sql = sprintf("REPLACE INTO %s.config_options(name, value) VALUES ('separator', '%s')",
 			$this->link->real_escape_string($this->innodb_schema),
 			$this->link->real_escape_string($separator));
 
+		if (!$this->link->query($sql)) {
+			return sprintf("%s, [%d] %s\n", $sql, $this->link->errno, $this->link->error);
+		}
+
+		/* later plugin version  */
+		$sql = sprintf("REPLACE INTO %s.config_options(name, value) VALUES ('table_map_delimiter', '%s')",
+			$this->link->real_escape_string($this->innodb_schema),
+			$this->link->real_escape_string($table_map_delimiter));
 
 		if (!$this->link->query($sql)) {
 			return sprintf("%s, [%d] %s\n", $sql, $this->link->errno, $this->link->error);
@@ -184,7 +193,7 @@ class my_memcache_config {
 		return $plugin_loaded;
 	}
 
-	public function container_needs_update($value_columns, $separator = '|') {
+	public function container_needs_update($value_columns, $separator = '|', $table_map_delimiter = '.') {
 		global $db;
 
 		$this->connect();
@@ -233,6 +242,18 @@ class my_memcache_config {
 			} else if ($this->link->errno) {
 				return sprintf("%s, [%d] %s\n", $sql, $this->link->errno, $this->link->error);
 			}
+
+
+			$sql = sprintf("SELECT value FROM %s.config_options WHERE name = 'table_map_delimiter'",
+				$this->link->real_escape_string($this->innodb_schema));
+
+			if ($res = $this->link->query($sql)) {
+				$row = $res->fetch_assoc();
+				$update_needed = ($row['value'] == $table_map_delimiter) ? false : true;
+			} else if ($this->link->errno) {
+				return sprintf("%s, [%d] %s\n", $sql, $this->link->errno, $this->link->error);
+			}
+
 		}
 
 		return $update_needed;
