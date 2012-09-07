@@ -43,6 +43,19 @@
 #define MYSQLND_MEMCACHE_VERSION "1.0.0-alpha"
 #define MYSQLND_MEMCACHE_VERSION_ID 10000
 
+ZEND_BEGIN_MODULE_GLOBALS(mysqlnd_memcache)
+        zend_bool enable;
+ZEND_END_MODULE_GLOBALS(mysqlnd_memcache)
+
+#ifdef ZTS
+#define MYSQLND_MEMCACHE_G(v) TSRMG(mysqlnd_memcache_globals_id, zend_mysqlnd_memcache_globals *, v)
+#else
+#define MYSQLND_MEMCACHE_G(v) (mysqlnd_memcache_globals.v)
+#endif
+
+ZEND_DECLARE_MODULE_GLOBALS(mysqlnd_memcache)
+
+
 static unsigned int mysqlnd_memcache_plugin_id;
 
 static func_mysqlnd_conn_data__query orig_mysqlnd_conn_data_query;
