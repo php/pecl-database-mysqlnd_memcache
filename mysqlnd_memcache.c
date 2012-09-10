@@ -28,6 +28,7 @@
 #include "ext/standard/info.h"
 #include "ext/standard/php_versioning.h"
 #include "ext/mysqlnd/mysqlnd.h"
+#include "ext/mysqlnd/mysqlnd_debug.h"
 #include "ext/mysqlnd/mysqlnd_result.h"
 #include "ext/mysqlnd/mysqlnd_ext_plugin.h"
 #include "ext/mysqlnd/mysqlnd_priv.h"
@@ -39,15 +40,23 @@
 #include "libmemcached/memcached.h"
 /* }}} */
 
+
+#define MYSQLND_MEMCACHE_VERSION "1.0.0-alpha"
+#define MYSQLND_MEMCACHE_VERSION_ID 10000
+
+ZEND_BEGIN_MODULE_GLOBALS(mysqlnd_memcache)
+        zend_bool enable;
+		zend_bool use_key_prefix;
+ZEND_END_MODULE_GLOBALS(mysqlnd_memcache)
+
 #ifdef ZTS
 #define MYSQLND_MEMCACHE_G(v) TSRMG(mysqlnd_memcache_globals_id, zend_mysqlnd_memcache_globals *, v)
 #else
 #define MYSQLND_MEMCACHE_G(v) (mysqlnd_memcache_globals.v)
 #endif
 
+ZEND_DECLARE_MODULE_GLOBALS(mysqlnd_memcache)
 
-#define MYSQLND_MEMCACHE_VERSION "1.0.0-alpha"
-#define MYSQLND_MEMCACHE_VERSION_ID 10000
 
 static unsigned int mysqlnd_memcache_plugin_id;
 
@@ -129,10 +138,6 @@ typedef struct {
 } mymem_result_data;
 /* }}} */
 
-ZEND_BEGIN_MODULE_GLOBALS(mysqlnd_memcache)
-	zend_bool enable;
-ZEND_END_MODULE_GLOBALS(mysqlnd_memcache)
-
 /* {{{ php-memcache interface */
 /*
  * I'd prefer having those exported from php-memcached.
@@ -162,6 +167,7 @@ static int count_char(char *pos, char v) /* {{{ */
 }
 /* }}} */
 
+
 #define BAILOUT_IF_CONN_DATA_UNSET(connection_data) \
 	if (UNEXPECTED(!connection_data)) { \
 		php_error_docref(NULL TSRMLS_CC, E_ERROR, "Connection data was unset but result set using it still exists"); \
@@ -175,19 +181,23 @@ static enum_func_status mymem_result_fetch_row(MYSQLND_RES *result, void *param,
 //	zval *data;
 	mymem_connection_data_data *connection_data = *mysqlnd_plugin_get_plugin_connection_data_data(result->conn, mysqlnd_memcache_plugin_id);
 	mymem_result_data *result_data = *(mymem_result_data **)mysqlnd_plugin_get_plugin_result_data(result, mysqlnd_memcache_plugin_id);
+	DBG_ENTER("mymem_result_fetch_row");
+
 
 	BAILOUT_IF_CONN_DATA_UNSET(connection_data)
 
 	php_error_docref(NULL TSRMLS_CC, E_ERROR, "fetch_row in %s:%d is currently not implemented", __FILE__, __LINE__);
 
 	if (result_data->read) {
-		return FAIL;
+		 DBG_INF("Already fetched");
+		 DBG_RETURN(FAIL);
 	}
 
 	result_data->read = 1;
 
 	if (!param) {
-		return FAIL;
+		 DBG_INF("No param");
+		 DBG_RETURN(FAIL);
 	}
 
 //	pcre_cache_entry *pattern = pcre_get_compiled_regex_cache("/\\W*,\\W*/", sizeof("/\\W*,\\W*/")-1 TSRMLS_CC);
@@ -206,16 +216,17 @@ static enum_func_status mymem_result_fetch_row(MYSQLND_RES *result, void *param,
 */
 	*fetched_anything = TRUE;
 
-	return PASS;
+	 DBG_RETURN(PASS);
 }
 /* }}} */
 
 static MYSQLND_RES *mymem_result_use_result(MYSQLND_RES *const result, zend_bool ps_protocol TSRMLS_DC) /* {{{ */
 {
+	DBG_ENTER("mymem_result_use_result");
 	if (UNEXPECTED(ps_protocol)) {
 		php_error_docref(NULL TSRMLS_CC, E_ERROR, "mysqlnd_memcache store result called with ps_protocol, not expected, bailing out");
 	}
-	return result;
+	DBG_RETURN(result);
 }
 /* }}} */
 
@@ -239,20 +250,23 @@ static void mymem_result_fetch_into(MYSQLND_RES *result, unsigned int flags, zva
 	zval *data;
 	char *raw_data;
 	char *value, *value_lasts;
+	DBG_ENTER("mymem_result_fetch_into");
 
 	BAILOUT_IF_CONN_DATA_UNSET(connection_data)
 
 	if (result_data->read || !result_data->data) {
-		return;
+		DBG_INF("Data already fetched or no data");
+		DBG_VOID_RETURN;
 	}
 
 	result_data->read = 1;
-	
+
 	/* We need this copy as strtok_r changes the data and seek might bring us back here*/
 	raw_data = estrndup(result_data->data, result_data->data_len);
+	DBG_INF_FMT("raw_data len %u, separator '%s'", (raw_data) ? strlen(raw_data) : 0, result_data->mapping->separator);
 
 	array_init(return_value);
-	
+
 	if (*raw_data == *result_data->mapping->separator) {
 		ALLOC_INIT_ZVAL(data);
 		ZVAL_EMPTY_STRING(data);
@@ -268,9 +282,9 @@ static void mymem_result_fetch_into(MYSQLND_RES *result, unsigned int flags, zva
 
 		i++;
 	}
-	
+
 	value = strtok_r(raw_data, result_data->mapping->separator, &value_lasts);
-	
+
 	while (value) {
 		ALLOC_INIT_ZVAL(data);
 		ZVAL_STRING(data, value, 1);
@@ -287,10 +301,18 @@ static void mymem_result_fetch_into(MYSQLND_RES *result, unsigned int flags, zva
 
 		value = strtok_r(NULL, result_data->mapping->separator, &value_lasts);
 		i++;
+
+		if (i == result_data->mapping->value_columns.num) {
+			DBG_INF_FMT("Tokenizer returns more values than expected - wrong results, stopping");
+			php_error_docref(NULL TSRMLS_CC, E_RECOVERABLE_ERROR, "Getting more values than expected.");
+			break;
+		}
 	}
+	DBG_INF_FMT("values %d, columns %d", i, result_data->mapping->value_columns.num);
 
 	CONN_SET_STATE(result->conn, CONN_READY);
 	efree(raw_data);
+	DBG_VOID_RETURN;
 }
 /* }}} */
 
@@ -305,12 +327,15 @@ static MYSQLND_ROW_C mymem_result_fetch_row_c(MYSQLND_RES *result TSRMLS_DC) /* 
 	int i = 0;
 	char *value, *value_lasts;
 
+	DBG_ENTER("mymem_result_fetch_row_c");
+
 	BAILOUT_IF_CONN_DATA_UNSET(connection_data)
 
 	field_count = result_data->mapping->value_columns.num;
 
 	if (result_data->read || !result_data->data) {
-		return NULL;
+		DBG_INF("Data already fetched or no data");
+		DBG_RETURN(NULL);
 	}
 
 	result_data->read = 1;
@@ -324,10 +349,10 @@ static MYSQLND_ROW_C mymem_result_fetch_row_c(MYSQLND_RES *result TSRMLS_DC) /* 
 		result_data->lengths[i++] = strlen(value);
 		value = strtok_r(NULL, result_data->mapping->separator, &value_lasts);
 	}
-
+	DBG_INF_FMT("values %d", i);
 	CONN_SET_STATE(result->conn, CONN_READY);
 
-	return retval;
+	DBG_RETURN(retval);
 }
 /* }}} */
 
@@ -335,28 +360,37 @@ static void mymem_result_fetch_all(MYSQLND_RES *result, unsigned int flags, zval
 {
 	zval *row;
 	mymem_result_data *result_data_p = *(mymem_result_data **)mysqlnd_plugin_get_plugin_result_data(result, mysqlnd_memcache_plugin_id);
+	DBG_ENTER("mymem_result_fetch_all");
 
 	array_init(return_value);
 	if (result_data_p->data) {
 		ALLOC_INIT_ZVAL(row);
 		mymem_result_fetch_into(result, flags, row, MYSQLND_MYSQLI TSRMLS_CC ZEND_FILE_LINE_CC);
 		zend_hash_next_index_insert(Z_ARRVAL_P(return_value), &row, sizeof(zval *), NULL);
+	} else {
+		DBG_INF_FMT("No data");
 	}
+	DBG_VOID_RETURN;
 }
 /* }}} */
 
 static void mymem_result_fetch_field_data(MYSQLND_RES *result, unsigned int offset, zval *return_value TSRMLS_DC) /* {{{ */
 {
 	mymem_result_data *result_data = *(mymem_result_data **)mysqlnd_plugin_get_plugin_result_data(result, mysqlnd_memcache_plugin_id);
+	DBG_ENTER("mymem_result_fetch_field_data");
+
 	php_error_docref(NULL TSRMLS_CC, E_WARNING, "Fetching fields is currently not supported, returning raw");
 	ZVAL_STRING(return_value, result_data->data, 1);
+	DBG_VOID_RETURN;
 }
 /* }}} */
 
 static uint64_t mymem_result_num_rows(const MYSQLND_RES * const result TSRMLS_DC) /* {{{ */
 {
 	mymem_result_data *result_data_p = *(mymem_result_data **)mysqlnd_plugin_get_plugin_result_data(result, mysqlnd_memcache_plugin_id);
-	return result_data_p->data ? 1 : 0;
+
+	DBG_ENTER("mymem_result_num_rows");
+	DBG_RETURN(result_data_p->data ? 1 : 0);
 }
 /* }}} */
 
@@ -364,19 +398,25 @@ static unsigned int mymem_result_num_fields(const MYSQLND_RES * const result TSR
 {
 	mymem_connection_data_data *connection_data = *mysqlnd_plugin_get_plugin_connection_data_data(result->conn, mysqlnd_memcache_plugin_id);
 	mymem_result_data *result_data = *(mymem_result_data **)mysqlnd_plugin_get_plugin_result_data(result, mysqlnd_memcache_plugin_id);
+
+	DBG_ENTER("mymem_result_num_fields");
 	BAILOUT_IF_CONN_DATA_UNSET(connection_data)
-	return result_data->mapping->value_columns.num;
+	DBG_RETURN(result_data->mapping->value_columns.num);
 }
 /* }}} */
 
 static enum_func_status	mymem_result_seek_data(MYSQLND_RES * result, uint64_t row TSRMLS_DC) /* {{{ */
 {
+	DBG_ENTER("mymem_result_seek_data");
 	if (row == 0) {
 		mymem_result_data *result_data = *mysqlnd_plugin_get_plugin_result_data(result, mysqlnd_memcache_plugin_id);
 		result_data->read = 0;
-		return PASS;
+		DBG_RETURN(PASS);
 	}
-	return FAIL;
+	/* TODO - Johannes, should we have a warning here?
+	php_error_docref(NULL TSRMLS_CC, E_WARNING, "Seek is currently not fully supported");
+	*/
+	DBG_RETURN(FAIL);
 }
 /* }}} */
 
@@ -384,55 +424,64 @@ static MYSQLND_FIELD_OFFSET mymem_result_seek_field(MYSQLND_RES * const result, 
 {
 	mymem_result_data *result_data = *mysqlnd_plugin_get_plugin_result_data(result, mysqlnd_memcache_plugin_id);
 	MYSQLND_FIELD_OFFSET old_value = result_data->current_field_offset;
+
+	DBG_ENTER("mymem_result_seek_field");
 	result_data->current_field_offset = field_offset; /* TODO: should we throw some error when out of bounds? */
-	return old_value;
+	DBG_RETURN(old_value);
 }
 /* }}} */
 
 static MYSQLND_FIELD_OFFSET mymem_result_field_tell(const MYSQLND_RES * const result TSRMLS_DC) /* {{{ */
 {
 	mymem_result_data *result_data = *mysqlnd_plugin_get_plugin_result_data(result, mysqlnd_memcache_plugin_id);
-	return result_data->current_field_offset;
+	DBG_ENTER("mymem_result_field_tell");
+	DBG_RETURN(result_data->current_field_offset);
 }
 /* }}} */
 
 static const MYSQLND_FIELD *mymem_result_fetch_field(MYSQLND_RES * const result TSRMLS_DC) /* {{{ */
 {
 	mymem_result_data *result_data = *mysqlnd_plugin_get_plugin_result_data(result, mysqlnd_memcache_plugin_id);
-	return result_data->fields + (result_data->current_field_offset++);
+	DBG_ENTER("mymem_result_fetch_field");
+	DBG_RETURN(result_data->fields + (result_data->current_field_offset++));
 }
 /* }}} */
 
 static const MYSQLND_FIELD *mymem_result_fetch_field_direct(MYSQLND_RES * const result, MYSQLND_FIELD_OFFSET fieldnr TSRMLS_DC) /* {{{ */
 {
 	mymem_result_data *result_data = *mysqlnd_plugin_get_plugin_result_data(result, mysqlnd_memcache_plugin_id);
-	return result_data->fields + fieldnr;
+	DBG_ENTER("mymem_result_fetch_field_direct");
+	DBG_RETURN(result_data->fields + fieldnr);
 }
 /* }}} */
 
 static const MYSQLND_FIELD *mymem_result_fetch_fields(MYSQLND_RES * const result TSRMLS_DC) /* {{{ */
 {
 	mymem_result_data *result_data = *mysqlnd_plugin_get_plugin_result_data(result, mysqlnd_memcache_plugin_id);
-	return result_data->fields;
+	DBG_ENTER("mymem_result_fetch_fields");
+	DBG_RETURN(result_data->fields);
 }
 /* }}} */
 
 static unsigned long *mymem_result_fetch_lengths(MYSQLND_RES * const result TSRMLS_DC) /* {{{ */
 {
 	mymem_result_data *result_data = *mysqlnd_plugin_get_plugin_result_data(result, mysqlnd_memcache_plugin_id);
-	return result_data->lengths;
+	DBG_ENTER("mymem_result_fetch_lengths");
+	DBG_RETURN(result_data->lengths);
 }
 /* }}} */
 
 static enum_func_status	mymem_result_free_result(MYSQLND_RES * result, zend_bool implicit TSRMLS_DC) /* {{{ */
 {
 	mymem_result_data *result_data = *mysqlnd_plugin_get_plugin_result_data(result, mysqlnd_memcache_plugin_id);
+
+	DBG_ENTER("mymem_result_free_result");
 	free(result_data->data);
 	efree(result_data->fields);
 	efree(result_data->lengths);
 	efree(result_data);
 	mnd_pefree(result, result->conn->persistent);
-	return PASS;
+	DBG_RETURN(PASS);
 }
 /* }}} */
 
@@ -527,60 +576,67 @@ static zval ** mymem_verify_patterns(MYSQLND_CONN_DATA *conn, mymem_connection_d
 	zval **value;
 	char *key;
 	int key_len;
+	DBG_ENTER("mymem_verify_patterns");
 
 	INIT_ZVAL(return_value); /* This will be a long or bool, no need for a zval_dtor */
 
 	php_pcre_match_impl(connection_data->regexp.pattern, query, query_len, &return_value, subpats, 0, 0, 0, 0 TSRMLS_CC);
 
 	if (!Z_LVAL(return_value)) {
-		return NULL;
+		DBG_INF("return value is no number");
+		DBG_RETURN(NULL);
 	}
 
 	if (zend_hash_index_find(Z_ARRVAL_P(subpats), 2, (void**)&table) == FAILURE || Z_TYPE_PP(table) != IS_STRING) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Pattern matched but no table name passed or not a string");
-		return NULL;
+		DBG_RETURN(NULL);
 	}
 
 	if (zend_hash_index_find(Z_ARRVAL_P(subpats), 3, (void**)&id_field) == FAILURE || Z_TYPE_PP(id_field) != IS_STRING) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Pattern matched but no id field name passed or not a string");
-		return NULL;
+		DBG_RETURN(NULL);
 	}
 
 	key_len = spprintf(&key, 0, "%s.%s.%s", conn->connect_or_select_db, Z_STRVAL_PP(table), Z_STRVAL_PP(id_field));
+	DBG_INF_FMT("key '%s'", key);
 
 	if (zend_hash_find(&connection_data->mapping, key, key_len+1, (void**)mapping) == FAILURE) {
 		efree(key);
-		return NULL;
+		DBG_INF("not found");
+		DBG_RETURN(NULL);
 	}
 	efree(key);
 
 	if (zend_hash_index_find(Z_ARRVAL_P(subpats), 5, (void**)&value) == FAILURE || Z_TYPE_PP(value) != IS_STRING) {
 		if (zend_hash_index_find(Z_ARRVAL_P(subpats), 4, (void**)&value) == FAILURE || Z_TYPE_PP(value) != IS_STRING) {
 			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Pattern matched but no id value passed or not a string");
-			return NULL;
+			DBG_RETURN(NULL);
 		}
 	}
 
 	if (zend_hash_index_find(Z_ARRVAL_P(subpats), 1, (void**)&tmp) == FAILURE || Z_TYPE_PP(tmp) != IS_STRING) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Pattern matched but no field list passed or not a string");
-		return NULL;
+		DBG_RETURN(NULL);
 	}
 
 	if (!mymem_check_field_list(Z_STRVAL_PP(tmp), (**mapping)->value_columns.v, (**mapping)->value_columns.num)) {
-		return NULL;
+		DBG_RETURN(NULL);
 	}
 
 
-	return value;
+	DBG_RETURN(value);
 }
 /* }}} */
 
-static void mymem_fill_field_data(mymem_result_data *result_data) /* {{{ */
+static void mymem_fill_field_data(mymem_result_data *result_data TSRMLS_DC) /* {{{ */
 {
 	int i;
 	int field_count = result_data->mapping->value_columns.num;
 	result_data->current_field_offset = 0;
 	result_data->fields = safe_emalloc(field_count, sizeof(MYSQLND_FIELD), 0);
+	DBG_ENTER("mymem_fill_field_data");
+	DBG_INF_FMT("field count %d", field_count);
+
 	memset(result_data->fields, 0, field_count*sizeof(MYSQLND_FIELD));
 
 	result_data->lengths = safe_emalloc(field_count, sizeof(unsigned long), 0);
@@ -597,6 +653,7 @@ static void mymem_fill_field_data(mymem_result_data *result_data) /* {{{ */
 		result_data->fields[i].catalog_length = 0;
 		result_data->fields[i].type = MYSQL_TYPE_STRING;
 	}
+	DBG_VOID_RETURN;
 }
 /* }}} */
 
@@ -608,6 +665,8 @@ static void mymem_notify_decision(mymem_connection_data_data *conn_data, zend_bo
 	ZVAL_BOOL(arg, using_memcache);
 	args[0] = &arg;
 
+	DBG_ENTER("mymem_notify_decision");
+
 	conn_data->callback.fci.no_separation = 0;
 	conn_data->callback.fci.retval_ptr_ptr = &retval;
 	conn_data->callback.fci.param_count = 1;
@@ -617,8 +676,8 @@ static void mymem_notify_decision(mymem_connection_data_data *conn_data, zend_bo
 		zval_ptr_dtor(&retval);
 	}
 	zval_ptr_dtor(&arg);
+	DBG_VOID_RETURN
 }
-/* }}} */
 /* }}} */
 
 static enum_func_status MYSQLND_METHOD(mymem_conn_data, query)(MYSQLND_CONN_DATA *conn, const char *query, unsigned int query_len TSRMLS_DC) /* {{{ */
@@ -627,6 +686,7 @@ static enum_func_status MYSQLND_METHOD(mymem_conn_data, query)(MYSQLND_CONN_DATA
 	zval **query_key = NULL;
 	mymem_mapping **mapping;
 	mymem_connection_data_data *connection_data = *mysqlnd_plugin_get_plugin_connection_data_data(conn, mysqlnd_memcache_plugin_id);
+	DBG_ENTER("mymem_conn_dat::query");
 
 	INIT_ZVAL(subpats);
 
@@ -647,7 +707,7 @@ static enum_func_status MYSQLND_METHOD(mymem_conn_data, query)(MYSQLND_CONN_DATA
 		char *key, *res;
 		int key_len;
 
-		if ((*mapping)->prefix && *(*mapping)->prefix) {
+		if (MYSQLND_MEMCACHE_G(use_key_prefix) && (*mapping)->prefix && *(*mapping)->prefix) {
 			int prefix_len = strlen((*mapping)->prefix);
 			key_len = prefix_len + Z_STRLEN_PP(query_key);
 			key = alloca(key_len+1);
@@ -662,6 +722,7 @@ static enum_func_status MYSQLND_METHOD(mymem_conn_data, query)(MYSQLND_CONN_DATA
 		}
 
 		res = memcached_get(connection_data->connection.memc, key, key_len, &value_len, &flags, &error);
+		DBG_INF_FMT("query %s, key '%s', value_len %d", query, key, value_len);
 
 		zval_dtor(&subpats);
 
@@ -674,7 +735,7 @@ static enum_func_status MYSQLND_METHOD(mymem_conn_data, query)(MYSQLND_CONN_DATA
 			 */
 			/* TODO: Map to MySQL error codes */
 			php_error_docref(NULL TSRMLS_CC, E_WARNING, "libmemcached error %s (%i)", memcached_strerror(connection_data->connection.memc, error), (int)error);
-			return FAIL;
+			DBG_RETURN(FAIL);
 		}
 
 		if (conn->current_result) {
@@ -692,7 +753,7 @@ static enum_func_status MYSQLND_METHOD(mymem_conn_data, query)(MYSQLND_CONN_DATA
 		result_data_p->read = 0;
 		result_data_p->mapping = *mapping;
 
-		mymem_fill_field_data(result_data_p);
+		mymem_fill_field_data(result_data_p TSRMLS_CC);
 
 		conn->upsert_status->affected_rows = (uint64_t)-1;
 		conn->upsert_status->warning_count = 0;
@@ -705,10 +766,11 @@ static enum_func_status MYSQLND_METHOD(mymem_conn_data, query)(MYSQLND_CONN_DATA
 		conn->last_query_type = QUERY_SELECT;
 		CONN_SET_STATE(conn, CONN_FETCHING_DATA);
 
-		return PASS;
+		DBG_RETURN(PASS);
 	} else {
+		DBG_INF_FMT("Not mapped");
 		zval_dtor(&subpats);
-		return orig_mysqlnd_conn_data_query(conn, query, query_len TSRMLS_CC);
+		DBG_RETURN(orig_mysqlnd_conn_data_query(conn, query, query_len TSRMLS_CC));
 	}
 }
 /* }}} */
@@ -717,6 +779,7 @@ static void mymem_free_connection_data_data(MYSQLND_CONN_DATA *conn TSRMLS_DC) /
 {
 	mymem_connection_data_data **conn_data_p = (mymem_connection_data_data **)mysqlnd_plugin_get_plugin_connection_data_data(conn, mysqlnd_memcache_plugin_id);
 	mymem_connection_data_data *conn_data = *conn_data_p;
+	DBG_ENTER("mymem_free_connection_data_data");
 
 	if (conn_data) {
 		zend_hash_destroy(&conn_data->mapping);
@@ -740,31 +803,37 @@ static void mymem_free_connection_data_data(MYSQLND_CONN_DATA *conn TSRMLS_DC) /
 
 		*conn_data_p = NULL;
 	}
+	DBG_VOID_RETURN;
 }
 /* }}} */
 
 static enum_func_status MYSQLND_METHOD(mymem_conn_data, end_psession)(MYSQLND_CONN_DATA *conn TSRMLS_DC) /* {{{ */
 {
+	DBG_ENTER("mymem_conn_data::end_psession");
 	mymem_free_connection_data_data(conn TSRMLS_CC);
-	return orig_mysqlnd_conn_data_end_psession(conn TSRMLS_CC);
+	DBG_RETURN(orig_mysqlnd_conn_data_end_psession(conn TSRMLS_CC));
 }
 /* }}} */
 
 static enum_func_status MYSQLND_METHOD(mymem_conn, close)(MYSQLND* conn, enum_connection_close_type close_type TSRMLS_DC) /* {{{ */
 {
+	DBG_ENTER("mymem_conn::close");
 	mymem_free_connection_data_data(conn->data TSRMLS_CC);
-	return orig_mysqlnd_conn_close(conn, close_type TSRMLS_CC);
+	DBG_RETURN(orig_mysqlnd_conn_close(conn, close_type TSRMLS_CC));
 }
 /* }}} */
 /* }}} */
 
 /* {{{ User space functions and helpers */
-static void mymem_split_columns(mymem_mapping *mapping, char *names, int names_len) /* {{{ */
+static void mymem_split_columns(mymem_mapping *mapping, char *names, int names_len TSRMLS_DC) /* {{{ */
 {
 	int i = 0;
 	char *pos_from = names, *pos_to;
 
 	int count = count_char(names, ',') + 1;
+
+	DBG_ENTER("mymem_split_columns");
+	DBG_INF_FMT("count %d", count);
 
 	mapping->value_columns.num = count;
 	pos_to = mapping->value_columns.to_free = emalloc(names_len + 1);
@@ -792,12 +861,15 @@ static void mymem_split_columns(mymem_mapping *mapping, char *names, int names_l
 		}
 	}
 	*pos_to = '\0';
+
+	DBG_VOID_RETURN;
 }
 /* }}} */
 
 static void mymem_free_mapping(void *mapping_v) /* {{{ */
 {
 	mymem_mapping *mapping = *(mymem_mapping**)mapping_v;
+
 	efree(mapping->name);
 	efree(mapping->prefix);
 	efree(mapping->schema_name);
@@ -807,6 +879,7 @@ static void mymem_free_mapping(void *mapping_v) /* {{{ */
 	efree(mapping->value_columns.v);
 	efree(mapping->separator);
 	efree(mapping);
+
 }
 /* }}} */
 
@@ -816,31 +889,33 @@ static const char *mymem_pick_mapping_query(MYSQLND *conn, int *query_len TSRMLS
 	MYSQLND_RES *res;
 	const char *retval;
 
+	DBG_ENTER("mymem_pick_mapping_query");
+
 	if (FAIL == orig_mysqlnd_conn_data_query(conn->data, MAPPING_DECISION_QUERY, sizeof(MAPPING_DECISION_QUERY)-1 TSRMLS_CC)) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "MySQL decision query failed: %s", mysqlnd_error(conn));
-		return NULL;
+		DBG_RETURN(NULL);
 	}
 	res = mysqlnd_store_result(conn);
 	if (!res) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Failed to store result");
-		return NULL;
+		DBG_RETURN(NULL);
 	}
 	if (1 != mysqlnd_num_fields(res)) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Got an invalid result num_fields=%i, expected 1", mysqlnd_num_fields(res));
 		mysqlnd_free_result(res, 0);
-		return NULL;
+		DBG_RETURN(NULL);
 	}
 	row = mysqlnd_fetch_row_c(res);
 	if (!row) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Neither innodb_memcache.containers nor ndbmemcache.containers exists. Can't proceed");
 		mysqlnd_free_result(res, 0);
-		return NULL;
+		DBG_RETURN(NULL);
 	}
 	if (!strncmp(row[0], "innodb_memcache", sizeof("innodb_memcache")-1)) {
 		if (mysqlnd_get_server_version(conn) < 50606) {
 			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Invalid MySQL Server version, require at least MySQL 5.6.6");
 			mysqlnd_free_result(res, 0);
-			return NULL;
+			DBG_RETURN(NULL);
 		}
 		retval = MAPPING_QUERY_INNODB;
 		*query_len = strlen(MAPPING_QUERY_INNODB);
@@ -852,18 +927,19 @@ static const char *mymem_pick_mapping_query(MYSQLND *conn, int *query_len TSRMLS
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Invalid memcache configuration table found, this error should be impossible to hit");
 		/* We make a SQL query using IN("innodb_memcache", "ndmemcache") but something different is being returned, major bug */
 		mysqlnd_free_result(res, 0);
-		return NULL;
+		DBG_RETURN(NULL);
 	}
 	mnd_free(row);
 	if ((row = mysqlnd_fetch_row_c(res))) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "It seems like both, innodb-memcached and ndb-memcached are configured. This is not supported");
 		mnd_free(row);
 		mysqlnd_free_result(res, 0);
-		return NULL;
+		DBG_RETURN(NULL);
 	}
 	mysqlnd_free_result(res, 0);
 
-	return retval;
+	DBG_INF_FMT("retval %s", retval);
+	DBG_RETURN(retval);
 }
 /* }}} */
 
@@ -875,30 +951,32 @@ static mymem_connection_data_data *mymem_init_mysqlnd(MYSQLND *conn TSRMLS_DC) /
 	MYSQLND_RES *res;
 	int query_len;
 	const char *query = NULL;
+	DBG_ENTER("mymem_init_mysqlnd");
 
 	if (!MYSQLND_MEMCACHE_G(enable)) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "mysqlnd_memcache.enable not set in php.ini. Enable it and restart PHP");
-		return NULL;
+		DBG_RETURN(NULL);
 	}
 
 	query = mymem_pick_mapping_query(conn, &query_len TSRMLS_CC);
 	if (!query) {
-		return NULL;
+		DBG_INF("no mapping query");
+		DBG_RETURN(NULL);
 	}
 	if (FAIL == orig_mysqlnd_conn_data_query(conn->data, query, query_len TSRMLS_CC)) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "MySQL mapping query failed: %s", mysqlnd_error(conn));
-		return NULL;
+		DBG_RETURN(NULL);
 	}
 
 	res = mysqlnd_store_result(conn);
 	if (!res) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Failed to store result");
-		return NULL;
+		DBG_RETURN(NULL);
 	}
 	if (7 != mysqlnd_num_fields(res)) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Got an invalid result num_fields=%i, expected 7", mysqlnd_num_fields(res));
 		mysqlnd_free_result(res, 0);
-		return NULL;
+		DBG_RETURN(NULL);
 	}
 
 	plugin_data_vpp = mysqlnd_plugin_get_plugin_connection_data_data(conn->data, mysqlnd_memcache_plugin_id);
@@ -911,7 +989,7 @@ static mymem_connection_data_data *mymem_init_mysqlnd(MYSQLND *conn TSRMLS_DC) /
 		char *key = NULL;
 		int key_len;
 		mymem_mapping *mapping;
-		
+
 		if (UNEXPECTED(!row[1])) {
 			if (query == MAPPING_QUERY_INNODB) {
 				/* with InnoDB column 1 is a concat of the name and table_map_deimiter, if the result is NULL one of those has to be NULL */
@@ -924,7 +1002,7 @@ static mymem_connection_data_data *mymem_init_mysqlnd(MYSQLND *conn TSRMLS_DC) /
 				}
 			}
 		}
-		
+
 		if (UNEXPECTED(!row[6])) {
 			if (query == MAPPING_QUERY_INNODB) {
 				php_error_docref(NULL TSRMLS_CC, E_WARNING, "'separator' is not set in innodb_memcache.config_options");
@@ -932,7 +1010,7 @@ static mymem_connection_data_data *mymem_init_mysqlnd(MYSQLND *conn TSRMLS_DC) /
 			}
 			/* With NDB this currently can't happen as this is a literal in the query */
 		}
-		
+
 		if (UNEXPECTED(!row[2] || !row[3] || !row[4] || !row[5])) {
 			/* row[0] is handled along with row[1] above */
 			const char *error_col = "(unknown)";
@@ -946,9 +1024,9 @@ static mymem_connection_data_data *mymem_init_mysqlnd(MYSQLND *conn TSRMLS_DC) /
 			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Field '%s' for '%s' is NULL in innodb_memcache.containers", error_col, row[0]);
 			continue;
 		}
-		
+
 		mapping = emalloc(sizeof(mymem_mapping));
-		
+
 		/*
 		For highest performance we might cache this persistently, globally,
 		this creates the risk of stuff going wrong if servers don't match
@@ -960,11 +1038,15 @@ static mymem_connection_data_data *mymem_init_mysqlnd(MYSQLND *conn TSRMLS_DC) /
 		mapping->schema_name = estrdup(row[2]);
 		mapping->table_name = estrdup(row[3]);
 		mapping->id_field_name = estrdup(row[4]);
-		mymem_split_columns(mapping, row[5], strlen(row[5]));
+		mymem_split_columns(mapping, row[5], strlen(row[5]) TSRMLS_CC);
 		mapping->separator = estrdup(row[6]);
+
+		DBG_INF_FMT("name '%s', prefix '%s', schema_name '%s'", mapping->name, mapping->prefix, mapping->schema_name);
+		DBG_INF_FMT("table_name '%s', field_name '%s', separator '%s'", mapping->table_name, mapping->id_field_name, mapping->separator);
 
 		/* TODO: We should add fields to the hash, too */
 		key_len = spprintf(&key, 0, "%s.%s.%s", mapping->schema_name, mapping->table_name, mapping->id_field_name);
+		DBG_INF_FMT("key '%s'", key);
 
 		zend_hash_add(&plugin_data_p->mapping, key, key_len+1, &mapping, sizeof(mymem_mapping*), NULL);
 		efree(key);
@@ -972,7 +1054,7 @@ static mymem_connection_data_data *mymem_init_mysqlnd(MYSQLND *conn TSRMLS_DC) /
 	}
 	mysqlnd_free_result(res, 0);
 
-	return plugin_data_p;
+	DBG_RETURN(plugin_data_p);
 }
 /* }}} */
 
@@ -1137,6 +1219,7 @@ static const zend_function_entry mymem_functions[] = {
 /* {{{ PHP_INI */
 PHP_INI_BEGIN()
 	STD_PHP_INI_BOOLEAN("mysqlnd_memcache.enable", "1", PHP_INI_SYSTEM, OnUpdateBool, enable, zend_mysqlnd_memcache_globals, mysqlnd_memcache_globals)
+	STD_PHP_INI_BOOLEAN("mysqlnd_memcache.use_key_prefix", "1", PHP_INI_SYSTEM, OnUpdateBool, use_key_prefix, zend_mysqlnd_memcache_globals, mysqlnd_memcache_globals)
 PHP_INI_END()
 /* }}} */
 
@@ -1145,6 +1228,8 @@ PHP_INI_END()
 static void php_mysqlnd_memcache_init_globals(zend_mysqlnd_memcache_globals *mysqlnd_memcache_globals)
 {
 	mysqlnd_memcache_globals->enable = TRUE;
+	/* TODO: Temporary hack to be compatible with June labs release */
+	mysqlnd_memcache_globals->use_key_prefix = TRUE;
 }
 /* }}} */
 
@@ -1178,7 +1263,7 @@ static PHP_MINIT_FUNCTION(mysqlnd_memcache)
 	if (MYSQLND_MEMCACHE_G(enable)) {
 		struct st_mysqlnd_conn_methods *conn_methods;
 		struct st_mysqlnd_conn_data_methods *conn_data_methods;
-		
+
 		mysqlnd_memcache_plugin_id = mysqlnd_plugin_register();
 
 		conn_methods = mysqlnd_conn_get_methods();
@@ -1189,7 +1274,7 @@ static PHP_MINIT_FUNCTION(mysqlnd_memcache)
 
 		orig_mysqlnd_conn_close = conn_methods->close;
 		conn_methods->close = MYSQLND_METHOD(mymem_conn, close);
-		
+
 		orig_mysqlnd_conn_data_end_psession = conn_data_methods->end_psession;
 		conn_data_methods->end_psession = MYSQLND_METHOD(mymem_conn_data, end_psession);
 	}

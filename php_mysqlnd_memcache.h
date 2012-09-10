@@ -36,14 +36,6 @@ extern zend_module_entry mysqlnd_memcache_module_entry;
 #include "TSRM.h"
 #endif
 
-#ifdef ZTS
-#define MYSQLND_MEMCACHE_G(v) TSRMG(mysqlnd_memcache_globals_id, zend_mysqlnd_memcache_globals *, v)
-#else
-#define MYSQLND_MEMCACHE_G(v) (mysqlnd_memcache_globals.v)
-#endif
-
-ZEND_EXTERN_MODULE_GLOBALS(mysqlnd_memcache)
-
 #endif	/* PHP_MYSQLND_MEMCACHE_H */
 
 
