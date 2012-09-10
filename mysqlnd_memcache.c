@@ -679,6 +679,7 @@ static void mymem_notify_decision(mymem_connection_data_data *conn_data, zend_bo
 	DBG_VOID_RETURN
 }
 /* }}} */
+/* }}} */
 
 static enum_func_status MYSQLND_METHOD(mymem_conn_data, query)(MYSQLND_CONN_DATA *conn, const char *query, unsigned int query_len TSRMLS_DC) /* {{{ */
 {
