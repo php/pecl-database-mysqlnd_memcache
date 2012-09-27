@@ -41,7 +41,7 @@
 /* }}} */
 
 
-#define MYSQLND_MEMCACHE_VERSION "1.0.0-alpha"
+#define MYSQLND_MEMCACHE_VERSION "1.0.0-beta"
 #define MYSQLND_MEMCACHE_VERSION_ID 10000
 
 ZEND_BEGIN_MODULE_GLOBALS(mysqlnd_memcache)

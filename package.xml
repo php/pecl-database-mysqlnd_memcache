@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<package packagerversion="1.9.1" version="2.0" xmlns="http://pear.php.net/dtd/package-2.0" xmlns:tasks="http://pear.php.net/dtd/tasks-1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://pear.php.net/dtd/tasks-1.0 http://pear.php.net/dtd/tasks-1.0.xsd http://pear.php.net/dtd/package-2.0 http://pear.php.net/dtd/package-2.0.xsd">
+ <name>mysqlnd_memcache</name>
+ <channel>pecl.php.net</channel>
+ <summary>A replication and load balancing plugin for mysqlnd</summary>
+ <description>A PHP extension for transparently translating SQL into requests for the MySQL InnoDB Memcached Daemon Plugin.</description>
+ <lead>
+  <name>Johannes Schlüter</name>
+  <user>johannes</user>
+  <email>johannes@php.net</email>
+  <active>yes</active>
+ </lead>
+ <lead>
+  <name>Andrey Hristov</name>
+  <user>andrey</user>
+  <email>andrey@php.net</email>
+  <active>yes</active>
+ </lead>
+ <lead>
+  <name>Ulf Wendel</name>
+  <user>uw</user>
+  <email>uw@php_net</email>
+  <active>yes</active>
+ </lead>
+ <date>2012-09-27</date>
+ <time>19:53:05</time>
+ <version>
+  <release>1.0.0</release>
+  <api>1.0.0</api>
+ </version>
+ <stability>
+  <release>beta</release>
+  <api>beta</api>
+ </stability>
+ <license uri="http://www.php.net/license">PHP License</license>
+ <notes>
+Initial package release.
+ </notes>
+ <contents>
+  <dir name="/">
+   <file name="tests/mymemc_update_and_fetch.phpt" role="test" />
+   <file name="tests/mymemc_api_basics_mysql.phpt" role="test" />
+   <file name="tests/mymemc_verify_mapping.phpt" role="test" />
+   <file name="tests/mymemc_memcache_set_debug_cb.phpt" role="test" />
+   <file name="tests/mymemc_empty_string.phpt" role="test" />
+   <file name="tests/mymemc_match_sql_patterns.phpt" role="test" />
+   <file name="tests/connect.inc" role="test" />
+   <file name="tests/mymemc_resultmeta_multiple.phpt" role="test" />
+   <file name="tests/mymemc_column_order.phpt" role="test" />
+   <file name="tests/mymemc_query_multi.phpt" role="test" />
+   <file name="tests/mymemc_result_num_rows.phpt" role="test" />
+   <file name="tests/mymemc_mysqli_fetch_assoc.phpt" role="test" />
+   <file name="tests/mymemc_query_multi_multi.phpt" role="test" />
+   <file name="tests/mymemc_phpinfo.phpt" role="test" />
+   <file name="tests/mymemc_mysqlnd_memcache_get_config_params.phpt" role="test" />
+   <file name="tests/mymemc_fetch_often.phpt" role="test" />
+   <file name="tests/mymemc_null_values.phpt" role="test" />
+   <file name="tests/mymemc_update_and_fetch_sql.phpt" role="test" />
+   <file name="tests/mymemc_api_basics_mysqli.phpt" role="test" />
+   <file name="tests/mymemc_resultmeta_multiple_plugin_disabled.phpt" role="test" />
+   <file name="tests/mymemc_select_sql_no_cache.phpt" role="test" />
+   <file name="tests/mymemc_column_alias.phpt" role="test" />
+   <file name="tests/mymemc_mysqlnd_memcache_set_params.phpt" role="test" />
+   <file name="tests/mymemc_mysqli_fetch_object.phpt" role="test" />
+   <file name="tests/mymemc_query_multi_unbuffered.phpt" role="test" />
+   <file name="tests/mymemc_unset_config.phpt" role="test" />
+   <file name="tests/mymemc_resultmeta_same_table.phpt" role="test" />
+   <file name="tests/skipif.inc" role="test" />
+   <file name="tests/mymemc_mysqli_fetch_array.phpt" role="test" />
+   <file name="tests/mymemc_reflection_functions.phpt" role="test" />
+   <file name="tests/mymemc_constants.phpt" role="test" />
+   <file name="tests/util.inc" role="test" />
+   <file name="tests/mymemc_api_basics_pdo.phpt" role="test" />
+   <file name="tests/mymemc_column_superset.phpt" role="test" />
+   <file name="tests/mymemc_query_async.phpt" role="test" />
+   <file name="tests/mymemc_query_unbuffered.phpt" role="test" />
+   <file name="tests/README" role="test" />
+   <file name="tests/mymemc_resultmeta.phpt" role="test" />
+   <file name="tests/mymemc_mysqlnd_memcache_get_config.phpt" role="test" />
+   <file name="tests/mymemc_seperator_clash_fetch_assoc.phpt" role="test" />
+   <file name="tests/mymemc_result_seek.phpt" role="test" />
+   <file name="tests/mymemc_reflection_extension.phpt" role="test" />
+   <file name="tests/table.inc" role="test" />
+   <file name="tests/mymemc_server_resultmeta.phpt" role="test" />
+   <file name="tests/mymemc_resultmeta_direct_access.phpt" role="test" />
+   <file name="tests/mymemc_insert_and_fetch_sql.phpt" role="test" />
+   <file name="tests/mymemc_resultmeta_lengths.phpt" role="test" />
+   <file name="tests/mymemc_seperator_clash.phpt" role="test" />
+   <file name="tests/mymemc_column_subset.phpt" role="test" />
+   <file name="tests/mymemc_result_field_count.phpt" role="test" />
+   <file name="tests/mymemc_subselect.phpt" role="test" />
+   <file name="tests/mymemc_memcache_no_host.phpt" role="test" />
+   <file name="tests/mymemc_insert_and_fetch.phpt" role="test" />
+   <file name="config.m4" role="src" />
+   <file name="config.w32" role="src" />
+   <file name="CREDITS" role="src" />
+   <file name="EXPERIMENTAL" role="doc" />
+   <file name="LICENSE" role="doc" />
+   <file name="mysqlnd_memcache.c" role="src" />
+   <file name="php_mysqlnd_memcache.h" role="src" />
+  </dir>
+ </contents>
+ <dependencies>
+  <required>
+   <php>
+    <min>5.4.0</min>
+   </php>
+   <pearinstaller>
+    <min>1.4.0</min>
+   </pearinstaller>
+  </required>
+ </dependencies>
+ <providesextension>mysqlnd_memcache</providesextension>
+ <extsrcrelease />
+ <changelog>
+  <release>
+   <version>
+    <release>1.0.0</release>
+    <api>1.0.0</api>
+   </version>
+   <stability>
+    <release>beta</release>
+    <api>beta</api>
+   </stability>
+   <date>2012-09-27</date>
+   <license uri="http://www.php.net/license">PHP License</license>
+   <notes>
+Initial package release.
+   </notes>
+  </release>
+ </changelog>
+</package>
