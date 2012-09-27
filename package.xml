@@ -2,8 +2,8 @@
 <package packagerversion="1.9.1" version="2.0" xmlns="http://pear.php.net/dtd/package-2.0" xmlns:tasks="http://pear.php.net/dtd/tasks-1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://pear.php.net/dtd/tasks-1.0 http://pear.php.net/dtd/tasks-1.0.xsd http://pear.php.net/dtd/package-2.0 http://pear.php.net/dtd/package-2.0.xsd">
  <name>mysqlnd_memcache</name>
  <channel>pecl.php.net</channel>
- <summary>A replication and load balancing plugin for mysqlnd</summary>
- <description>A PHP extension for transparently translating SQL into requests for the MySQL InnoDB Memcached Daemon Plugin.</description>
+ <summary>A PHP extension for transparently translating SQL into requests for the MySQL InnoDB Memcached Daemon Plugin</summary>
+ <description>The mysqlnd memcache plugin (mysqlnd_memcache) is an PHP extension for transparently translating SQL into requests for the MySQL InnoDB Memcached Daemon Plugin (server plugin). It includes experimental support for the MySQL Cluster Memcached Daemon. The server plugin provides access to data stored inside MySQL InnoDB (respectively MySQL Cluster NDB) tables using the Memcache protocol. This PHP extension, which supports all PHP MySQL extensions that use mysqlnd, will identify tables exported in this way and will translate specific SELECT queries into Memcache requests.</description>
  <lead>
   <name>Johannes Schlüter</name>
   <user>johannes</user>
