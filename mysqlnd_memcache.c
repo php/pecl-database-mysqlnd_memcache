@@ -46,7 +46,6 @@
 
 ZEND_BEGIN_MODULE_GLOBALS(mysqlnd_memcache)
         zend_bool enable;
-		zend_bool use_key_prefix;
 ZEND_END_MODULE_GLOBALS(mysqlnd_memcache)
 
 #ifdef ZTS
@@ -708,7 +707,7 @@ static enum_func_status MYSQLND_METHOD(mymem_conn_data, query)(MYSQLND_CONN_DATA
 		char *key, *res;
 		int key_len;
 
-		if (MYSQLND_MEMCACHE_G(use_key_prefix) && (*mapping)->prefix && *(*mapping)->prefix) {
+		if ((*mapping)->prefix && *(*mapping)->prefix) {
 			int prefix_len = strlen((*mapping)->prefix);
 			key_len = prefix_len + Z_STRLEN_PP(query_key);
 			key = alloca(key_len+1);
@@ -1220,7 +1219,6 @@ static const zend_function_entry mymem_functions[] = {
 /* {{{ PHP_INI */
 PHP_INI_BEGIN()
 	STD_PHP_INI_BOOLEAN("mysqlnd_memcache.enable", "1", PHP_INI_SYSTEM, OnUpdateBool, enable, zend_mysqlnd_memcache_globals, mysqlnd_memcache_globals)
-	STD_PHP_INI_BOOLEAN("mysqlnd_memcache.use_key_prefix", "1", PHP_INI_SYSTEM, OnUpdateBool, use_key_prefix, zend_mysqlnd_memcache_globals, mysqlnd_memcache_globals)
 PHP_INI_END()
 /* }}} */
 
@@ -1229,8 +1227,6 @@ PHP_INI_END()
 static void php_mysqlnd_memcache_init_globals(zend_mysqlnd_memcache_globals *mysqlnd_memcache_globals)
 {
 	mysqlnd_memcache_globals->enable = TRUE;
-	/* TODO: Temporary hack to be compatible with June labs release */
-	mysqlnd_memcache_globals->use_key_prefix = TRUE;
 }
 /* }}} */
 
