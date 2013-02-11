@@ -300,14 +300,8 @@ static void mymem_result_fetch_into(MYSQLND_RES *result, unsigned int flags, zva
 
 		value = strtok_r(NULL, result_data->mapping->separator, &value_lasts);
 		i++;
-
-		if (i == result_data->mapping->value_columns.num) {
-			DBG_INF_FMT("Tokenizer returns more values than expected - wrong results, stopping");
-			php_error_docref(NULL TSRMLS_CC, E_RECOVERABLE_ERROR, "Getting more values than expected.");
-			break;
-		}
 	}
-	DBG_INF_FMT("values %d, columns %d", i, result_data->mapping->value_columns.num);
+	DBG_INF_FMT("values %d", i);
 
 	CONN_SET_STATE(result->conn, CONN_READY);
 	efree(raw_data);
