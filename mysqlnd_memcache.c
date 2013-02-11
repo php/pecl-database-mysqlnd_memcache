@@ -676,7 +676,7 @@ static void mymem_notify_decision(mymem_connection_data_data *conn_data, zend_bo
 		zval_ptr_dtor(&retval);
 	}
 	zval_ptr_dtor(&arg);
-	DBG_VOID_RETURN
+	DBG_VOID_RETURN;
 }
 /* }}} */
 /* }}} */
