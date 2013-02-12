@@ -39,7 +39,7 @@ array(1) {
   ["mymem_test"]=>
   array(6) {
     ["prefix"]=>
-    string(0) ""
+    string(0) "@@mymem_test."
     ["schema_name"]=>
     string(4) "%s"
     ["table_name"]=>
