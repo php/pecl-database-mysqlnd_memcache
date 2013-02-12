@@ -32,5 +32,3 @@ tests/*.log
 tests/*.out
 tests/*.php
 tests/*.sh
-docbook/entities.functions.xml
-docbook/entities.figures.xml
