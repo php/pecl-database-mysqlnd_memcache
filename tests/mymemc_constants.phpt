@@ -34,8 +34,8 @@ mysqlnd_memcache.enable=1
 
 	print "done!";
 ?>
---EXPECT--
+--EXPECTF--
 MYSQLND_MEMCACHE_DEFAULT_REGEXP = '/^\s*SELECT\s*(.+?)\s*FROM\s*`?([a-z0-9_]+)`?\s*WHERE\s*`?([a-z0-9_]+)`?\s*=\s*(?(?=["'])["']([^"']*)["']|([0-9e\.]*))\s*$/is'
-MYSQLND_MEMCACHE_VERSION = '1.0.0-alpha'
-MYSQLND_MEMCACHE_VERSION_ID = '10000'
+MYSQLND_MEMCACHE_VERSION = '%s'
+MYSQLND_MEMCACHE_VERSION_ID = '%d'
 done!
