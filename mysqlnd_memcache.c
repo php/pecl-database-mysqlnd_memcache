@@ -1011,7 +1011,7 @@ static mymem_connection_data_data *mymem_init_mysqlnd(MYSQLND *conn TSRMLS_DC) /
 			int i;
 			for (i = 2; i <= 5; ++i) {
 				if (!row[i]) {
-					MYSQLND_FIELD *f = mysqlnd_fetch_field_direct(res, i);
+					const MYSQLND_FIELD *f = mysqlnd_fetch_field_direct(res, i);
 					error_col = f->name;
 				}
 			}
