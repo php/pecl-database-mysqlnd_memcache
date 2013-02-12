@@ -50,7 +50,7 @@ mysqlnd_memcache.enable=1
 	$mappings = array(
 				"mymem_test" =>
 					array(
-						"prefix" => "",
+						"prefix" => "@@mymem_test.",
 						"schema_name" => $db,
 						"table_name" => "mymem_test",
 						"id_field_name" => "id",

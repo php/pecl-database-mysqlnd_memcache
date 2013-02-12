@@ -65,9 +65,9 @@ mysqlnd_memcache.enable=1
 
 	print "done!";
 ?>
---EXPECT--
+--EXPECTF--
 Name: mysqlnd_memcache
-Version: 1.0.0-alpha
+Version: %s
 Dependencies:
   memcached - Required
   pcre - Required
