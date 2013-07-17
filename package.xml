@@ -22,19 +22,19 @@
   <email>uw@php_net</email>
   <active>yes</active>
  </lead>
- <date>2012-09-27</date>
+ <date>2013-07-26</date>
  <time>19:53:05</time>
  <version>
-  <release>1.0.0</release>
+  <release>1.0.1</release>
   <api>1.0.0</api>
  </version>
  <stability>
-  <release>beta</release>
-  <api>beta</api>
+  <release>stable</release>
+  <api>stable</api>
  </stability>
  <license uri="http://www.php.net/license">PHP License</license>
  <notes>
-Initial package release.
+Fixed build issues.
  </notes>
  <contents>
   <dir name="/">
@@ -94,7 +94,6 @@ Initial package release.
    <file name="config.m4" role="src" />
    <file name="config.w32" role="src" />
    <file name="CREDITS" role="src" />
-   <file name="EXPERIMENTAL" role="doc" />
    <file name="LICENSE" role="doc" />
    <file name="mysqlnd_memcache.c" role="src" />
    <file name="php_mysqlnd_memcache.h" role="src" />
@@ -113,6 +112,21 @@ Initial package release.
  <providesextension>mysqlnd_memcache</providesextension>
  <extsrcrelease />
  <changelog>
+  <release>
+   <version>
+    <release>1.0.1</release>
+    <api>1.0.0</api>
+   </version>
+   <staility>
+    <release>stable</release>
+    <api>stable</api>
+   </stability>
+   <date>2013-07-18</date>
+   <license uri="http://www.php.net/license">PHP License</license>
+   <notes>
+Fixed build issues
+   </notes>
+  </release>
   <release>
    <version>
     <release>1.0.0</release>
