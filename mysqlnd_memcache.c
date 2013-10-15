@@ -41,9 +41,6 @@
 /* }}} */
 
 
-#define MYSQLND_MEMCACHE_VERSION "1.0.1"
-#define MYSQLND_MEMCACHE_VERSION_ID 10001
-
 ZEND_BEGIN_MODULE_GLOBALS(mysqlnd_memcache)
         zend_bool enable;
 ZEND_END_MODULE_GLOBALS(mysqlnd_memcache)
@@ -1270,7 +1267,7 @@ static PHP_MINIT_FUNCTION(mysqlnd_memcache)
 		conn_data_methods->end_psession = MYSQLND_METHOD(mymem_conn_data, end_psession);
 	}
 	REGISTER_STRINGL_CONSTANT("MYSQLND_MEMCACHE_DEFAULT_REGEXP", SQL_PATTERN, SQL_PATTERN_LEN, CONST_CS | CONST_PERSISTENT);
-	REGISTER_STRING_CONSTANT("MYSQLND_MEMCACHE_VERSION", MYSQLND_MEMCACHE_VERSION, CONST_CS | CONST_PERSISTENT);
+	REGISTER_STRING_CONSTANT("MYSQLND_MEMCACHE_VERSION", PHP_MYSQLND_MEMCACHE_VERSION, CONST_CS | CONST_PERSISTENT);
 	REGISTER_LONG_CONSTANT("MYSQLND_MEMCACHE_VERSION_ID", MYSQLND_MEMCACHE_VERSION_ID, CONST_CS | CONST_PERSISTENT);
 
 	return SUCCESS;
@@ -1296,7 +1293,7 @@ static PHP_MINFO_FUNCTION(mysqlnd_memcache)
 
 	php_info_print_table_start();
 	php_info_print_table_header(2, "mysqlnd_memcache support", "enabled");
-    snprintf(buf, sizeof(buf), "%s (%d)", MYSQLND_MEMCACHE_VERSION, MYSQLND_MEMCACHE_VERSION_ID);
+    snprintf(buf, sizeof(buf), "%s (%d)", PHP_MYSQLND_MEMCACHE_VERSION, MYSQLND_MEMCACHE_VERSION_ID);
 	php_info_print_table_row(2, "Plugin active", MYSQLND_MEMCACHE_G(enable) ? "yes" : "no");
 	php_info_print_table_row(2, "php-memcached version", (*memcached_ce)->info.internal.module->version);
 	php_info_print_table_row(2, "libmemcached version", LIBMEMCACHED_VERSION_STRING);
@@ -1329,7 +1326,7 @@ zend_module_entry mysqlnd_memcache_module_entry = {
 	NULL,
 	NULL,
 	PHP_MINFO(mysqlnd_memcache),
-	MYSQLND_MEMCACHE_VERSION,
+	PHP_MYSQLND_MEMCACHE_VERSION,
 	STANDARD_MODULE_PROPERTIES
 };
 /* }}} */

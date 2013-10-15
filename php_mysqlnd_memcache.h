@@ -22,6 +22,9 @@
 extern zend_module_entry mysqlnd_memcache_module_entry;
 #define phpext_mysqlnd_memcache_ptr &mysqlnd_memcache_module_entry
 
+#define PHP_MYSQLND_MEMCACHE_VERSION "1.0.1"
+#define MYSQLND_MEMCACHE_VERSION_ID 10001
+
 #endif	/* PHP_MYSQLND_MEMCACHE_H */
 
 
