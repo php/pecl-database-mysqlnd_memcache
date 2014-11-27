@@ -1062,12 +1062,24 @@ static PHP_FUNCTION(mysqlnd_memcache_set)
 	mymem_connection_data_data *conn_data;
 	zend_fcall_info fci;
 	zend_fcall_info_cache fcc;
+	#if PHP_VERSION_ID >= 50600
+		unsigned int client_api_capabilities, tmp;
+	#endif
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "zO!|s!f", &mysqlnd_conn_zv, &memcached_zv, *memcached_ce, &regexp, &regexp_len, &fci, &fcc) == FAILURE) {
 		return;
 	}
 
-	if (!(mysqlnd_conn = zval_to_mysqlnd(mysqlnd_conn_zv TSRMLS_CC))) {
+	#if PHP_VERSION_ID >= 50600
+		mysqlnd_conn = zval_to_mysqlnd(mysqlnd_conn_zv, 0, &client_api_capabilities TSRMLS_CC);
+		if (mysqlnd_conn) {
+			mysqlnd_conn = zval_to_mysqlnd(mysqlnd_conn_zv, client_api_capabilities, &tmp TSRMLS_CC);
+		}
+	#else
+		mysqlnd_conn = zval_to_mysqlnd(mysqlnd_conn_zv TSRMLS_CC);
+	#endif
+
+	if (!mysqlnd_conn) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Passed variable is no mysqlnd-based MySQL connection");
 		RETURN_FALSE;
 	}
@@ -1153,12 +1165,24 @@ static PHP_FUNCTION(mysqlnd_memcache_get_config)
 	zval *mysqlnd_conn_zv, *mapping;
 	MYSQLND *mysqlnd_conn;
 	mymem_connection_data_data *conn_data;
+        #if PHP_VERSION_ID >= 50600
+                unsigned int client_api_capabilities, tmp;
+        #endif
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "z", &mysqlnd_conn_zv) == FAILURE) {
 		return;
 	}
 
-	if (!(mysqlnd_conn = zval_to_mysqlnd(mysqlnd_conn_zv TSRMLS_CC))) {
+        #if PHP_VERSION_ID >= 50600
+                mysqlnd_conn = zval_to_mysqlnd(mysqlnd_conn_zv, 0, &client_api_capabilities TSRMLS_CC);
+                if (mysqlnd_conn) {
+                        mysqlnd_conn = zval_to_mysqlnd(mysqlnd_conn_zv, client_api_capabilities, &tmp TSRMLS_CC);
+                }
+        #else
+                mysqlnd_conn = zval_to_mysqlnd(mysqlnd_conn_zv TSRMLS_CC);
+        #endif
+
+	if (!mysqlnd_conn) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Passed variable is no mysqlnd-based MySQL connection");
 		RETURN_FALSE;
 	}
